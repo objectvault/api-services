@@ -1,0 +1,48 @@
+// cSpell:ignore goginrpf, gonic, paulo ferreira
+package user
+
+/*
+ * This file is part of the ObjectVault Project.
+ * Copyright (C) 2020-2022 Paulo Ferreira <vault at sourcenotes.org>
+ *
+ * This work is published under the GNU AGPLv3.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import (
+	"github.com/objectvault/api-services/common"
+	"github.com/objectvault/api-services/orm"
+	rpf "github.com/objectvault/goginrpf"
+
+	"github.com/gin-gonic/gin"
+)
+
+func DBRegistryUserStoreList(r rpf.GINProcessor, c *gin.Context) {
+	// Get Required Parameters
+	user_id := r.MustGet("user-id").(uint64)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to User Registry
+	db, err := dbm.Connect(user_id)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// List Registered User Orgs
+	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	list, err := orm.QueryRegisteredUserObjectsByType(db, user_id, common.OTYPE_STORE, q, true)
+
+	// Failed Retrieving User?
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Save List
+	r.Set("registry-user-objects", list)
+}

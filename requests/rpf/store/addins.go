@@ -1,0 +1,147 @@
+// cSpell:ignore ginrpf, gonic, paulo ferreira
+package store
+
+/*
+ * This file is part of the ObjectVault Project.
+ * Copyright (C) 2020-2022 Paulo Ferreira <vault at sourcenotes.org>
+ *
+ * This work is published under the GNU AGPLv3.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+import (
+	"github.com/gin-gonic/gin"
+	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/requests/rpf/object"
+	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/session"
+	"github.com/objectvault/api-services/requests/rpf/shared"
+	"github.com/objectvault/api-services/requests/rpf/user"
+	rpf "github.com/objectvault/goginrpf"
+)
+
+// COMMON //
+func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
+	session.AddinActiveUserSession(g, opts)
+	g.Append(
+		func(r rpf.GINProcessor, c *gin.Context) { // Get Store
+			r.SetLocal("store-id", r.MustGet("request-store"))
+		},
+		DBGetRegistryStoreUser, // FIND User by Searching Store User Registry
+	)
+
+	// OPTION: Check if user is unblocked? (DEFAULT: Check)
+	if shared.HelperAddinOptionsCallback(opts, "check-user-unlocked", true).(bool) {
+		g.Append(AssertStoreUserUnblocked) // Make sure user is Unblocked
+	}
+
+	/* NOTES:
+	 * Store are Children of Organizations.
+	 * So given only the Store ID how do we get the Organization?
+	 * Answer: From the Store Object (which has the Parent Organization ID)
+	 */
+
+	// OPTION: Check if organization is unblocked? (DEFAULT: Check)
+	if shared.HelperAddinOptionsCallback(opts, "check-org-unlocked", true).(bool) {
+		g.Append(
+			DBGetStoreByID, // Get Store from ID
+			func(r rpf.GINProcessor, c *gin.Context) { // Get Store Organization
+				s := r.MustGet("store").(*orm.Store)
+				r.SetLocal("org-id", s.Organization())
+			},
+			org.DBRegistryOrgFindByID, // Get Organization Registry
+			org.AssertOrgUnblocked,    // Make Sure Orga Unblocked
+		)
+
+		// OPTION: Check if store is unblocked? (DEFAULT: Check)
+		if shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool) {
+			g.Append(
+				org.DBRegistryOrgStoreFind, // Find Store's Organization  Registry
+				AssertStoreUnblocked,       // Make Store Unblocked
+			)
+		}
+	} else // OPTION: Check if store is unblocked (but skip org check)? (DEFAULT: Check)
+	if shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool) {
+		g.Append(
+			DBGetStoreByID, // Get Store from ID
+			func(r rpf.GINProcessor, c *gin.Context) { // Get Store Organization
+				s := r.MustGet("store").(*orm.Store)
+				r.SetLocal("org-id", s.Organization())
+			},
+			org.DBRegistryOrgFindByID,  // Get Organization Registry
+			org.DBRegistryOrgStoreFind, // Find Store's Organization  Registry
+			AssertStoreUnblocked,       // Make Store Unblocked
+		)
+	}
+
+	// OPTION: Check user's store roles? (DEFAULT: Check)
+	if shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool) {
+		g.Append(
+			func(r rpf.GINProcessor, c *gin.Context) {
+				roles := shared.HelperAddinOptionsCallback(opts, "roles", nil)
+				if roles == nil {
+					// TODO: errors.New("System Error: Missing Option Value")
+					r.Abort(5303, nil)
+					return
+				}
+
+				r.SetLocal("roles-required", roles)
+			},
+			object.AssertUserHasAllRolesInObject, // ASSERT User has required Access Roles
+		)
+	}
+
+	return g
+}
+
+// REQUEST TYPE :store //
+
+// Extract GIN Request Parameters for a store request
+func AddinRequestParamsStore(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
+	g.Append(
+		ExtractGINParameterStore,
+	)
+	return g
+}
+
+// Global initial store request validation
+func AddinGroupValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
+	// Extract Request Parameter
+	AddinRequestParamsStore(g)
+
+	// Validate Basic User Request Requirements
+	return BaseValidateStoreRequest(g, opts)
+}
+
+// REQUEST TYPE :store/:user //
+
+// Extract GIN Request Parameters for a store/user request
+func AddinRequestParamsStoreUser(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
+	g.Append(
+		ExtractGINParameterStore,
+		user.ExtractGINParameterUser,
+	)
+	return g
+}
+
+// Global initial store/user request validation
+func AddinGroupValidateStoreUserRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
+	// Extract Request Parameter
+	AddinRequestParamsStoreUser(g)
+
+	// Validate Basic User Request Requirements
+	return BaseValidateStoreRequest(g, opts)
+}
+
+func AddinRequestStoreUserRegsitry(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
+	g.Append(
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("object-id", r.MustGet("request-store"))
+			r.SetLocal("user-id", r.MustGet("request-user"))
+		},
+		object.DBRegistryObjectUserFind,
+	)
+	return g
+}
