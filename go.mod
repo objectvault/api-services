@@ -9,5 +9,5 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/pjacferreira/sqlf v1.1.2-pf
 	github.com/objectvault/goginrpf v0.0.2
-  github.com/objectvault/filter-parser v0.0.3
+	github.com/objectvault/filter-parser v0.0.3
 )
