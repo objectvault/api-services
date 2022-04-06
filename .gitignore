@@ -22,7 +22,6 @@ pids
 *.pid
 *.seed
 debug
-go.sum
 /bin
 /conf
 /curl
