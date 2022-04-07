@@ -311,7 +311,7 @@ func (o *UserObjectRegistry) ByKey(db *sql.DB, user uint64, object uint64) error
 		Select("alias").To(&o.alias).
 		Select("favorite").To(&fav).
 		Where("id_user = ? and id_object = ?", user, object).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Test Results
 	switch {
@@ -412,7 +412,7 @@ func (o *UserObjectRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("id_object", o.object).
 			Set("alias", o.alias).
 			Set("favorite", boolToMySQL(o.favorite)).
-			ExecAndClose(nil, db)
+			ExecAndClose(context.TODO(), db)
 	} else { // NO: Update
 		if o.user == nil {
 			return errors.New("User ID not Set")
@@ -430,7 +430,7 @@ func (o *UserObjectRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("alias", o.alias).
 			Set("favorite", boolToMySQL(o.favorite)).
 			Where("id_user = ? and id_object = ?", o.user, o.object).
-			ExecAndClose(nil, db)
+			ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

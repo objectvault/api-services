@@ -174,7 +174,7 @@ func (o *OrgStoreRegistry) ByID(db *sql.DB, org uint64, store uint64) error {
 		Select("storename").To(&o.store_alias).
 		Select("state").To(&o.state).
 		Where("id_org = ? and id_store = ?", org, store).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -208,7 +208,7 @@ func (o *OrgStoreRegistry) ByAlias(db *sql.DB, org uint64, store string) error {
 		Select("id_store").To(&o.store).
 		Select("state").To(&o.state).
 		Where("id_org = ? and storename = ?", org, store).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -346,7 +346,7 @@ func (o *OrgStoreRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("id_store", o.store).
 			Set("storename", o.store_alias).
 			Set("state", o.state).
-			ExecAndClose(nil, db)
+			ExecAndClose(context.TODO(), db)
 	} else { // NO: Update
 		if !o.hasKey() {
 			return errors.New("Missing or Invalid Registry Key")
@@ -363,7 +363,7 @@ func (o *OrgStoreRegistry) Flush(db sqlf.Executor, force bool) error {
 		}
 
 		// Execute Statement
-		_, e = s.ExecAndClose(nil, db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

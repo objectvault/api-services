@@ -338,7 +338,7 @@ func (o *Template) Flush(db sqlf.Executor, force bool) error {
 			s.Set("description", o.description)
 		}
 
-		_, e := s.Exec(nil, db)
+		_, e := s.Exec(context.TODO(), db)
 
 		// Error Occured?
 		if e == nil { // NO: Get Last Insert ID

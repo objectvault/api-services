@@ -12,6 +12,7 @@ package orm
  */
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"fmt"
@@ -72,7 +73,7 @@ func HasPendingInvitation(db *sql.DB, object uint64, invitee_email string) (bool
 	fmt.Println(s.String())
 
 	// Execute Count
-	e := s.QueryRowAndClose(nil, db)
+	e := s.QueryRowAndClose(context.TODO(), db)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -104,7 +105,7 @@ func CountInvitations(db *sql.DB, q TQueryConditions) (uint64, error) {
 	}
 
 	// Execute Count
-	e = s.QueryRowAndClose(nil, db)
+	e = s.QueryRowAndClose(context.TODO(), db)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -274,7 +275,7 @@ func (o *InvitationRegistry) ByUID(db *sql.DB, uid string) error {
 		Select("expiration").To(&expiration).
 		Select("state").To(&o.state).
 		Where("uid = ?", uid).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -311,7 +312,7 @@ func (o *InvitationRegistry) ByID(db *sql.DB, id uint64) error {
 		Select("expiration").To(&expiration).
 		Select("state").To(&o.state).
 		Where("id_invite = ?", id).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -539,12 +540,12 @@ func (o *InvitationRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("expiration", goTimeToMySQLTimeStamp(o.expiration)).
 			Set("state", o.state)
 
-		_, e = s.Exec(nil, db)
+		_, e = s.Exec(context.TODO(), db)
 	} else { // NO: Update
 		_, e = sqlf.Update("registry_invites").
 			Set("state", o.state).
 			Where("id_invite = ?", o.id).
-			ExecAndClose(nil, db)
+			ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

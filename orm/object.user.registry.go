@@ -220,7 +220,7 @@ func (o *ObjectUserRegistry) ByKey(db *sql.DB, object uint64, user uint64) error
 		Select("roles").To(&csv).
 		Select("ciphertext").To(&ciphertext).
 		Where("id_object = ? and id_user = ?", object, user).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -502,7 +502,7 @@ func (o *ObjectUserRegistry) Flush(db sqlf.Executor, force bool) error {
 	}
 
 	// Execute Statement
-	_, e := s.ExecAndClose(nil, db)
+	_, e := s.ExecAndClose(context.TODO(), db)
 	if e == nil {
 		o.stored = true
 		o.dirty = false

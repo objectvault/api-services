@@ -45,7 +45,7 @@ func CountRegisteredOrgs(db *sql.DB, q TQueryConditions) (uint64, error) {
 		Select("COUNT(*)").To(&count)
 
 	// Execute Count
-	e := s.QueryRowAndClose(nil, db)
+	e := s.QueryRowAndClose(context.TODO(), db)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -407,7 +407,7 @@ func (o *OrgRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("orgname", o.alias).
 			Set("name", o.name).
 			Set("state", o.state).
-			ExecAndClose(nil, db)
+			ExecAndClose(context.TODO(), db)
 	} else { // NO: Update
 		if !o.hasKey() {
 			return errors.New("Missing or Invalid Registry Key")
@@ -425,7 +425,7 @@ func (o *OrgRegistry) Flush(db sqlf.Executor, force bool) error {
 		}
 
 		// Execute Statement
-		_, e = s.ExecAndClose(nil, db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

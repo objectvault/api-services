@@ -12,6 +12,7 @@ package orm
  */
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/hex"
@@ -56,7 +57,7 @@ func CountRegisteredUsers(db *sql.DB, q TQueryConditions) (uint64, error) {
 		Select("COUNT(*)").To(&count)
 
 	// Execute Count
-	e := s.QueryRowAndClose(nil, db)
+	e := s.QueryRowAndClose(context.TODO(), db)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -204,7 +205,7 @@ func (o *UserRegistry) ByID(db *sql.DB, id uint64) error {
 		Select("state").To(&o.state).
 		Select("ciphertext").To(&ciphertext).
 		Where("id_user = ?", id).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -254,7 +255,7 @@ func (o *UserRegistry) ByUserName(db *sql.DB, username string) error {
 		Select("state").To(&o.state).
 		Select("ciphertext").To(&ciphertext).
 		Where("username = ?", username).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -301,7 +302,7 @@ func (o *UserRegistry) ByEmail(db *sql.DB, email string) error {
 		Select("state").To(&o.state).
 		Select("ciphertext").To(&ciphertext).
 		Where("email = ?", email).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Did we retrieve an entry?
 	if e == nil { // YES
@@ -508,7 +509,7 @@ func (o *UserRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("state", o.state).
 			Set("ciphertext", o.ciphertext)
 
-		_, e = s.ExecAndClose(nil, db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 	} else { // NO: Update
 		// TODO: Create Special Update to Change User Password
 		s := sqlf.Update("registry_users").
@@ -521,7 +522,7 @@ func (o *UserRegistry) Flush(db sqlf.Executor, force bool) error {
 			s.Set("ciphertext", o.ciphertext)
 		}
 
-		_, e = s.ExecAndClose(nil, db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

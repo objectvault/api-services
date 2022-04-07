@@ -12,6 +12,7 @@ package orm
  */
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"errors"
@@ -79,7 +80,7 @@ func (o *Key) ByID(db *sql.DB, id uint32) error {
 		Select("id_creator").To(&creator).
 		Select("created").To(&created).
 		Where("id = ?", id).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -234,14 +235,14 @@ func (o *Key) Flush(db sqlf.Executor, force bool) error {
 		// DEBUG: Print SQL
 		fmt.Println(s.String())
 
-		_, e = s.Exec(nil, db)
+		_, e = s.Exec(context.TODO(), db)
 
 		// Error Occured?
 		if e == nil { // NO: Get Last Insert ID
 			var id uint32
 			e = sqlf.Select("LAST_INSERT_ID()").
 				To(&id).
-				QueryRowAndClose(nil, db)
+				QueryRowAndClose(context.TODO(), db)
 
 			// Error Occured?
 			if e == nil { // NO: Set Object ID

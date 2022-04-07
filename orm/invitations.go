@@ -12,6 +12,7 @@ package orm
  */
 
 import (
+	"context"
 	"crypto/sha1"
 	"database/sql"
 	"errors"
@@ -108,7 +109,7 @@ func (o *Invitation) ByID(db *sql.DB, id uint32) error {
 		Select("expiration").To(&expiration).
 		Select("created").To(&created).
 		Where("id = ?", id).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -422,14 +423,14 @@ func (o *Invitation) Flush(db sqlf.Executor, force bool) error {
 			s.Set("message", o.message)
 		}
 
-		_, e = s.Exec(nil, db)
+		_, e = s.Exec(context.TODO(), db)
 
 		// Error Occured?
 		if e == nil { // NO: Get Last Insert ID
 			var id uint32
 			e = sqlf.Select("LAST_INSERT_ID()").
 				To(&id).
-				QueryRowAndClose(nil, db)
+				QueryRowAndClose(context.TODO(), db)
 
 			// Error Occured?
 			if e == nil { // NO: Set Object ID

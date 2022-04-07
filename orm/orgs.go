@@ -12,6 +12,7 @@ package orm
  */
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -91,7 +92,7 @@ func (o *Organization) ByID(db *sql.DB, id uint32) error {
 		Select("modifier").To(&modifier).
 		Select("modified").To(&modified).
 		Where("id = ?", id).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -145,7 +146,7 @@ func (o *Organization) ByAlias(db *sql.DB, alias string) error {
 		Select("creator").To(&creator).
 		Select("object").To(&object).
 		Where("orgname = ?", alias).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -311,14 +312,14 @@ func (o *Organization) Flush(db sqlf.Executor, force bool) error {
 			Set("orgname", o.alias).
 			Set("name", o.name).
 			Set("creator", o.creator).
-			Exec(nil, db)
+			Exec(context.TODO(), db)
 
 		// Error Occured?
 		if e == nil { // NO: Get Last Insert ID
 			var id uint32
 			e = sqlf.Select("LAST_INSERT_ID()").
 				To(&id).
-				QueryRowAndClose(nil, db)
+				QueryRowAndClose(context.TODO(), db)
 
 			// Error Occured?
 			if e == nil { // NO: Set Object ID
@@ -339,7 +340,7 @@ func (o *Organization) Flush(db sqlf.Executor, force bool) error {
 			Set("name", o.name).
 			Set("modifier", o.modifier).
 			Where("id = ?", o.id).
-			ExecAndClose(nil, db)
+			ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

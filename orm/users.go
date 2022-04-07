@@ -215,7 +215,7 @@ func (o *User) ByUserName(db *sql.DB, username string) error {
 		Select("modifier").To(&modifier).
 		Select("modified").To(&modified).
 		Where("username = ?", username).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -298,7 +298,7 @@ func (o *User) ByEmail(db *sql.DB, email string) error {
 		Select("modifier").To(&modifier).
 		Select("modified").To(&modified).
 		Where("email = ?", email).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -606,7 +606,7 @@ func (o *User) Flush(db sqlf.Executor, force bool) error {
 			Set("ciphertext", o.ciphertext).
 			Set("creator", o.creator)
 
-		_, e = s.Exec(nil, db)
+		_, e = s.Exec(context.TODO(), db)
 
 		// Error Occured?
 		if e != nil { // YES: Abort
@@ -617,7 +617,7 @@ func (o *User) Flush(db sqlf.Executor, force bool) error {
 		var id uint32
 		e = sqlf.Select("LAST_INSERT_ID()").
 			To(&id).
-			QueryRow(nil, db)
+			QueryRow(context.TODO(), db)
 
 		// Error Occured?
 		if e != nil { // YES: Abort
@@ -646,7 +646,7 @@ func (o *User) Flush(db sqlf.Executor, force bool) error {
 			s.Set("ciphertext", o.ciphertext)
 		}
 
-		_, e = s.ExecAndClose(nil, db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

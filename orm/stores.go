@@ -12,6 +12,7 @@ package orm
  */
 
 import (
+	"context"
 	"database/sql"
 	"errors"
 	"log"
@@ -89,7 +90,7 @@ func (o *Store) ByID(db *sql.DB, id uint32) error {
 		Select("modifier").To(&modifier).
 		Select("modified").To(&modified).
 		Where("id = ?", id).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -147,7 +148,7 @@ func (o *Store) ByAlias(db *sql.DB, alias string) error {
 		Select("creator").To(&creator).
 		Select("object").To(&object).
 		Where("storename = ?", alias).
-		QueryRowAndClose(nil, db)
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Executing Query?
 	if e != nil && e != sql.ErrNoRows { // YES
@@ -341,16 +342,16 @@ func (o *Store) Flush(db sqlf.Executor, force bool) error {
 			Set("storename", o.alias).
 			Set("name", o.name).
 			Set("creator", o.creator).
-			Exec(nil, db)
+			Exec(context.TODO(), db)
 
-		// Error Occured?
+		// Error Occurred?
 		if e == nil { // NO: Get Last Insert ID
 			var id uint32
 			e = sqlf.Select("LAST_INSERT_ID()").
 				To(&id).
-				QueryRowAndClose(nil, db)
+				QueryRowAndClose(context.TODO(), db)
 
-			// Error Occured?
+			// Error Occurred?
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}
@@ -376,7 +377,7 @@ func (o *Store) Flush(db sqlf.Executor, force bool) error {
 		}
 
 		// Execute Statement
-		_, e = s.ExecAndClose(nil, db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

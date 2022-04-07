@@ -21,7 +21,7 @@
             "user": "root",
             "password": null,
             "server": {
-              "host": "mysql",
+              "host": "ov-debug-db",
               "port": 3306
             }
           }
@@ -35,7 +35,7 @@
             "user": "root",
             "password": null,
             "server": {
-              "host": "mysql",
+              "host": "ov-debug-db",
               "port": 3306
             }
           }
