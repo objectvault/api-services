@@ -1,4 +1,4 @@
-// cSpell:ignore goginrpf, gonic, paulo ferreira
+// cSpell:ignore addin, goginrpf, gonic, paulo ferreira
 package session
 
 /*
