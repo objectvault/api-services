@@ -49,7 +49,7 @@ func ExportRegistryUserList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("users", ures)
+	r.SetResponseDataValue("users", ures)
 }
 
 func ExportUserMe(r rpf.GINProcessor, c *gin.Context) {
@@ -61,7 +61,7 @@ func ExportUserMe(r rpf.GINProcessor, c *gin.Context) {
 		Registry: registry,
 	}
 
-	r.SetReponseDataValue("user", d)
+	r.SetResponseDataValue("user", d)
 }
 
 func ExportUserSystem(r rpf.GINProcessor, c *gin.Context) {
@@ -75,7 +75,7 @@ func ExportUserSystem(r rpf.GINProcessor, c *gin.Context) {
 		User:     user,
 	}
 
-	r.SetReponseDataValue("user", d)
+	r.SetResponseDataValue("user", d)
 }
 
 func ExportUserSession(r rpf.GINProcessor, c *gin.Context) {
@@ -92,5 +92,5 @@ func ExportUserSession(r rpf.GINProcessor, c *gin.Context) {
 		Registered: hash != nil,
 	}
 
-	r.SetReponseDataValue("user", data)
+	r.SetResponseDataValue("user", data)
 }

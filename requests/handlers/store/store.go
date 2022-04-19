@@ -105,7 +105,7 @@ func IsStoreOpen(c *gin.Context) {
 
 			// Does Store Key Exist in Session?
 			if key == nil { // NO
-				r.SetReponseDataValue("open", false)
+				r.SetResponseDataValue("open", false)
 				return
 			}
 
@@ -136,7 +136,7 @@ func IsStoreOpen(c *gin.Context) {
 							r.SetLocal("store-key", ss.Key())
 
 							// Set Response
-							r.SetReponseDataValue("open", true)
+							r.SetResponseDataValue("open", true)
 						},
 						session.SessionStoreSave, // Update Store Session
 						session.SaveSession,      // Update Session Cookie
@@ -146,7 +146,7 @@ func IsStoreOpen(c *gin.Context) {
 					request.Append(
 						func(r rpf.GINProcessor, c *gin.Context) {
 							s.Delete(skey)
-							r.SetReponseDataValue("open", false)
+							r.SetResponseDataValue("open", false)
 						},
 						session.SaveSession, // Update Session Cookie
 					)
@@ -206,7 +206,7 @@ func OpenStore(c *gin.Context) {
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Organization Information
 			rus := r.MustGet("registry-store-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("store", rus.Object())
+			r.SetResponseDataValue("store", rus.Object())
 		},
 		session.SaveSession, // Update Session Cookie
 	}

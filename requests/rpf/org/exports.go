@@ -48,7 +48,7 @@ func ExportSystemRegistryOrgList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("orgs", list)
+	r.SetResponseDataValue("orgs", list)
 }
 
 func ExportOrganizationFull(r rpf.GINProcessor, c *gin.Context) {
@@ -62,7 +62,7 @@ func ExportOrganizationFull(r rpf.GINProcessor, c *gin.Context) {
 		Organization: org,
 	}
 
-	r.SetReponseDataValue("organization", d)
+	r.SetResponseDataValue("organization", d)
 }
 
 func ExportOrganizationBasic(r rpf.GINProcessor, c *gin.Context) {
@@ -76,7 +76,7 @@ func ExportOrganizationBasic(r rpf.GINProcessor, c *gin.Context) {
 		Organization: *org,
 	}
 
-	r.SetReponseDataValue("organization", d)
+	r.SetResponseDataValue("organization", d)
 }
 
 // STORES //
@@ -106,5 +106,5 @@ func ExportRegistryOrgStoreList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("stores", list)
+	r.SetResponseDataValue("stores", list)
 }

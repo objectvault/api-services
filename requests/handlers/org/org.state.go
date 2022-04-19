@@ -46,7 +46,7 @@ func GetOrgLockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -94,7 +94,7 @@ func PutOrgLockState(c *gin.Context) {
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
 			// Return Current States
-			r.SetReponseDataValue("state", registry.State())
+			r.SetResponseDataValue("state", registry.State())
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -127,7 +127,7 @@ func GetOrgBlockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -173,7 +173,7 @@ func PutOrgBlockState(c *gin.Context) {
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
 			// Return Current States
-			r.SetReponseDataValue("state", registry.State())
+			r.SetResponseDataValue("state", registry.State())
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -206,7 +206,7 @@ func GetOrgState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			r.SetReponseDataValue("state", registry.State())
+			r.SetResponseDataValue("state", registry.State())
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -252,7 +252,7 @@ func PutOrgState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			r.SetReponseDataValue("state", registry.State())
+			r.SetResponseDataValue("state", registry.State())
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -298,7 +298,7 @@ func DeleteOrgState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			r.SetReponseDataValue("state", registry.State())
+			r.SetResponseDataValue("state", registry.State())
 		},
 		session.SaveSession, // Update Session Cookie
 	}

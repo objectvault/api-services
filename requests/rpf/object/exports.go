@@ -51,7 +51,7 @@ func ExportRegistryObjUsersList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("users", list)
+	r.SetResponseDataValue("users", list)
 }
 
 func ExportRegistryObjUserFull(r rpf.GINProcessor, c *gin.Context) {
@@ -65,7 +65,7 @@ func ExportRegistryObjUserFull(r rpf.GINProcessor, c *gin.Context) {
 		User:     user,
 	}
 
-	r.SetReponseDataValue("user", d)
+	r.SetResponseDataValue("user", d)
 }
 
 func ExportRegistryObjUserBasic(r rpf.GINProcessor, c *gin.Context) {
@@ -77,7 +77,7 @@ func ExportRegistryObjUserBasic(r rpf.GINProcessor, c *gin.Context) {
 		Registry: registry,
 	}
 
-	r.SetReponseDataValue("user", d)
+	r.SetResponseDataValue("user", d)
 }
 
 // USER <--> OBJECT //
@@ -112,7 +112,7 @@ func ExportRegistryUserObjsList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("objects", list)
+	r.SetResponseDataValue("objects", list)
 }
 
 func ExportRegistryUserObj(r rpf.GINProcessor, c *gin.Context) {
@@ -124,5 +124,5 @@ func ExportRegistryUserObj(r rpf.GINProcessor, c *gin.Context) {
 		Registry: registry,
 	}
 
-	r.SetReponseDataValue("object", d)
+	r.SetResponseDataValue("object", d)
 }

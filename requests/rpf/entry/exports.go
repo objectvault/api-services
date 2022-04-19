@@ -52,7 +52,7 @@ func ExportStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("objects", ores)
+	r.SetResponseDataValue("objects", ores)
 }
 
 func ExportStoreObjectFolder(r rpf.GINProcessor, c *gin.Context) {
@@ -66,7 +66,7 @@ func ExportStoreObjectFolder(r rpf.GINProcessor, c *gin.Context) {
 		Object: obj,
 	}
 
-	r.SetReponseDataValue("object", d)
+	r.SetResponseDataValue("object", d)
 }
 
 func ExportStoreObjectRegistry(r rpf.GINProcessor, c *gin.Context) {
@@ -80,7 +80,7 @@ func ExportStoreObjectRegistry(r rpf.GINProcessor, c *gin.Context) {
 		Object: obj,
 	}
 
-	r.SetReponseDataValue("object", d)
+	r.SetResponseDataValue("object", d)
 }
 
 func ExportStoreObjectJSON(r rpf.GINProcessor, c *gin.Context) {
@@ -96,5 +96,5 @@ func ExportStoreObjectJSON(r rpf.GINProcessor, c *gin.Context) {
 		Template: t,
 	}
 
-	r.SetReponseDataValue("object", d)
+	r.SetResponseDataValue("object", d)
 }

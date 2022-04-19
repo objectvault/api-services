@@ -284,7 +284,7 @@ func GetStoreUserLock(c *gin.Context) {
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 	)
 
@@ -335,7 +335,7 @@ func PutStoreUserLock(c *gin.Context) {
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 	)
 
@@ -370,7 +370,7 @@ func GetStoreUserBlock(c *gin.Context) {
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
 	)
 
@@ -421,7 +421,7 @@ func PutStoreUserBlock(c *gin.Context) {
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
 	)
 
@@ -456,7 +456,7 @@ func GetStoreUserState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
+			r.SetResponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
 		},
 	)
 
@@ -504,7 +504,7 @@ func PutStoreUserState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
+			r.SetResponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
 		},
 	)
 
@@ -552,7 +552,7 @@ func DeleteStoreUserState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
-			r.SetReponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
+			r.SetResponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
 		},
 	)
 

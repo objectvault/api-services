@@ -56,7 +56,7 @@ func ExportRegistryInvList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("invitations", irs)
+	r.SetResponseDataValue("invitations", irs)
 }
 
 func ExportRegistryInv(r rpf.GINProcessor, c *gin.Context) {
@@ -67,7 +67,7 @@ func ExportRegistryInv(r rpf.GINProcessor, c *gin.Context) {
 		Entry: i,
 	}
 
-	r.SetReponseDataValue("invitation", oi)
+	r.SetResponseDataValue("invitation", oi)
 }
 
 func ExportNoSessionRegistryInv(r rpf.GINProcessor, c *gin.Context) {
@@ -85,5 +85,5 @@ func ExportNoSessionRegistryInv(r rpf.GINProcessor, c *gin.Context) {
 		oi.Invitee = r.Get("invitation-invitee").(*orm.UserRegistry)
 	}
 
-	r.SetReponseDataValue("invitation", oi)
+	r.SetResponseDataValue("invitation", oi)
 }

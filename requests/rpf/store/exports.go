@@ -32,7 +32,7 @@ func ExportStoreFull(r rpf.GINProcessor, c *gin.Context) {
 		Store:    store,
 	}
 
-	r.SetReponseDataValue("store", d)
+	r.SetResponseDataValue("store", d)
 }
 
 func ExportStoreBasic(r rpf.GINProcessor, c *gin.Context) {
@@ -46,7 +46,7 @@ func ExportStoreBasic(r rpf.GINProcessor, c *gin.Context) {
 		Store: store,
 	}
 
-	r.SetReponseDataValue("store", d)
+	r.SetResponseDataValue("store", d)
 }
 
 // REGISTRY: STORE <--> USER //

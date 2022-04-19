@@ -244,7 +244,7 @@ func DeleteStore(c *gin.Context) {
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// TODO What Value to Return?
-			r.SetReponseDataValue("ok", true)
+			r.SetResponseDataValue("ok", true)
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -271,7 +271,7 @@ func GetOrgStoreLockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -312,7 +312,7 @@ func PutOrgStoreLockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -339,7 +339,7 @@ func GetOrgStoreBlockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -380,7 +380,7 @@ func PutOrgStoreBlockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -407,7 +407,7 @@ func GetOrgStoreState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
+			r.SetResponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -445,7 +445,7 @@ func PutOrgStoreState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
+			r.SetResponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -483,7 +483,7 @@ func DeleteOrgStoreState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetReponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
+			r.SetResponseDataValue("state", registry.State()&orm.STATE_MASK_FUNCTIONS)
 		},
 		session.SaveSession, // Update Session Cookie
 	}

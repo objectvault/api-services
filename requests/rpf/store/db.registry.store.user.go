@@ -125,7 +125,7 @@ func DBRegisterUserWithExistingStore(r rpf.GINProcessor, c *gin.Context) {
 	storeID := r.MustGet("store-id").(uint64)
 	storeKey := r.MustGet("store-key").([]byte)
 
-	// Get User Informtaion
+	// Get User Information
 	user := r.MustGet("registry-user").(*orm.UserRegistry)
 	userHash := r.MustGet("hash").(string)
 

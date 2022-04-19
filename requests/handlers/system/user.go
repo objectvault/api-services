@@ -312,7 +312,7 @@ func GetUserLockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -375,7 +375,7 @@ func PutUserLockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
-			r.SetReponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -423,7 +423,7 @@ func GetUserBlockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
@@ -486,7 +486,7 @@ func PutUserBlockState(c *gin.Context) {
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
-			r.SetReponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
 		session.SaveSession, // Update Session Cookie
 	}
