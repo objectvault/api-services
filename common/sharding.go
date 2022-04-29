@@ -1,4 +1,4 @@
-// cSpell:ignore ferreira, paulo
+// cSpell:ignore dword, ferreira, otype, paulo, qword
 package common
 
 /*
@@ -17,13 +17,13 @@ import (
 )
 
 // KNOWN TYPES
-const OTYPE_NOTSET = 0        // Object Type NOT SET
-const OTYPE_USER = 0x01       // USER Object
-const OTYPE_ORG = 0x02        // ORGANIZATION Object
-const OTYPE_STORE = 0x03      // STORE Object
-const OTYPE_KEY = 0xFD        // KEY OBJECT
-const OTYPE_INVITATION = 0xFE // INVITATION OBJECT
-const OTYPE_OTHER = 0xFF      // OTHER Object Type
+const OTYPE_NOTSET = uint16(0x0000)     // Object Type NOT SET
+const OTYPE_USER = uint16(0x0001)       // USER Object
+const OTYPE_ORG = uint16(0x0002)        // ORGANIZATION Object
+const OTYPE_STORE = uint16(0x0003)      // STORE Object
+const OTYPE_KEY = uint16(0x00FD)        // KEY OBJECT
+const OTYPE_INVITATION = uint16(0x00FE) // INVITATION OBJECT
+const OTYPE_OTHER = uint16(0x00FF)      // OTHER Object Type
 
 // BITS for VARIOUS SIZES
 const QWORD_BITS = 64
@@ -32,29 +32,29 @@ const WORD_BITS = 16
 const BYTE_BITS = 8
 
 // SEPARATION of PARTS
-const SHARD_QWORD_MASK = 0xF0000FFF00000000 // UPPER DWORD
-const SHARD_QWORD_OFFSET = 32               // BIT OFFSERR in QWORD
-const LOCAL_QWORD_MASK = 0x00000000FFFFFFFF // LOWER DWORD
+const SHARD_QWORD_MASK = uint64(0xF0000FFF00000000) // UPPER DWORD
+const SHARD_QWORD_OFFSET = 32                       // BIT OFFSERR in QWORD
+const LOCAL_QWORD_MASK = uint64(0x00000000FFFFFFFF) // LOWER DWORD
 
 // SHARD GROUP BIT MANAGEMENT
 const SHARD_GROUP_BITS = 4                                             // NUMBER of Bits Used for SHARD GROUP
-const SHARD_GROUP_DWORD_MASK = 0xF0000000                              // ID for SHARD GROUP
-const SHARD_GROUP_DWORD_OFFSET_MASK = 0x0000000F                       // ID for SHARD GROUP
-const SHARD_GROUP_WORD_OFFSET_MASK = 0x000F                            // ID for SHARD GROUP
+const SHARD_GROUP_DWORD_MASK = uint32(0xF0000000)                      // ID for SHARD GROUP
+const SHARD_GROUP_DWORD_OFFSET_MASK = uint32(0x0000000F)               // ID for SHARD GROUP
+const SHARD_GROUP_WORD_OFFSET_MASK = uint16(0x000F)                    // ID for SHARD GROUP
 const SHARD_GROUP_DWORD_OFFSET = DWORD_BITS - SHARD_GROUP_BITS         // BIT OFFSET in DWORD (uint32)
 const SHARD_GROUP_QWORD_OFFSET = SHARD_GROUP_DWORD_OFFSET + DWORD_BITS // BIT OFFSET in QWORD (uint64)
 
 // SHARD ID BIT MANAGEMENT
 const SHARD_ID_BITS = 12                                            // NUMBER of Bits Used for SHARD ID
-const SHARD_ID_DWORD_MASK = 0x00000FFF                              // ID of SHARD in GROUP
+const SHARD_ID_DWORD_MASK = uint32(0x00000FFF)                      // ID of SHARD in GROUP
 const SHARD_ID_DWORD_OFFSET = 0                                     // BIT OFFSET in DWORD (uint32)
 const SHARD_ID_QWORD_OFFSET = SHARD_GROUP_DWORD_OFFSET + DWORD_BITS // BIT OFFSET in QWORD (uint64)
 
 // OBJECT TYPE BIT MANAGEMENT
 const OTYPE_BITS = 8                                       // OBJECT TYPE in GLOBAL ID
-const OTYPE_DWORD_MASK = 0x00FF0000                        // OBJECT TYPE BITS
+const OTYPE_DWORD_MASK = uint32(0x00FF0000)                // OBJECT TYPE BITS
 const OTYPE_DWORD_OFFSET = 16                              // BIT OFFSET in DWORD (uint32)
-const OTYPE_WORD_OFFSET_MASK = 0x00FF                      // OBJECT TYPE for GLOBAL ID
+const OTYPE_WORD_OFFSET_MASK = uint16(0x00FF)              // OBJECT TYPE for GLOBAL ID
 const OTYPE_QWORD_OFFSET = OTYPE_DWORD_OFFSET + DWORD_BITS // BIT OFFSET in QWORD (uint64)
 
 // LOCAL ID BIT MANAGEMENT
@@ -63,8 +63,8 @@ const LOCAL_ID_DWORD_OFFSET = 0 // BIT OFFSET in DWORD (uint32)
 const LOCAL_ID_QWORD_OFFSET = 0 // BIT OFFSET in QWORD (uint64)
 
 // GLOBAL OBJECT CONSTANTS
-const SYSTEM_ADMINISTRATOR = 0x1000000000000 // STAR System Administrator
-const SYSTEM_ORGANIZATION = 0x2000000000000  // Global Management Organization
+const SYSTEM_ADMINISTRATOR = uint64(0x1000000000000) // STAR System Administrator
+const SYSTEM_ORGANIZATION = uint64(0x2000000000000)  // Global Management Organization
 
 func ShardInfoFromID(global uint64) uint32 {
 	qword := global & SHARD_QWORD_MASK
