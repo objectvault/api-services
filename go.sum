@@ -73,6 +73,10 @@ github.com/objectvault/filter-parser v0.0.3 h1:IXjzAaDqLsdhJhylg4bzLiN6pupr5Hm+j
 github.com/objectvault/filter-parser v0.0.3/go.mod h1:+r6z+joBwrZscarbJV0lhoXbKRmcDoLQzf/enw+obYY=
 github.com/objectvault/goginrpf v0.0.2 h1:lu7kAQOKhIjCpJs70YUQVGg3ZMkausxsMeW/t21T03M=
 github.com/objectvault/goginrpf v0.0.2/go.mod h1:48W7gP2dA6+tyvXqm7VOAO/CvxmyE0SBCeCkeVNG0eA=
+github.com/objectvault/goginrpf v0.0.3 h1:ToKgMQ+VcXjaw2KOYrqSKyEUBUp2LxXF2AQkRDCrwwA=
+github.com/objectvault/goginrpf v0.0.3/go.mod h1:48W7gP2dA6+tyvXqm7VOAO/CvxmyE0SBCeCkeVNG0eA=
+github.com/objectvault/goginrpf v0.0.4 h1:9wgNCK32QE6EH9be0QIS9gvHBIt0eL2UmTE8Rxh1HTE=
+github.com/objectvault/goginrpf v0.0.4/go.mod h1:48W7gP2dA6+tyvXqm7VOAO/CvxmyE0SBCeCkeVNG0eA=
 github.com/pjacferreira/sqlf v1.1.2-pf h1:u7PfaUg+pJswvzcEB0Z3VTceMj6bToFdEopN1tazCO4=
 github.com/pjacferreira/sqlf v1.1.2-pf/go.mod h1:aCFhmrblOke/ohkshw1kjlE7Wb2iS6yApCRowcR8SCs=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
