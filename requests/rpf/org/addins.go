@@ -16,6 +16,7 @@ import (
 
 	rpf "github.com/objectvault/goginrpf"
 
+	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/session"
@@ -96,8 +97,17 @@ func AddinRequestParamsOrg(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
 
 // Global initial organization request validation
 func AddinGroupValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
-	// Extract Request Parameter
-	AddinRequestParamsOrg(g)
+	// OPTION: Check if user is unblocked? (DEFAULT: Check)
+	if shared.HelperAddinOptionsCallback(opts, "system-organization", false).(bool) {
+		// ORGANIZATION for Request is System Organization //
+		g.Append(
+			func(r rpf.GINProcessor, c *gin.Context) {
+				r.SetLocal("request-org", common.SYSTEM_ORGANIZATION)
+			})
+	} else {
+		// Extract Request Parameter
+		AddinRequestParamsOrg(g)
+	}
 
 	// Validate Basic User Request Requirements
 	return BaseValidateOrgRequest(g, opts)
