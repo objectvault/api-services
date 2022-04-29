@@ -226,6 +226,34 @@ func QueryRegisteredObjectTemplates(db *sql.DB, object uint64, q TQueryCondition
 	return list, nil
 }
 
+// ByTemplate Find Template in Object by Name
+func (o *ObjectTemplateRegistry) ByTemplate(db *sql.DB, object uint64, template string) error {
+	// Cleanup Entry
+	o.reset()
+
+	// Execute Query
+	e := sqlf.From("registry_object_templates").
+		Select("title").To(&o.title).
+		Where("id_object = ? and template = ?", object, template).
+		QueryRowAndClose(context.TODO(), db)
+
+	// Error Executing Query?
+	if e != nil && e != sql.ErrNoRows { // YES
+		log.Printf("query error: %v\n", e)
+		return e
+	}
+
+	// Did we retrieve an entry?
+	if e == nil { // YES
+		o.object = &object
+		o.template = template
+		o.dirty = false // Clear Dirty Flag
+		o.stored = true // Registered Store
+	}
+
+	return nil
+}
+
 // IsDirty Have the Object Properties Changed since last Serialization?
 func (o *ObjectTemplateRegistry) IsDirty() bool {
 	return o.dirty

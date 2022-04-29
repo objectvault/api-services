@@ -45,3 +45,98 @@ func DBGetObjectTemplates(r rpf.GINProcessor, c *gin.Context) {
 	// Save List
 	r.Set("registry-object-templates", templates)
 }
+
+func DBGetObjectTemplateRegistry(r rpf.GINProcessor, c *gin.Context) {
+	// Get Object Identifier
+	obj := r.MustGet("object-id").(uint64)
+
+	// Get Template
+	template := r.MustGet("request-template").(string)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Object Shard
+	db, err := dbm.Connect(obj)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Create Registry Entry
+	o := &orm.ObjectTemplateRegistry{}
+	err = o.ByTemplate(db, obj, template)
+
+	// Failed To Retrive Entry?
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Did we find the Template?
+	if !o.IsValid() { // NO: Template Not Registered
+		r.Abort(4998 /* TODO: Error [Template not registered with Object] */, nil)
+		return
+	}
+
+	// Save List
+	r.Set("registry-object-template", o)
+}
+
+func DBRegisterTemplateWithObject(r rpf.GINProcessor, c *gin.Context) {
+	// Get Object Identifier
+	obj := r.MustGet("object-id").(uint64)
+
+	// Get Template Name
+	template := r.MustGet("request-template").(string)
+	title := r.MustGet("template-title").(string)
+
+	// Create Registry Entry
+	o := &orm.ObjectTemplateRegistry{}
+	o.SetKey(obj, template)
+	o.SetTitle(title)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Object Shard
+	db, err := dbm.Connect(obj)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Write Entry
+	err = o.Flush(db, true)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	r.SetLocal("registry-object-template", o)
+}
+
+func DBDeleteTemplateFromObject(r rpf.GINProcessor, c *gin.Context) {
+	// Get Object Identifier
+	obj := r.MustGet("object-id").(uint64)
+
+	// Get Template Name
+	template := r.MustGet("template-name").(string)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Object Shard
+	db, err := dbm.Connect(obj)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Delete Template from Object
+	err = orm.DeleteRegisteredObjectTemplate(db, obj, template)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+}

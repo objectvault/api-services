@@ -44,7 +44,18 @@ func ExportRegistryTemplateList(r rpf.GINProcessor, c *gin.Context) {
 		},
 	}
 
-	r.SetReponseDataValue("templates", list)
+	r.SetResponseDataValue("templates", list)
+}
+
+func ExportRegistryTemplate(r rpf.GINProcessor, c *gin.Context) {
+	// Get Registry Entries
+	registry := r.MustGet("registry-object-template").(*orm.ObjectTemplateRegistry)
+
+	v := &FullTemplateRegistryToJSON{
+		Registry: registry,
+	}
+
+	r.SetResponseDataValue("templates", v)
 }
 
 func ExportTemplate(r rpf.GINProcessor, c *gin.Context) {
@@ -52,9 +63,9 @@ func ExportTemplate(r rpf.GINProcessor, c *gin.Context) {
 	t := r.MustGet("template").(*orm.Template)
 
 	// Transform for Export
-	d := &FullTemplateToJSON{
+	v := &FullTemplateToJSON{
 		Template: t,
 	}
 
-	r.SetReponseDataValue("template", d)
+	r.SetResponseDataValue("template", v)
 }

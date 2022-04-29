@@ -66,7 +66,7 @@ func AddinGetObjectTemplateList(g rpf.GINGroupProcessor, opts shared.TAddinCallb
 				gQuery.LocalToGlobal("query-conditions")
 			}
 		},
-		// Query Organizatio
+		// Query Organization
 		DBGetObjectTemplates,
 	)
 

@@ -124,6 +124,10 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			system.PUT("/org/:org", pkgsystem.PutOrgProfile) // IMPLEMENTED
 			system.DELETE("/org/:org", pkgsystem.DeleteOrg)
 
+			// TEMPLATE ACCESS (LIST / GET)
+			system.GET("/templates", pkgsystem.ListTemplates)
+			system.GET("/template/:template", pkgsystem.GetTemplate)
+
 			// TODO: Anti Lockout Rule - User Can't modify is own Roles
 			// TODO: Anti Lockout Rule - Can't Modify Admin User Roles in System Org??
 		}
@@ -189,8 +193,10 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			organization.PUT("/user/:user/roles", pkgorg.PutOrgUserRoles)
 
 			// ORGANIZATION TEMPLATE ACCESS (LIST / GET)
-			organization.GET("/templates", pkgorg.GetTemplates)
+			organization.GET("/templates", pkgorg.ListTemplates)
 			organization.GET("/template/:template", pkgorg.GetTemplate)
+			organization.POST("/template/:template", pkgorg.AddTemplateToOrg)
+			organization.DELETE("/template/:template", pkgorg.DeleteTemplateFromOrg)
 		}
 
 		// STORE MANAGEMENT //
@@ -242,16 +248,11 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			store.PUT("/obj/:parent/:object", pkgstore.PutStoreObjectJSON) // IMPLEMENTED
 			store.DELETE("/obj/:object", pkgstore.DeleteStoreObject)
 
-			// SINGLE OBJECT
-			// store.POST("/obj", pkgstore.PostStoreObjectFolder)       // IMPLEMENTED
-			// store.POST("/obj/:parent", pkgstore.PostStoreObjectJSON) // IMPLEMENTED
-			// store.GET("/obj/:object", pkgstore.GetStoreObject)       // IMPLEMENTED
-			// store.PUT("/obj/:object", pkgstore.PutStoreObjectJSON)   // IMPLEMENTED
-			// store.DELETE("/obj/:object", pkgstore.DeleteStoreObject)
-
-			// ORGANIZATION TEMPLATE ACCESS (LIST / GET)
-			store.GET("/templates", pkgstore.GetTemplates)
-			store.GET("/template/:template", pkgstore.GetTemplate)
+			// STORE TEMPLATE MANAGEMENT //
+			store.GET("/templates", pkgstore.ListStoreTemplates)   // IMPLEMENTED - REQUIRED: List Permission to Store
+			store.GET("/template/:template", pkgstore.GetTemplate) // IMPLEMENTED - REQUIRED: Read Permission to Store
+			store.POST("/template/:template", pkgstore.AddTemplateToStore)
+			store.DELETE("/template/:template", pkgstore.DeleteTemplateFromStore)
 		}
 
 		// SELF MANAGEMENT //
