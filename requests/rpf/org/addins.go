@@ -97,11 +97,12 @@ func AddinRequestParamsOrg(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
 
 // Global initial organization request validation
 func AddinGroupValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
-	// OPTION: Check if user is unblocked? (DEFAULT: Check)
+	// OPTION: Request ORganization System Organization? (DEFAULT: NO)
 	if shared.HelperAddinOptionsCallback(opts, "system-organization", false).(bool) {
 		// ORGANIZATION for Request is System Organization //
 		g.Append(
 			func(r rpf.GINProcessor, c *gin.Context) {
+				// This is so the API does not have to know the System Organization ID
 				r.SetLocal("request-org", common.SYSTEM_ORGANIZATION)
 			})
 	} else {
