@@ -77,12 +77,6 @@ func DeleteRegisteredObjectTemplate(db *sql.DB, object uint64, template string) 
 		return e
 	}
 
-	// Error Occurred?
-	if e != nil { // YES
-		log.Printf("query error: %v\n", e)
-		return e
-	}
-
 	return nil
 }
 
@@ -348,7 +342,8 @@ func (o *ObjectTemplateRegistry) Flush(db sqlf.Executor, force bool) error {
 
 		s = sqlf.InsertInto("registry_object_templates").
 			Set("id_object", o.object).
-			Set("username", o.template)
+			Set("template", o.template).
+			Set("title", o.title)
 	} else { // NO: Update
 		return errors.New("Table does not allow update")
 	}

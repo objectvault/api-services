@@ -156,6 +156,9 @@ func AddTemplateToOrg(c *gin.Context) {
 
 	// Save Session
 	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
 }
 
 // Delete Template from Organization
@@ -182,6 +185,7 @@ func DeleteTemplateFromOrg(c *gin.Context) {
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Set Object to To Search
 			r.SetLocal("object-id", r.MustGet("org-id"))
+			r.SetLocal("template-name", r.MustGet("request-template"))
 		},
 		template.AssertTemplateInObject,
 		// Delete Template //
@@ -195,4 +199,7 @@ func DeleteTemplateFromOrg(c *gin.Context) {
 
 	// Save Session
 	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
 }

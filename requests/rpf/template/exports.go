@@ -55,7 +55,7 @@ func ExportRegistryTemplate(r rpf.GINProcessor, c *gin.Context) {
 		Registry: registry,
 	}
 
-	r.SetResponseDataValue("templates", v)
+	r.SetResponseDataValue("template", v)
 }
 
 func ExportTemplate(r rpf.GINProcessor, c *gin.Context) {
