@@ -11,6 +11,8 @@ package main
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore objs, pkgme, sharded
+
 import (
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
@@ -78,8 +80,8 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			// LIST Invites for Container
 			invites.GET("/:object", pkginvites.ListInvitesByObject)
 			// LIST All Invites :
-			// Problably Shouldn't Exist because:
-			// 1. would Requires System Level Permission to List All Invites
+			// Probably Shouldn't Exist because:
+			// 1. Would Requires System Level Permission to List All Invites
 			// 2. We Might Associate the Invite Registry to Object Allow us to spread the invite registry around the shards
 			invites.GET("", pkginvites.ListAllInvites)
 		}

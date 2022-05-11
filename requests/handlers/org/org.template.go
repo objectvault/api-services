@@ -180,7 +180,7 @@ func DeleteTemplateFromOrg(c *gin.Context) {
 
 	// Request Process //
 	request.Append(
-		// Verify Template Exists in Store //
+		// Verify Template Exists in Organization //
 		template.ExtractGINParameterTemplate,
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Set Object to To Search
