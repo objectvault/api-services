@@ -67,7 +67,7 @@ func AssertSystemAdmin(r rpf.GINProcessor, c *gin.Context) {
 		r.Abort(3998 /* TODO: ERROR MESSAGE */, nil)
 		return
 	}
-	// ELSE: Admnin User Logged In (Continue)
+	// ELSE: Admin User Logged In (Continue)
 }
 
 func AssertNotSystemAdmin(r rpf.GINProcessor, c *gin.Context) {
@@ -83,7 +83,7 @@ func AssertNotSystemAdmin(r rpf.GINProcessor, c *gin.Context) {
 	// ELSE: Admnin User Logged In (Continue)
 }
 
-func AssertNotSelf(r rpf.GINProcessor, c *gin.Context) {
+func AssertIfSelf(r rpf.GINProcessor, c *gin.Context) {
 	// Get Session Store
 	session := sessions.Default(c)
 
@@ -95,7 +95,7 @@ func AssertNotSelf(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// Is Request User === Session User?
-	uid := r.MustGet("user-id").(uint64)
+	uid := r.MustGet("request-user").(uint64)
 	if sid == uid { // YES: Action not permitted on self
 		r.Abort(4004, nil)
 		return

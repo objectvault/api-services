@@ -52,13 +52,6 @@ func BaseValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackO
 		) // Make sure user is Unblocked
 	}
 
-	// OPTION: Check if session user is requested user ? (DEFAULT: NO Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-not-self", false).(bool) {
-		g.Append(
-			session.AssertNotSelf, // Make Sure user is Not Applying Action to himself
-		)
-	}
-
 	// OPTION: Check user's org roles? (DEFAULT: Check)
 	if shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool) {
 		g.Append(
@@ -129,6 +122,13 @@ func AddinRequestParamsOrgUser(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
 func AddinGroupValidateOrgUserRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
 	// Extract Request Parameter
 	AddinRequestParamsOrgUser(g)
+
+	// OPTION: Check if session user is requested user ? (DEFAULT: NO Check)
+	if shared.HelperAddinOptionsCallback(opts, "assert-if-self", false).(bool) {
+		g.Append(
+			session.AssertIfSelf, // Make Sure user is Not Applying Action to himself
+		)
+	}
 
 	// Validate Basic User Request Requirements
 	return BaseValidateOrgRequest(g, opts)

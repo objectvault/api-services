@@ -80,16 +80,22 @@ func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbac
 	if shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool) {
 		g.Append(
 			func(r rpf.GINProcessor, c *gin.Context) {
-				roles := shared.HelperAddinOptionsCallback(opts, "roles", nil)
-				if roles == nil {
-					// TODO: errors.New("System Error: Missing Option Value")
-					r.Abort(5303, nil)
-					return
-				}
+				skipSelf := shared.HelperAddinOptionsCallback(opts, "skip-roles-if-self", false).(bool)
+				skipRoles := skipSelf || !session.IsSelf(c, r.MustGet("user-id").(uint64))
 
-				r.SetLocal("roles-required", roles)
+				// Skip Roles Check
+				if !skipRoles { // NO
+					roles := shared.HelperAddinOptionsCallback(opts, "roles", nil)
+					if roles == nil {
+						// TODO: errors.New("System Error: Missing Option Value")
+						r.Abort(5303, nil)
+						return
+					}
+
+					r.SetLocal("roles-required", roles)
+					object.AssertUserHasAllRolesInObject(r, c) // ASSERT User has required Access Roles
+				}
 			},
-			object.AssertUserHasAllRolesInObject, // ASSERT User has required Access Roles
 		)
 	}
 
@@ -131,11 +137,18 @@ func AddinGroupValidateStoreUserRequest(g rpf.GINGroupProcessor, opts shared.TAd
 	// Extract Request Parameter
 	AddinRequestParamsStoreUser(g)
 
+	// OPTION: Check if session user is requested user ? (DEFAULT: NO Check)
+	if shared.HelperAddinOptionsCallback(opts, "assert-if-self", false).(bool) {
+		g.Append(
+			session.AssertIfSelf, // Make Sure user is Not Applying Action to himself
+		)
+	}
+
 	// Validate Basic User Request Requirements
 	return BaseValidateStoreRequest(g, opts)
 }
 
-func AddinRequestStoreUserRegsitry(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
+func AddinRequestStoreUserRegistry(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
 	g.Append(
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.SetLocal("object-id", r.MustGet("request-store"))

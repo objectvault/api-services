@@ -205,13 +205,15 @@ func GetStoreUser(c *gin.Context) {
 	store.AddinGroupValidateStoreUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "skip-roles-if-self" {
+			return true
 		}
 
 		return nil
 	})
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	// Request Processing
 	request.Append(
@@ -244,7 +246,7 @@ func DeleteStoreUser(c *gin.Context) {
 	})
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	// Request Processing
 	request.Append(
@@ -275,7 +277,7 @@ func GetStoreUserLock(c *gin.Context) {
 	})
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	// Request Processing
 	request.Append(
@@ -317,7 +319,7 @@ func PutStoreUserLock(c *gin.Context) {
 	)
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	request.Append(
 		// UPDATE Registry Entry
@@ -363,7 +365,7 @@ func GetStoreUserBlock(c *gin.Context) {
 	})
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	// Request Processing
 	request.Append(
@@ -403,7 +405,7 @@ func PutStoreUserBlock(c *gin.Context) {
 	)
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	request.Append(
 		// UPDATE Registry Entry
@@ -449,7 +451,7 @@ func GetStoreUserState(c *gin.Context) {
 	})
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	// Request Processing
 	request.Append(
@@ -489,7 +491,7 @@ func PutStoreUserState(c *gin.Context) {
 	)
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	request.Append(
 		// UPDATE Registry Entry
@@ -537,7 +539,7 @@ func DeleteStoreUserState(c *gin.Context) {
 	)
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	request.Append(
 		// UPDATE Registry Entry
@@ -585,7 +587,7 @@ func ToggleStoreUserAdmin(c *gin.Context) {
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store-user").(*orm.ObjectUserRegistry)
 
-			// Store Admimnistration Roles
+			// Store Administration Roles
 			roles := []uint32{0x301FFFF, 0x302FFFF, 0x303FFFF, 0x304FFFF}
 			if registry.HasAllStates(orm.STATE_SYSTEM) { // Clear Admin
 				registry.ClearStates(orm.STATE_SYSTEM)
@@ -617,6 +619,8 @@ func PutStoreUserRoles(c *gin.Context) {
 	store.AddinGroupValidateStoreUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-if-self" {
+			return true
 		}
 
 		return nil
@@ -648,7 +652,7 @@ func PutStoreUserRoles(c *gin.Context) {
 	)
 
 	// Get Object Registry Entry for Request Store / User
-	store.AddinRequestStoreUserRegsitry(request)
+	store.AddinRequestStoreUserRegistry(request)
 
 	request.Append(
 		func(r rpf.GINProcessor, c *gin.Context) {
