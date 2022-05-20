@@ -24,6 +24,9 @@ FROM alpine:latest
 # SET Working Directory
 WORKDIR /app
 
+# Copy License and README File
+COPY  LICENSE.md README.md ./
+
 # Copy Application from Build Environment
 COPY --from=builder /usr/local/bin/app /app/server
 

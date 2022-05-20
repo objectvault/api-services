@@ -9,12 +9,10 @@ Dockerfile
 .history
 .vs_code
 
-# Other Stuff
+# Addon Configuration
 .editorconfig
+cspell.json
 
 # Other Application Stuff
 conf
 scripts
-LICENSE.md
-README.md
-
