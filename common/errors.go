@@ -39,8 +39,13 @@ func codesWarnings(code int) (int, string) {
 	// 2000 - 2099 : User Related Warnings
 	case 2001: // Update Profile with No Changes
 		return http.StatusOK, "There was nothing to change!"
-	// 2100 - 2199 : Company Related Warnings
-	// 2200 - 2299 : Activation Related Warnings
+		// 2100 - 2199 : Organization Related Warnings
+		// 2200 - 2299 : Store Related Warnings
+		// 2300 - 2399 : Store Related Warnings
+		// 2400 - 2499 : Invitation Related Messages
+	case 2490: // Failed to Queue Message
+		return http.StatusOK, "Failed to Send Invitation. Retry!"
+	// 2900 - 2999 : System Related Warning
 	case 2998: // TODO Set Proper Error Code
 		return http.StatusOK, "TO BE Implemented - Warning Code"
 	default:

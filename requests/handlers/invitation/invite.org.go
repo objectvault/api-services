@@ -1,4 +1,3 @@
-// cSpell:ignore goginrpf, gonic, orgs, paulo, ferreira
 package invitation
 
 /*
@@ -10,6 +9,8 @@ package invitation
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+// cSpell:ignore vmap
 
 import (
 	"errors"
@@ -24,6 +25,7 @@ import (
 	"github.com/objectvault/api-services/requests/rpf/invitation"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/utils"
@@ -166,6 +168,20 @@ func CreateOrgInvitation(c *gin.Context) {
 		// Register Invitation
 		invitation.DBInsertInvitation,
 		invitation.DBRegisterInvitation,
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
+
+			// Get Session User's Email and Name for Invitation
+			r.SetLocal("from-user-email", session.Get("user-email"))
+			r.SetLocal("from-user-name", session.Get("user-name"))
+
+			// Message Queue
+			r.SetLocal("queue", "inbox")
+		},
+		queue.CreateInvitationMessage,
+		queue.SendQueueMessage,
 		// RESPONSE //
 		invitation.ExportRegistryInv,
 	)

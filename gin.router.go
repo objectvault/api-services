@@ -11,11 +11,13 @@ package main
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// cSpell:ignore objs, pkgme, sharded
+// cSpell:ignore amqp, objs, pkgme, sharded
 
 import (
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/queue-interface/queue"
+	"github.com/objectvault/queue-interface/shared"
 
 	pkginvites "github.com/objectvault/api-services/requests/handlers/invitation"
 	pkgme "github.com/objectvault/api-services/requests/handlers/me"
@@ -27,35 +29,72 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var gManager *orm.DBSessionManager
+var gDBManager *orm.DBSessionManager
+var gQConnection *queue.AMQPServerConnection
 
-func ginDatabaseManager(c *gin.Context) {
-	if gManager == nil {
+func databaseManager() (*orm.DBSessionManager, error) {
+	if gDBManager == nil {
 		dbm := common.ShardedDatabase{}
 
 		// Do we have a Database Configuration Object?
 		o, e := common.ConfigPropertyObject(Config, "database", nil, nil)
 		if e != nil { // NO
-			panic(e)
+			return nil, e
 		}
 		e = dbm.FromConfig(o)
 		if e != nil { // NO
-			panic(e)
+			return nil, e
 		}
 
 		// Create Global Database Manager for Sessions
-		gManager = orm.NewDBManager(&dbm)
+		gDBManager = orm.NewDBManager(&dbm)
 	}
-	c.Set("dbm", gManager)
+
+	return gDBManager, nil
+}
+
+func queueConnection() (*queue.AMQPServerConnection, error) {
+	if gQConnection == nil {
+		// Set Message Activation Queue Connection Settings
+		q, err := shared.ToQueue(
+			common.ConfigProperty(Config, "queues.default", nil),
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		// Create Connection Configuration
+		gQConnection = &queue.AMQPServerConnection{}
+		gQConnection.SetConnection(q.Servers)
+		gQConnection.SetPrefix(q.QueuePrefix)
+	}
+
+	return gQConnection, nil
+}
+
+func initializeGinSession(c *gin.Context) {
+	dbm, err := databaseManager()
+	if err != nil {
+		panic(err)
+	}
+
+	mq, err := queueConnection()
+	if err != nil {
+		panic(err)
+	}
+
+	c.Set("dbm", dbm)
+	c.Set("mq-connection", mq)
 }
 
 // GIN Router
 func ginRouter(r *gin.Engine) *gin.Engine {
 	// SESSION
-	r.GET("/session", ginDatabaseManager, pkgsession.Hello) // IMPLEMENTED
+	r.GET("/session", initializeGinSession, pkgsession.Hello) // IMPLEMENTED
 
 	// API Version 1 Interface //
-	v1 := r.Group("/1", ginDatabaseManager) // *gin.RouterGroup
+	v1 := r.Group("/1", initializeGinSession) // *gin.RouterGroup
 	{
 		// SESSION MANAGEMENT //
 		session := v1.Group("/session")
