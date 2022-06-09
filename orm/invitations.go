@@ -99,6 +99,7 @@ func (o *Invitation) ByID(db *sql.DB, id uint32) error {
 	var expiration sql.NullString
 	var created sql.NullString
 	e := sqlf.From("invites").
+		Select("uid").To(&o.uid).
 		Select("id_creator").To(&o.creator).
 		Select("invitee_email").To(&o.invitee_email).
 		Select("id_object").To(&o.object).

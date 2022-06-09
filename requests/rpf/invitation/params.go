@@ -13,7 +13,6 @@ package invitation
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 
 	"github.com/objectvault/api-services/requests/rpf/utils"
@@ -44,7 +43,7 @@ func ExtractGINParameterUID(r rpf.GINProcessor, c *gin.Context) {
 
 func ExtractGINParameterInvitationID(r rpf.GINProcessor, c *gin.Context) {
 	// Initial Post Parameter Tests
-	sid, message := utils.ValidateGinParameter(c, "id", true, true, false)
+	v, message := utils.ValidateGinParameter(c, "id", true, true, false)
 	if message != "" {
 		fmt.Println(message)
 		r.Abort(3100, nil)
@@ -52,17 +51,12 @@ func ExtractGINParameterInvitationID(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// See if it is valid
-	if !utils.IsValidID(sid) {
+	id, message := utils.ValidateObjectID("object", v)
+	if message != "" {
 		fmt.Println(message)
 		r.Abort(3100, nil)
 		return
 	}
 
-	uid, e := strconv.ParseUint(sid, 10, 64)
-	if e != nil {
-		r.Abort(5998, nil) // TODO: Error Code [Invalid Invitation UID]
-		return
-	}
-
-	r.SetLocal("request-invite-id", uid)
+	r.SetLocal("request-invite-id", uint64(*id))
 }

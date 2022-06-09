@@ -9,6 +9,6 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/objectvault/filter-parser v0.0.3
 	github.com/objectvault/goginrpf v0.0.7
-	github.com/objectvault/queue-interface v0.0.1 // indirect
+	github.com/objectvault/queue-interface v0.0.3
 	github.com/pjacferreira/sqlf v1.1.2-pf
 )

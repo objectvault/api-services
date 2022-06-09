@@ -130,6 +130,7 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 		{
 			// CRUD INVITE
 			invite.GET("/:id", pkginvites.GetObjectInvite)
+			invite.PUT("/:id", pkginvites.ResendInvite)    // IMPLEMENTED: Needs Testing
 			invite.DELETE("/:id", pkginvites.DeleteInvite) // IMPLEMENTED: Needs Testing
 		}
 
@@ -193,6 +194,7 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 
 			// SINGLE INVITE
 			organization.POST("/invite", pkginvites.CreateOrgInvitation) // IMPLEMENTED
+			// RESEND: Use DELETE /invite/:id
 			// DELETE: Use DELETE /invite/:id
 
 			// ORGANIZATION STORE MANAGEMENT //

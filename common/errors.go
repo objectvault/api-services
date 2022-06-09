@@ -182,7 +182,11 @@ func codesServerErrors(code int) (int, string) {
 		return http.StatusInternalServerError, "Unexpected Server Error"
 	case 5901: // JSON Conversion Error
 		return http.StatusInternalServerError, "Error Converting to JSON"
-	case 5998: // TODO Set PRoper Error Code
+	case 5920: // Queue Message Creation Error
+		return http.StatusInternalServerError, "System Error Creating Queue Message"
+	case 5921: // Queue Message Publish Error
+		return http.StatusInternalServerError, "System Error Publishing Queue Message"
+	case 5998: // TODO Set Proper Error Code
 		return http.StatusInternalServerError, "TO BE Implemented - Error Code"
 	case 5999: // TODO Error
 		return http.StatusInternalServerError, "TO BE Implemented"

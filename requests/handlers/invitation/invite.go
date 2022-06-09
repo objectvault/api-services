@@ -24,6 +24,7 @@ import (
 	"github.com/objectvault/api-services/requests/rpf/keys"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/store"
@@ -672,6 +673,112 @@ func GetObjectInvite(c *gin.Context) {
 			r.Abort(5999, nil)
 		},
 	}
+
+	// Start Request Processing
+	request.Run()
+}
+
+func ResendInvite(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("PUT.INVITE", c, 1000, shared.JSONResponse)
+
+	// Request Processing Chain
+	request.Chain = rpf.ProcessChain{}
+
+	// Session
+	request.Append(
+		// Make user we have an Active Session
+		session.AssertUserSession,
+	)
+
+	// Get Invitation Information
+	request.Append(
+		// Extract Request Parameters
+		invitation.ExtractGINParameterInvitationID,
+		// Get Invitation by ID
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Request Object ID
+			iid := r.MustGet("request-invite-id").(uint64)
+
+			// Save as Request Object ID
+			r.SetLocal("invitation-id", iid)
+		},
+		invitation.DBGetRegistryInvitationByID,
+		invitation.AssertInvitationActive,
+	)
+
+	// Process Request
+	request.Append(
+		// Validate Session Information
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Request Invitation
+			i := r.MustGet("registry-invitation").(*orm.InvitationRegistry)
+
+			// Get Request Object ID
+			oid := i.Object()
+
+			// Save as Request Object ID
+			r.SetLocal("object-id", oid)
+
+			if common.IsObjectOfType(oid, common.OTYPE_ORG) {
+				// Set Request Parameter as OID
+				r.SetLocal("request-org", oid)
+
+				// Treat as if Organization Request
+				org.BaseValidateOrgRequest(request, func(o string) interface{} {
+					// Required Roles : Organization Invite Access with Delete Function
+					roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_INVITE, orm.FUNCTION_CREATE)}
+
+					if o == "roles" {
+						return roles
+					}
+
+					return nil
+				})
+			} else if common.IsObjectOfType(oid, common.OTYPE_STORE) {
+				// Set Request Parameter as OID
+				r.SetLocal("request-store", oid)
+
+				// Treat as if Store Request
+				store.BaseValidateStoreRequest(request, func(o string) interface{} {
+					// Required Roles : Store Invite Access with Delete Function
+					roles := []uint32{orm.Role(orm.CATEGORY_STORE|orm.SUBCATEGORY_INVITE, orm.FUNCTION_CREATE)}
+
+					if o == "roles" {
+						return roles
+					}
+
+					return nil
+				})
+			} else {
+				// TODO: errors.New("Invalid Object ID")
+				r.Abort(5303, nil)
+			}
+
+			// Request Process //
+			request.Append(
+				func(r rpf.GINProcessor, c *gin.Context) {
+					// Get Session Store
+					session := sessions.Default(c)
+
+					// Get Session User's Email and Name for Invitation
+					r.SetLocal("from-user-email", session.Get("user-email"))
+					r.SetLocal("from-user-name", session.Get("user-name"))
+
+					// Message Queue
+					r.SetLocal("queue", "inbox")
+				},
+				invitation.DBGetInvitationByID,
+				queue.CreateInvitationMessage,
+				queue.SendQueueMessage,
+				// RESPONSE //
+				invitation.ExportRegistryInv,
+			)
+		},
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()

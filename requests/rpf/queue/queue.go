@@ -7,7 +7,6 @@ import (
 
 	rpf "github.com/objectvault/goginrpf"
 
-	"github.com/objectvault/queue-interface/messages"
 	"github.com/objectvault/queue-interface/queue"
 )
 
@@ -25,11 +24,6 @@ func SendQueueMessage(r rpf.GINProcessor, c *gin.Context) {
 	// Get the Required Activation Message
 	m := r.MustGet("queue-message")
 
-	// Create Queue Message
-	msg := messages.QueueMessage{}
-	msg.SetID("TODO GENERATE ID")
-	msg.SetMessage(m)
-
 	// Open Queue Connection
 	mq := c.MustGet("mq-connection").(*queue.AMQPServerConnection)
 
@@ -42,8 +36,11 @@ func SendQueueMessage(r rpf.GINProcessor, c *gin.Context) {
 
 	// Published Message to Queue?
 	q := r.MustGet("queue").(string)
-	err = mq.QueuePublishJSON("write", q, msg)
+	err = mq.QueuePublishJSON("write", q, m)
 	if err != nil { // NO: Failed to Publish Message to Queue
 		r.SetResponseCode(2490)
 	}
+
+	// Close the Connection
+	mq.CloseConnection()
 }

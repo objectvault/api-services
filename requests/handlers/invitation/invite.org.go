@@ -53,8 +53,6 @@ func CreateOrgInvitation(c *gin.Context) {
 		return nil
 	})
 
-	// Request Process //
-
 	// Create Invitation
 	request.Append(
 		// EXTRACT : Invitation
