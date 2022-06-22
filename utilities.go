@@ -12,7 +12,7 @@
 package main
 
 // LOCAL HELPER Methods //
-// If Empty String return nil (Allows Conversion Betwee String and String Pointer)
+// If Empty String return nil (Allows Conversion Between String and String Pointer)
 func nilOnEmpty(s string) *string {
 	if s == "" {
 		return nil
@@ -21,7 +21,7 @@ func nilOnEmpty(s string) *string {
 	return &s
 }
 
-// If nil String Pointer return Empty String (Allows Conversion Betwee String and String Pointer)
+// If nil String Pointer return Empty String (Allows Conversion Between String and String Pointer)
 func emptyOnNil(s *string) string {
 	if s == nil {
 		return ""
