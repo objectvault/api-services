@@ -58,7 +58,6 @@ func GroupCloseSessionWithError(parent rpf.GINProcessor, ecode int) *rpf.Process
 		SaveSession,      // Update Session Cookie
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.Abort(ecode, nil)
-			return
 		},
 	}
 

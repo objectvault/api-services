@@ -192,7 +192,7 @@ func QueryInvitations(db *sql.DB, q TQueryConditions, c bool) (TQueryResults, er
 	fmt.Println(s.String())
 
 	// Execute Query
-	e = s.QueryAndClose(nil, db, func(row *sql.Rows) {
+	e = s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		id_invite := id
 		id_object := object
 		id_creator := creator

@@ -121,7 +121,7 @@ func QueryRegisteredOrgs(db *sql.DB, q TQueryConditions, c bool) (TQueryResults,
 	fmt.Print(s.String())
 
 	// Execute Query
-	e := s.QueryAndClose(nil, db, func(row *sql.Rows) {
+	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		orgid := id
 
 		o := OrgRegistry{

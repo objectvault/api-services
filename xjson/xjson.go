@@ -459,34 +459,6 @@ func getDeepestMap(s T_xMap, path []string) (T_xMap, []string) {
 	return p, nil
 }
 
-func getParentMap(s T_xMap, path []string) (T_xMap, error) {
-	var e error
-	p := s
-	for i := 0; i < len(path); i++ {
-		p, e = getChildMap(p, path[i])
-		if e != nil {
-			return nil, e
-		}
-	}
-
-	return p, nil
-}
-
-func getChildMap(s T_xMap, name string) (T_xMap, error) {
-	value, exists := s[name]
-	if !exists {
-		return nil, nil
-	}
-
-	m, ok := value.(T_xMap)
-	if !ok {
-		msg := fmt.Sprintf("[%s] is not a map entry", name)
-		return nil, errors.New(msg)
-	}
-
-	return m, nil
-}
-
 func createMap(p T_xMap, name string) (T_xMap, error) {
 	value, exists := p[name]
 	if !exists {
