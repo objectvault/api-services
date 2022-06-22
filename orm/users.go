@@ -683,12 +683,7 @@ func (o *User) testHash(hash []byte) bool {
 
 	// Does HASH Decode Cypher Text?
 	_, e := toPlainBytes(hash, o.ciphertext)
-	if e != nil { // NO: Invalid Password Hash
-		return false
-	}
-
-	// OK
-	return true
+	return e == nil
 }
 
 func (o *User) reset() {

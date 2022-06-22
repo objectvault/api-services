@@ -130,7 +130,7 @@ func QueryRegisteredUsers(db *sql.DB, q TQueryConditions, c bool) (TQueryResults
 	// DEBUG: Print SQL
 	fmt.Print(s.String())
 
-	e := s.QueryAndClose(nil, db, func(row *sql.Rows) {
+	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		userid := id
 
 		u := UserRegistry{

@@ -125,7 +125,7 @@ func DBRegistryUserFindByID(r rpf.GINProcessor, c *gin.Context) {
 
 func DBRegistryUserFindByEmailOrNil(r rpf.GINProcessor, c *gin.Context) {
 	// Get User Identifier
-	email := r.Get("user-email").(string)
+	email := r.MustGet("user-email").(string)
 
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
