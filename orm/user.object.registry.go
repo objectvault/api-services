@@ -19,6 +19,7 @@ import (
 	"log"
 
 	"github.com/objectvault/api-services/common"
+	"github.com/objectvault/api-services/orm/mysql"
 
 	"github.com/pjacferreira/sqlf"
 )
@@ -322,7 +323,7 @@ func (o *UserObjectRegistry) ByKey(db *sql.DB, user uint64, object uint64) error
 	case e == nil: // Entry found
 		o.user = &user
 		o.object = &object
-		o.favorite = mySQLtoBool(fav)
+		o.favorite = mysql.MySQLtoBool(fav)
 		o.stored = true
 	default: // DB Error
 		o.user = nil
@@ -411,7 +412,7 @@ func (o *UserObjectRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("type", common.ObjectTypeFromID(*o.object)).
 			Set("id_object", o.object).
 			Set("alias", o.alias).
-			Set("favorite", boolToMySQL(o.favorite)).
+			Set("favorite", mysql.BoolToMySQL(o.favorite)).
 			ExecAndClose(context.TODO(), db)
 	} else { // NO: Update
 		if o.user == nil {
@@ -428,7 +429,7 @@ func (o *UserObjectRegistry) Flush(db sqlf.Executor, force bool) error {
 
 		_, e = sqlf.Update("registry_user_objects").
 			Set("alias", o.alias).
-			Set("favorite", boolToMySQL(o.favorite)).
+			Set("favorite", mysql.BoolToMySQL(o.favorite)).
 			Where("id_user = ? and id_object = ?", o.user, o.object).
 			ExecAndClose(context.TODO(), db)
 	}

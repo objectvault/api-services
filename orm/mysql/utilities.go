@@ -1,5 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
-package orm
+package mysql
 
 /*
  * This file is part of the ObjectVault Project.
@@ -11,7 +10,7 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-func boolToMySQL(f bool) uint8 {
+func BoolToMySQL(f bool) uint8 {
 	if f {
 		return 1
 	}
@@ -19,6 +18,6 @@ func boolToMySQL(f bool) uint8 {
 	return 0
 }
 
-func mySQLtoBool(v uint8) bool {
+func MySQLtoBool(v uint8) bool {
 	return v != 0
 }
