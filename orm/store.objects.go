@@ -19,6 +19,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/objectvault/api-services/orm/mysql"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -356,13 +357,13 @@ func (o *StoreObject) ByID(db *sql.DB, id uint32) error {
 		}
 
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		if modifier.Valid {
 			m := uint64(modifier.Int64)
 			o.modifier = &m
 			if modified.Valid {
-				o.modified = mySQLTimeStampToGoTime(created.String)
+				o.modified = mysql.MySQLTimeStampToGoTime(created.String)
 			}
 		}
 
@@ -411,13 +412,13 @@ func (o *StoreObject) ByKey(db *sql.DB, store uint32, id uint32) error {
 		}
 
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		if modifier.Valid {
 			m := uint64(modifier.Int64)
 			o.modifier = &m
 			if modified.Valid {
-				o.modified = mySQLTimeStampToGoTime(created.String)
+				o.modified = mysql.MySQLTimeStampToGoTime(created.String)
 			}
 		}
 

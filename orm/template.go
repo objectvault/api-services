@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/objectvault/api-services/orm/mysql"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -83,7 +84,7 @@ func (o *Template) ByID(db *sql.DB, id uint32) error {
 		}
 
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 
 		// TODO Deal with Object
@@ -132,7 +133,7 @@ func (o *Template) ByNameLatest(db *sql.DB, name string) error {
 		}
 
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 
 		o.stored = true
@@ -185,7 +186,7 @@ func (o *Template) ByNameVersion(db *sql.DB, name string, version uint16) error 
 		}
 
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 
 		o.stored = true

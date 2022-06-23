@@ -20,6 +20,7 @@ import (
 	"log"
 	"time"
 
+	"github.com/objectvault/api-services/orm/mysql"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -92,14 +93,14 @@ func (o *Key) ByID(db *sql.DB, id uint32) error {
 	if e == nil { // YES
 		o.id = &id
 		if expires.Valid {
-			o.expiration = mySQLTimeStampToGoTime(expires.String)
+			o.expiration = mysql.MySQLTimeStampToGoTime(expires.String)
 		}
 		if creator.Valid {
 			cid := uint64(creator.Int64)
 			o.creator = &cid
 		}
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		o.stored = true
 	}
@@ -229,7 +230,7 @@ func (o *Key) Flush(db sqlf.Executor, force bool) error {
 		// Execute Insert
 		s := sqlf.InsertInto("ciphers").
 			Set("ciphertext", o.ciphertext).
-			Set("expiration", goTimeToMySQLTimeStamp(o.expiration)).
+			Set("expiration", mysql.GoTimeToMySQLTimeStamp(o.expiration)).
 			Set("id_creator", o.creator)
 
 		// DEBUG: Print SQL

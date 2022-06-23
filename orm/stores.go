@@ -19,6 +19,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/objectvault/api-services/orm/mysql"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -105,13 +106,13 @@ func (o *Store) ByID(db *sql.DB, id uint32) error {
 			o.name = &name.String
 		}
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		if modifier.Valid {
 			m := uint64(modifier.Int64)
 			o.modifier = &m
 			if modified.Valid {
-				o.modified = mySQLTimeStampToGoTime(created.String)
+				o.modified = mysql.MySQLTimeStampToGoTime(created.String)
 			}
 		}
 		// TODO Deal with Object

@@ -22,6 +22,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/objectvault/api-services/orm/mysql"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -153,19 +154,19 @@ func (o *User) ByID(db *sql.DB, id uint32) error {
 			o.ciphertext = []byte(s)
 		}
 		if expires.Valid {
-			o.expires = mySQLTimeStampToGoTime(expires.String)
+			o.expires = mysql.MySQLTimeStampToGoTime(expires.String)
 		}
 		if lastpwdchange.Valid {
-			o.lastpwdchange = mySQLTimeStampToGoTime(lastpwdchange.String)
+			o.lastpwdchange = mysql.MySQLTimeStampToGoTime(lastpwdchange.String)
 		}
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		if modifier.Valid {
 			m := uint64(modifier.Int64)
 			o.modifier = &m
 			if modified.Valid {
-				o.modified = mySQLTimeStampToGoTime(created.String)
+				o.modified = mysql.MySQLTimeStampToGoTime(created.String)
 			}
 		}
 
@@ -233,19 +234,19 @@ func (o *User) ByUserName(db *sql.DB, username string) error {
 			o.ciphertext = []byte(s)
 		}
 		if expires.Valid {
-			o.expires = mySQLTimeStampToGoTime(expires.String)
+			o.expires = mysql.MySQLTimeStampToGoTime(expires.String)
 		}
 		if lastpwdchange.Valid {
-			o.lastpwdchange = mySQLTimeStampToGoTime(lastpwdchange.String)
+			o.lastpwdchange = mysql.MySQLTimeStampToGoTime(lastpwdchange.String)
 		}
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		if modifier.Valid {
 			m := uint64(modifier.Int64)
 			o.modifier = &m
 			if modified.Valid {
-				o.modified = mySQLTimeStampToGoTime(created.String)
+				o.modified = mysql.MySQLTimeStampToGoTime(created.String)
 			}
 		}
 
@@ -316,19 +317,19 @@ func (o *User) ByEmail(db *sql.DB, email string) error {
 			o.ciphertext = []byte(s)
 		}
 		if expires.Valid {
-			o.expires = mySQLTimeStampToGoTime(expires.String)
+			o.expires = mysql.MySQLTimeStampToGoTime(expires.String)
 		}
 		if lastpwdchange.Valid {
-			o.lastpwdchange = mySQLTimeStampToGoTime(lastpwdchange.String)
+			o.lastpwdchange = mysql.MySQLTimeStampToGoTime(lastpwdchange.String)
 		}
 		if created.Valid {
-			o.created = mySQLTimeStampToGoTime(created.String)
+			o.created = mysql.MySQLTimeStampToGoTime(created.String)
 		}
 		if modifier.Valid {
 			m := uint64(modifier.Int64)
 			o.modifier = &m
 			if modified.Valid {
-				o.modified = mySQLTimeStampToGoTime(created.String)
+				o.modified = mysql.MySQLTimeStampToGoTime(created.String)
 			}
 		}
 

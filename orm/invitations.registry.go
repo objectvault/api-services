@@ -22,13 +22,14 @@ import (
 	"github.com/pjacferreira/sqlf"
 
 	"github.com/objectvault/api-services/common"
+	"github.com/objectvault/api-services/orm/mysql"
 )
 
 // Invitation Registry Object Definition
 type InvitationRegistry struct {
 	dirty         bool       // Is Entry Dirty?
 	stored        bool       // Is Entry Stored in Database
-	id            *uint64    // KEY: GLOBAL Invation ID
+	id            *uint64    // KEY: GLOBAL Invitation ID
 	uid           string     // Unique ID (NO Shard or Local ID Information since Invitation Don't Require Session)
 	creator       *uint64    // Creator User ID
 	object        *uint64    // Invitation to Object
@@ -202,7 +203,7 @@ func QueryInvitations(db *sql.DB, q TQueryConditions, c bool) (TQueryResults, er
 			uid:           uid,
 			object:        &id_object,
 			creator:       &id_creator,
-			expiration:    mySQLTimeStampToGoTime(expiration),
+			expiration:    mysql.MySQLTimeStampToGoTime(expiration),
 			invitee_email: invitee_email,
 			state:         state,
 		}
@@ -288,7 +289,7 @@ func (o *InvitationRegistry) ByUID(db *sql.DB, uid string) error {
 		o.uid = uid
 
 		if expiration.Valid {
-			o.expiration = mySQLTimeStampToGoTime(expiration.String)
+			o.expiration = mysql.MySQLTimeStampToGoTime(expiration.String)
 		}
 
 		o.stored = true
@@ -325,7 +326,7 @@ func (o *InvitationRegistry) ByID(db *sql.DB, id uint64) error {
 		o.id = &id
 
 		if expiration.Valid {
-			o.expiration = mySQLTimeStampToGoTime(expiration.String)
+			o.expiration = mysql.MySQLTimeStampToGoTime(expiration.String)
 		}
 
 		o.stored = true
@@ -537,7 +538,7 @@ func (o *InvitationRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("id_creator", o.creator).
 			Set("id_object", o.object).
 			Set("invitee_email", o.invitee_email).
-			Set("expiration", goTimeToMySQLTimeStamp(o.expiration)).
+			Set("expiration", mysql.GoTimeToMySQLTimeStamp(o.expiration)).
 			Set("state", o.state)
 
 		_, e = s.Exec(context.TODO(), db)
