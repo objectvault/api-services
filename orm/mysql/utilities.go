@@ -40,12 +40,12 @@ func MySQLTimeStampToGoTime(t string) *time.Time {
 	// NOTE: MySQL Server Should have Time Zone set to UTC
 	// time.Parse() Returns time stamp relative to UTC if no Time Zone in String
 
-	// Did parse genersate an error?
+	// Did parse generate an error?
 	if e != nil { // YES
 		return nil
 	}
 
-	// Return Time Stam
+	// Return Time Stamp
 	fmt.Println(tm)
 	return &tm
 }
