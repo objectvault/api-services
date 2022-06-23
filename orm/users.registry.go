@@ -181,7 +181,7 @@ func (o *UserRegistry) Find(db *sql.DB, id interface{}) error {
 		return o.ByID(db, id.(uint64))
 	} else if _, ok := id.(string); ok { // ELSE: Find by Alias or Email
 		sid := id.(string)
-		if strings.Index(sid, "@") < 0 {
+		if !strings.Contains(sid, "@") {
 			return o.ByUserName(db, sid)
 		}
 
@@ -545,12 +545,7 @@ func (o *UserRegistry) testHash(hash []byte) bool {
 
 	// Does HASH Decode Cypher Text?
 	_, e := toPlainBytes(hash, o.ciphertext)
-	if e != nil { // NO: Invalid Password Hash
-		return false
-	}
-
-	// OK
-	return true
+	return e == nil
 }
 
 func (o *UserRegistry) reset() {

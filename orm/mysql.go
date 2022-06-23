@@ -20,9 +20,5 @@ func boolToMySQL(f bool) uint8 {
 }
 
 func mySQLtoBool(v uint8) bool {
-	if v == 0 {
-		return false
-	}
-
-	return true
+	return v != 0
 }

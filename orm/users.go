@@ -96,7 +96,7 @@ func (o *User) Find(db *sql.DB, id interface{}) error {
 		return o.ByID(db, uint32(oid))
 	} else if _, ok := id.(string); ok { // ELSE: Find by Alias or Email
 		sid := id.(string)
-		if strings.Index(sid, "@") < 0 {
+		if !strings.Contains(sid, "@") {
 			return o.ByUserName(db, sid)
 		}
 

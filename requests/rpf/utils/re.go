@@ -14,24 +14,27 @@ package utils
 import "regexp"
 
 // REGEXP - ID
-var rMatchID = regexp.MustCompile("^[0-9][0-9]*$")
+var rMatchID = regexp.MustCompile(`^[0-9][0-9]*$`)
 
 // REGEXP - ID
-var rMatchHexID = regexp.MustCompile("^:[0-9a-f][0-9a-f]*$")
+var rMatchHexID = regexp.MustCompile(`^:[0-9a-f][0-9a-f]*$`)
 
 // REGEXP - Alias
-var rMatchAlias = regexp.MustCompile("^[a-z][a-z0-9_.-]+$")
+var rMatchAlias = regexp.MustCompile(`^[a-z][a-z0-9_.-]+$`)
 
 // REGEXP Organization Alias
 // https://stackoverflow.com/questions/106179/regular-expression-to-match-dns-hostname-or-ip-address
 // MATCH DNS as per RFC 1123
-var rMatchOrgAlias = regexp.MustCompile("^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_\\-]*[A-Za-z0-9])$")
+var rMatchOrgAlias = regexp.MustCompile(`^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9_\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9_\-]*[A-Za-z0-9])$`)
 
 // REGEXP - Password Hash (Unsalted) = SHA256
-var rMatchPasswordHash = regexp.MustCompile("^[a-f0-9]{64}$")
+var rMatchPasswordHash = regexp.MustCompile(`^[a-f0-9]{64}$`)
 
 // REGEXP - Invitation Unique ID SHA1
-var rMatchUID = regexp.MustCompile("^[a-f0-9]{40}$")
+var rMatchUID = regexp.MustCompile(`^[a-f0-9]{40}$`)
+
+// REGEXP - Invitation GUID
+var rMatchGUID = regexp.MustCompile(`^([a-z0-9]{8}-([a-z0-9]{4}-){3}[a-z0-9]{12})$`)
 
 // https://github.com/badoux/checkmail
 var rMatchEmail = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
@@ -41,6 +44,10 @@ var rMatchRolesCSV = regexp.MustCompile(`^\s*\d+(\s*,\s*\d+)*\s*$`)
 
 func IsValidEmail(v string) bool {
 	return rMatchEmail.Match([]byte(v))
+}
+
+func IsValidGUID(v string) bool {
+	return rMatchGUID.Match([]byte(v))
 }
 
 func IsValidUserName(v string) bool {

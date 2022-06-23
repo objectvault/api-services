@@ -25,7 +25,7 @@ func RequestExtractJSON(r rpf.GINProcessor, c *gin.Context) {
 	// Is JSON Body?
 	app := c.GetHeader("content-type")
 	fmt.Println(app)
-	if (app == "") || (strings.Index(app, "application/json") < 0) {
+	if (app == "") || !strings.Contains(app, "application/json") {
 		r.Abort(5201, nil)
 		return
 	}

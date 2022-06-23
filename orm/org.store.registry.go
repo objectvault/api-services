@@ -121,7 +121,7 @@ func QueryRegisteredStores(db *sql.DB, org uint64, q TQueryConditions, c bool) (
 	fmt.Print(s.String())
 
 	// Execute Query
-	e := s.QueryAndClose(nil, db, func(row *sql.Rows) {
+	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		storeid := id
 		o := OrgStoreRegistry{
 			org:         &org,
