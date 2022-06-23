@@ -14,7 +14,6 @@ package org
 import (
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/org"
-	sharedorg "github.com/objectvault/api-services/requests/rpf/org"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	rpf "github.com/objectvault/goginrpf"
@@ -29,9 +28,9 @@ func GetOrgLockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)
@@ -62,9 +61,9 @@ func PutOrgLockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)
@@ -110,9 +109,9 @@ func GetOrgBlockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)
@@ -143,9 +142,9 @@ func PutOrgBlockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)
@@ -189,9 +188,9 @@ func GetOrgState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)
@@ -222,9 +221,9 @@ func PutOrgState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)
@@ -268,9 +267,9 @@ func DeleteOrgState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
-		sharedorg.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
+		org.AssertNotSystemOrgRequest, // CAN'T MODIFY SYSTEM ORGS STATE
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
 			oid := r.MustGet("request-org").(uint64)

@@ -15,7 +15,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"math/rand"
 	"strings"
 	"time"
 
@@ -27,9 +26,6 @@ import (
 type DBSessionManager struct {
 	config *common.ShardedDatabase
 }
-
-// Local Random Number Generator
-var randgen *rand.Rand
 
 // Constructor Create an RPF Instance
 func NewDBManager(c *common.ShardedDatabase) *DBSessionManager {

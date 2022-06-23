@@ -64,32 +64,29 @@ func InitializeSessionStore(r *gin.Engine) bool {
 			Path: "/",
 		}
 
-		// Do we have Cookie Options
-		if options != nil { // YES
+		// Convert Cookie Options to Structure
+		// NOTE: staticcheck S1031 - Loop will not execute if options == nil
+		for k, v := range options {
+			// Use Lowe Case for Switch
+			k = strings.ToLower(k)
 
-			// Convert Cookie Options to Structure
-			for k, v := range options {
-				// Use Lowe Case for Switch
-				k = strings.ToLower(k)
-
-				switch k {
-				case "path":
-					path := strings.TrimSpace(v.(string))
-					if path != "" {
-						cookieOptions.Path = path
-					}
-				case "domain":
-					domain := strings.TrimSpace(v.(string))
-					if domain != "" {
-						cookieOptions.Domain = domain
-					}
-				case "maxage":
-					cookieOptions.MaxAge = int(v.(float64))
-				case "secure":
-					cookieOptions.Secure = v.(bool)
-				case "httponly":
-					cookieOptions.HttpOnly = v.(bool)
+			switch k {
+			case "path":
+				path := strings.TrimSpace(v.(string))
+				if path != "" {
+					cookieOptions.Path = path
 				}
+			case "domain":
+				domain := strings.TrimSpace(v.(string))
+				if domain != "" {
+					cookieOptions.Domain = domain
+				}
+			case "maxage":
+				cookieOptions.MaxAge = int(v.(float64))
+			case "secure":
+				cookieOptions.Secure = v.(bool)
+			case "httponly":
+				cookieOptions.HttpOnly = v.(bool)
 			}
 		}
 

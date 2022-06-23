@@ -17,7 +17,6 @@ import (
 
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/org"
-	sharedorg "github.com/objectvault/api-services/requests/rpf/org"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/store"
@@ -38,7 +37,7 @@ func GetOrgStores(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
@@ -48,7 +47,7 @@ func GetOrgStores(c *gin.Context) {
 			roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_LIST)}
 
 			// Initialize Request
-			g := sharedorg.GroupOrgRequestInitialize(r, oid, roles, false)
+			g := org.GroupOrgRequestInitialize(r, oid, roles, false)
 			g.Run()
 		},
 		// Extract Query Parameters //
@@ -90,7 +89,7 @@ func PostCreateStore(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameters
-		sharedorg.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrg,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Organization ID
@@ -184,7 +183,7 @@ func GetStoreProfile(c *gin.Context) {
 		},
 		// Get Store
 		store.DBGetStoreByID,
-		sharedorg.DBRegistryOrgStoreFind,
+		org.DBRegistryOrgStoreFind,
 		// Request Response //
 		store.ExportStoreFull,
 		session.SaveSession, // Update Session Cookie
