@@ -69,7 +69,7 @@ func AssertNoPendingInvitation(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	if dup == true { // YES: Pending Invitation Found
+	if dup { // YES: Pending Invitation Found
 		r.Abort(5998, nil) // TODO: Error [Pending Invitation]
 		return
 	}
