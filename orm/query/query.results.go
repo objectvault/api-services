@@ -1,5 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
-package orm
+package query
 
 /*
  * This file is part of the ObjectVault Project.

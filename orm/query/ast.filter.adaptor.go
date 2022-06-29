@@ -1,5 +1,4 @@
-// cSpell:ignore ferreira, paulo
-package orm
+package query
 
 /*
  * This file is part of the ObjectVault Project.
@@ -11,6 +10,7 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore fand, fname, fnot, transpiling, uFFFD
 import (
 	"fmt"
 	"strings"
@@ -133,7 +133,7 @@ func (a *SQLFWhere) sqlfFunctionToWhere(p *ast.Function, f *ast.Function) string
 	case "IN":
 		return a.sqlfOperatorIN(f)
 	default:
-		return fmt.Sprintf("Unsupported Funcion [%s]", fname)
+		return fmt.Sprintf("Unsupported Function [%s]", fname)
 	}
 }
 

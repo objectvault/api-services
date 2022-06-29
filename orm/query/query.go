@@ -1,5 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
-package orm
+package query
 
 /*
  * This file is part of the ObjectVault Project.
@@ -43,7 +42,7 @@ type TQueryResults interface {
 	MaxCount() uint64
 }
 
-func applyFilterConditions(s *sqlf.Stmt, q TQueryConditions) error {
+func ApplyFilterConditions(s *sqlf.Stmt, q TQueryConditions) error {
 	// Do we have Sort Conditions
 	if q != nil && q.Filter() != nil {
 		f := q.Filter()
