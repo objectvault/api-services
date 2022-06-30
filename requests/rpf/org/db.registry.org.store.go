@@ -13,6 +13,7 @@ package org
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	rpf "github.com/objectvault/goginrpf"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ func DBRegistryOrgStoreList(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// List Registered Org Stores
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	stores, err := orm.QueryRegisteredStores(db, org, q, true)
 
 	// Failed Retrieving User?

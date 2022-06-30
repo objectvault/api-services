@@ -13,6 +13,7 @@ package invitation
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +25,7 @@ import (
 
 func ExportRegistryInvList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Invitations Registry Entries
-	invs := r.Get("invitations").(orm.TQueryResults)
+	invs := r.Get("invitations").(query.TQueryResults)
 
 	irs := &shared.ExportList{
 		List: invs,

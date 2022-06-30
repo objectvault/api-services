@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -36,7 +37,7 @@ type ObjectUserRegistry struct {
 	ciphertext []byte  // Encrypted Store Key
 }
 
-func CountRegisteredObjectUsers(db *sql.DB, object uint64, q TQueryConditions) (uint64, error) {
+func CountRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -46,7 +47,7 @@ func CountRegisteredObjectUsers(db *sql.DB, object uint64, q TQueryConditions) (
 		Where("id_object = ?", object)
 
 	// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// DEBUG: Print SQL
 	fmt.Println(s.String())
@@ -69,8 +70,8 @@ func CountRegisteredObjectUsers(db *sql.DB, object uint64, q TQueryConditions) (
 	return count, nil
 }
 
-func QueryRegisteredObjectUsers(db *sql.DB, object uint64, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	if q != nil {
@@ -132,7 +133,7 @@ func QueryRegisteredObjectUsers(db *sql.DB, object uint64, q TQueryConditions, c
 	}
 
 	// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// Error Occurred?
 	if e != nil { // YES

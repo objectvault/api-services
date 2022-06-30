@@ -14,6 +14,7 @@ package invitation
 import (
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 
 	"github.com/gin-gonic/gin"
 
@@ -32,7 +33,7 @@ func DBRegistryInviteList(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// List Invitiations
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	invites, err := orm.QueryInvitations(db, q, true)
 
 	// Failed Retrieving User?

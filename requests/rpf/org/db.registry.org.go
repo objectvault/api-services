@@ -13,6 +13,7 @@ package org
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	rpf "github.com/objectvault/goginrpf"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ func DBRegistryOrgList(r rpf.GINProcessor, c *gin.Context) {
 	// TODO Add Query Options to Requrest
 
 	// List Registered Orgs
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	orgs, err := orm.QueryRegisteredOrgs(db, q, true)
 
 	// Failed Retrieving User?

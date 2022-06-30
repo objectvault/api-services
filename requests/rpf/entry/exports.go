@@ -13,6 +13,7 @@ package entry
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 
 	rpf "github.com/objectvault/goginrpf"
@@ -24,7 +25,7 @@ import (
 func ExportStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
 	// Get List
 	sid := r.MustGet("store-id").(uint64)
-	objs := r.Get("store-objects").(orm.TQueryResults)
+	objs := r.Get("store-objects").(query.TQueryResults)
 
 	ores := &shared.ExportList{
 		List: objs,

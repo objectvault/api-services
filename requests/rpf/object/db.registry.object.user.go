@@ -13,6 +13,7 @@ package object
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	rpf "github.com/objectvault/goginrpf"
 
 	"github.com/gin-gonic/gin"
@@ -33,7 +34,7 @@ func DBRegistryObjectUsersList(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// List Registered Org Users
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	users, err := orm.QueryRegisteredObjectUsers(db, obj, q, true)
 
 	// Failed Retrieving User?

@@ -14,6 +14,7 @@ package entry
 import (
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 
 	rpf "github.com/objectvault/goginrpf"
 
@@ -36,7 +37,7 @@ func DBStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// List Registered Orgs
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	objs, err := orm.QueryStoreParentObjects(db, common.LocalIDFromID(sid), pid, q, true)
 
 	// Failed Retrieving User?

@@ -1,4 +1,3 @@
-// cSpell:ignore bson, paulo ferreira
 package orm
 
 /*
@@ -21,6 +20,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -48,7 +48,7 @@ func UserRegistryFromUser(u *User) (*UserRegistry, error) {
 	return r, nil
 }
 
-func CountRegisteredUsers(db *sql.DB, q TQueryConditions) (uint64, error) {
+func CountRegisteredUsers(db *sql.DB, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -68,8 +68,8 @@ func CountRegisteredUsers(db *sql.DB, q TQueryConditions) (uint64, error) {
 	return count, nil
 }
 
-func QueryRegisteredUsers(db *sql.DB, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryRegisteredUsers(db *sql.DB, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	if q != nil {

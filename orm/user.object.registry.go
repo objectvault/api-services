@@ -20,6 +20,7 @@ import (
 
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm/mysql"
+	"github.com/objectvault/api-services/orm/query"
 
 	"github.com/pjacferreira/sqlf"
 )
@@ -34,7 +35,7 @@ type UserObjectRegistry struct {
 	favorite bool    // FLAG: Is Container Favorite
 }
 
-func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q TQueryConditions) (uint64, error) {
+func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -44,7 +45,7 @@ func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q T
 		Where("id_user = ? and type = ?", user, ltype)
 
 	// Apply Extra Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 	if e != nil { // Error Occurred
 		log.Printf("query error: %v\n", e)
 		return 0, e
@@ -60,7 +61,7 @@ func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q T
 	return count, nil
 }
 
-func CountRegisteredUserObjects(db *sql.DB, user uint64, q TQueryConditions) (uint64, error) {
+func CountRegisteredUserObjects(db *sql.DB, user uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -70,7 +71,7 @@ func CountRegisteredUserObjects(db *sql.DB, user uint64, q TQueryConditions) (ui
 		Where("id_user = ?", user)
 
 	// Apply Extra Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 	if e != nil { // Error Occurred
 		log.Printf("query error: %v\n", e)
 		return 0, e
@@ -87,8 +88,8 @@ func CountRegisteredUserObjects(db *sql.DB, user uint64, q TQueryConditions) (ui
 }
 
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
-func QueryRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	if q != nil {
@@ -151,7 +152,7 @@ func QueryRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q T
 	s.Where("id_user = ? and type = ?", user, ltype)
 
 	// Apply Extra Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 	if e != nil { // Error Occurred
 		// DEBUG: Print SQL
 		log.Print(s.String())
@@ -185,8 +186,8 @@ func QueryRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q T
 	return list, nil
 }
 
-func QueryRegisteredUserObjects(db *sql.DB, user uint64, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryRegisteredUserObjects(db *sql.DB, user uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	if q != nil {
@@ -249,7 +250,7 @@ func QueryRegisteredUserObjects(db *sql.DB, user uint64, q TQueryConditions, c b
 	s.Where("id_user = ?", user)
 
 	// Apply Extra Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 	if e != nil { // Error Occurred
 		// DEBUG: Print SQL
 		log.Print(s.String())

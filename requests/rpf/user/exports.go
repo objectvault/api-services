@@ -14,6 +14,7 @@ package user
 import (
 	"github.com/gin-contrib/sessions"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	rpf "github.com/objectvault/goginrpf"
 
@@ -22,7 +23,7 @@ import (
 
 func ExportRegistryUserList(r rpf.GINProcessor, c *gin.Context) {
 	// Get User Registry Entries
-	users := r.MustGet("users").(orm.TQueryResults)
+	users := r.MustGet("users").(query.TQueryResults)
 
 	ures := &shared.ExportList{
 		List: users,

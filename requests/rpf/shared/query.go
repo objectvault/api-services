@@ -17,7 +17,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/utils"
 	"github.com/objectvault/filter-parser/ast"
 	"github.com/objectvault/filter-parser/lexer"
@@ -32,7 +32,7 @@ import (
 type TFilterPostProcessor = func(n ast.Node) ast.Node
 
 // SINGLE/MULTI FIELD VALIDATION RPF HANDLERS //
-func GroupExtractQueryConditions(parent rpf.GINProcessor, post TFilterPostProcessor, fmapper orm.TMapFieldNameExternalToORM, vmapper orm.TMapFieldValueExternalToORM) *rpf.ProcessorGroup {
+func GroupExtractQueryConditions(parent rpf.GINProcessor, post TFilterPostProcessor, fmapper query.TMapFieldNameExternalToORM, vmapper query.TMapFieldValueExternalToORM) *rpf.ProcessorGroup {
 	// Create Processing Group
 	group := &rpf.ProcessorGroup{}
 	group.Parent = parent
@@ -57,12 +57,12 @@ func GroupExtractQueryConditions(parent rpf.GINProcessor, post TFilterPostProces
 			}
 
 			// Extract Query Conditions
-			q := r.MustGet("query-conditions").(*orm.QueryConditions)
+			q := r.MustGet("query-conditions").(*query.QueryConditions)
 
 			// Set Query Filter
-			fmapper := r.MustGet("mapper-field-external-to-orm").(orm.TMapFieldNameExternalToORM)
-			vmapper := r.MustGet("mapper-value-external-to-orm").(orm.TMapFieldValueExternalToORM)
-			q.SetFilter(orm.NewQueryFilterTOWhere(a, fmapper, vmapper))
+			fmapper := r.MustGet("mapper-field-external-to-orm").(query.TMapFieldNameExternalToORM)
+			vmapper := r.MustGet("mapper-value-external-to-orm").(query.TMapFieldValueExternalToORM)
+			q.SetFilter(query.NewQueryFilterTOWhere(a, fmapper, vmapper))
 		},
 		ExtractQueryOrderBy,
 		ExtractQueryOffset,
@@ -81,7 +81,7 @@ func GroupExtractQueryConditions(parent rpf.GINProcessor, post TFilterPostProces
 
 // RPFCreateQueryOptions Generate Query Options (if any)
 func InitializeQueryConditions(r rpf.GINProcessor, c *gin.Context) {
-	q := orm.QueryConditions{}
+	q := query.QueryConditions{}
 	r.SetLocal("query-conditions", &q)
 }
 
@@ -152,8 +152,8 @@ func ExtractQueryOrderBy(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// Extract Query Conditions
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
-	mapper := r.MustGet("mapper-field-external-to-orm").(orm.TMapFieldNameExternalToORM)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
+	mapper := r.MustGet("mapper-field-external-to-orm").(query.TMapFieldNameExternalToORM)
 
 	sortby := strings.Split(value, ",")
 	var field string
@@ -214,7 +214,7 @@ func ExtractQueryOffset(r rpf.GINProcessor, c *gin.Context) {
 	// Have Value?
 	if u != nil { // YES
 		// Set Query Offset
-		q := r.MustGet("query-conditions").(*orm.QueryConditions)
+		q := r.MustGet("query-conditions").(*query.QueryConditions)
 		q.SetOffset(*u)
 	}
 }
@@ -245,7 +245,7 @@ func ExtractQueryLimit(r rpf.GINProcessor, c *gin.Context) {
 	// Have Value?
 	if u != nil { // YES
 		// Set Query Limit
-		q := r.MustGet("query-conditions").(*orm.QueryConditions)
+		q := r.MustGet("query-conditions").(*query.QueryConditions)
 		q.SetLimit(*u)
 	}
 }

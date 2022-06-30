@@ -13,6 +13,7 @@ package object
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	rpf "github.com/objectvault/goginrpf"
 
@@ -23,7 +24,7 @@ import (
 
 func ExportRegistryObjUsersList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entries
-	users := r.Get("registry-object-users").(orm.TQueryResults)
+	users := r.Get("registry-object-users").(query.TQueryResults)
 
 	list := &shared.ExportList{
 		List: users,
@@ -84,7 +85,7 @@ func ExportRegistryObjUserBasic(r rpf.GINProcessor, c *gin.Context) {
 
 func ExportRegistryUserObjsList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entries
-	objects := r.Get("registry-user-objects").(orm.TQueryResults)
+	objects := r.Get("registry-user-objects").(query.TQueryResults)
 
 	list := &shared.ExportList{
 		List: objects,

@@ -13,6 +13,7 @@ package org
 
 import (
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	rpf "github.com/objectvault/goginrpf"
 
@@ -23,7 +24,7 @@ import (
 
 func ExportSystemRegistryOrgList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Orgs Registry Entries
-	orgs := r.Get("orgs").(orm.TQueryResults)
+	orgs := r.Get("orgs").(query.TQueryResults)
 
 	list := &shared.ExportList{
 		List: orgs,
@@ -83,7 +84,7 @@ func ExportOrganizationBasic(r rpf.GINProcessor, c *gin.Context) {
 
 func ExportRegistryOrgStoreList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Org Stores Registry Entries
-	stores := r.Get("registry-stores").(orm.TQueryResults)
+	stores := r.Get("registry-stores").(query.TQueryResults)
 
 	list := &shared.ExportList{
 		List: stores,

@@ -14,6 +14,7 @@ package template
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 
 	rpf "github.com/objectvault/goginrpf"
 )
@@ -33,7 +34,7 @@ func DBGetObjectTemplates(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// List Registered Org Users
-	q := r.MustGet("query-conditions").(*orm.QueryConditions)
+	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	templates, err := orm.QueryRegisteredObjectTemplates(db, obj, q, true)
 
 	// Failed Retrieving User?

@@ -15,16 +15,16 @@ import (
 	"encoding/json"
 	"strings"
 
-	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 )
 
 type ExportList struct {
-	List        orm.TQueryResults
+	List        query.TQueryResults
 	ValueMapper TMapListEntryORMtoExport
 	FieldMapper TMapFieldNameORMToExternal
 }
 
-func orderByToString(asort []orm.OrderBy, mapper TMapFieldNameORMToExternal) string {
+func orderByToString(asort []query.OrderBy, mapper TMapFieldNameORMToExternal) string {
 	fl := []string{}
 
 	if len(asort) > 0 {

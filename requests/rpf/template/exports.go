@@ -14,13 +14,14 @@ package template
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	rpf "github.com/objectvault/goginrpf"
 )
 
 func ExportRegistryTemplateList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entries
-	templates := r.Get("registry-object-templates").(orm.TQueryResults)
+	templates := r.Get("registry-object-templates").(query.TQueryResults)
 
 	list := &shared.ExportList{
 		List: templates,

@@ -23,6 +23,7 @@ import (
 
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm/mysql"
+	"github.com/objectvault/api-services/orm/query"
 )
 
 // Invitation Registry Object Definition
@@ -85,7 +86,7 @@ func HasPendingInvitation(db *sql.DB, object uint64, invitee_email string) (bool
 	return count > 0, nil
 }
 
-func CountInvitations(db *sql.DB, q TQueryConditions) (uint64, error) {
+func CountInvitations(db *sql.DB, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -94,7 +95,7 @@ func CountInvitations(db *sql.DB, q TQueryConditions) (uint64, error) {
 		Select("COUNT(*)").To(&count)
 
 	// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// DEBUG: Print SQL
 	fmt.Println(s.String())
@@ -117,8 +118,8 @@ func CountInvitations(db *sql.DB, q TQueryConditions) (uint64, error) {
 	return count, nil
 }
 
-func QueryInvitations(db *sql.DB, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryInvitations(db *sql.DB, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	if q != nil {
@@ -158,7 +159,7 @@ func QueryInvitations(db *sql.DB, q TQueryConditions, c bool) (TQueryResults, er
 	}
 
 	// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// Error Occurred?
 	if e != nil && e != sql.ErrNoRows { // YES

@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/objectvault/api-services/orm/mysql"
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -97,7 +98,7 @@ func DeleteStoreObject(db *sql.DB, store uint32, oid uint32) error {
 	return e
 }
 
-func CountStoreObject(db *sql.DB, store uint32, q TQueryConditions) (uint64, error) {
+func CountStoreObject(db *sql.DB, store uint32, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -107,7 +108,7 @@ func CountStoreObject(db *sql.DB, store uint32, q TQueryConditions) (uint64, err
 		Where("id_store = ?", store)
 
 		// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -127,7 +128,7 @@ func CountStoreObject(db *sql.DB, store uint32, q TQueryConditions) (uint64, err
 	return count, nil
 }
 
-func CountStoreParentObject(db *sql.DB, store uint32, parent uint32, q TQueryConditions) (uint64, error) {
+func CountStoreParentObject(db *sql.DB, store uint32, parent uint32, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -137,7 +138,7 @@ func CountStoreParentObject(db *sql.DB, store uint32, parent uint32, q TQueryCon
 		Where("id_store = ? and id_parent = ?", store, parent)
 
 	// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -203,8 +204,8 @@ func QueryStoreObjects(db *sql.DB, store uint32, query string) ([]StoreObject, e
 	return entries, nil
 }
 
-func QueryStoreParentObjects(db *sql.DB, store uint32, parent uint32, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryStoreParentObjects(db *sql.DB, store uint32, parent uint32, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	// Set Query Page Limits
@@ -265,7 +266,7 @@ func QueryStoreParentObjects(db *sql.DB, store uint32, parent uint32, q TQueryCo
 	}
 
 	// Apply Query Conditions
-	e := applyFilterConditions(s, q)
+	e := query.ApplyFilterConditions(s, q)
 
 	// Error Occurred?
 	if e != nil { // YES

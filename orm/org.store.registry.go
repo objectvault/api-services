@@ -19,6 +19,7 @@ import (
 	"log"
 	"strings"
 
+	"github.com/objectvault/api-services/orm/query"
 	"github.com/pjacferreira/sqlf"
 )
 
@@ -35,7 +36,7 @@ type OrgStoreRegistry struct {
 
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
 
-func CountRegisteredOrgStores(db *sql.DB, org uint64, q TQueryConditions) (uint64, error) {
+func CountRegisteredOrgStores(db *sql.DB, org uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -56,8 +57,8 @@ func CountRegisteredOrgStores(db *sql.DB, org uint64, q TQueryConditions) (uint6
 	return count, nil
 }
 
-func QueryRegisteredStores(db *sql.DB, org uint64, q TQueryConditions, c bool) (TQueryResults, error) {
-	var list QueryResults = QueryResults{}
+func QueryRegisteredStores(db *sql.DB, org uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
 	if q != nil {
