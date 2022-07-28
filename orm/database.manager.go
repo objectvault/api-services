@@ -54,7 +54,16 @@ func (m *DBSessionManager) ConnectTo(g uint16, sID uint32) (*sql.DB, error) {
 		return nil, err
 	}
 
-	return m.connection(shard.Connection)
+	// Do we already have a SHARD SQL Connection?
+	if shard.DBConnection == nil { // NO: Create one
+		c, e := m.connection(shard.Connection)
+		if e != nil {
+			return nil, e
+		}
+		shard.DBConnection = c
+	}
+	// ELSE: Yes - Use it
+	return shard.DBConnection, nil
 }
 
 func (m *DBSessionManager) getShardGroup(rs *([](*common.DBShardGroup)), g uint16) (*common.DBShardGroup, error) {
@@ -112,9 +121,9 @@ func (m *DBSessionManager) connection(c common.DBConnection) (*sql.DB, error) {
 	}
 
 	// TODO Use Config File  Connection Settings
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxOpenConns(10)
-	db.SetMaxIdleConns(2)
+	db.SetConnMaxLifetime(time.Second * 5)
+	//	db.SetMaxOpenConns(10)
+	//	db.SetMaxIdleConns(2)
 
 	return db, nil
 }

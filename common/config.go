@@ -12,6 +12,7 @@ package common
  */
 
 import (
+	"database/sql"
 	"errors"
 	"strings"
 )
@@ -78,8 +79,9 @@ func (s *DBConnection) FromConfig(base map[string]interface{}) error {
 
 // DEFINITION: Database Shard
 type DBShard struct {
-	Range      []uint32     `json:"range"`
-	Connection DBConnection `json:"connection"`
+	Range        []uint32     `json:"range"`
+	Connection   DBConnection `json:"connection"`
+	DBConnection *sql.DB
 }
 
 func (s *DBShard) FromConfig(base map[string]interface{}) error {
