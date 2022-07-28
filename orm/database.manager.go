@@ -121,7 +121,7 @@ func (m *DBSessionManager) connection(c common.DBConnection) (*sql.DB, error) {
 	}
 
 	// TODO Use Config File  Connection Settings
-	db.SetConnMaxLifetime(time.Second * 5)
+	db.SetConnMaxLifetime(time.Minute * 5)
 	//	db.SetMaxOpenConns(10)
 	//	db.SetMaxIdleConns(2)
 
