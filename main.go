@@ -10,7 +10,7 @@ package main
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// cSpell:ignore ccors
+// cSpell:ignore ccors, gindump
 
 import (
 	"flag"
@@ -23,6 +23,32 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/objectvault/api-services/common"
 )
+
+func ginEngine() *gin.Engine {
+	// Equivalent to gin.Default()
+	engine := gin.New()
+	engine.Use(gin.Logger(), gin.Recovery())
+
+	// TODO: Fix CORS - For Now Use Default Allow All
+	ccors := cors.DefaultConfig()
+	ccors.AllowOriginFunc = func(origin string) bool {
+		return true
+	}
+	ccors.AllowCredentials = true
+	engine.Use(cors.New(ccors))
+
+	// Initialize Session Store
+	if !InitializeSessionStore(engine) {
+		log.Println("[ginEngine] Failed to Initialize Session Store")
+		return nil
+	}
+
+	// START:DEBUG
+	// r.Use(gindump.Dump())
+	// END:DEBUG
+
+	return engine
+}
 
 // MAIN //
 func main() {
@@ -62,26 +88,11 @@ func main() {
 		fmt.Println("EXIT: Close All Connections")
 	}()
 
-	// Create Gin Router
-	r := gin.Default() // *gin.Engine
-
-	// Initialize Session Store
-	if !InitializeSessionStore(r) {
-		log.Println("[main] Failed to Initialize Session Store")
-		return
+	// Create and Configure Gin Engine
+	r := ginEngine() // *gin.Engine
+	if r == nil {
+		panic("Failed to Initialize GIN Engine")
 	}
-
-	// TODO: Fix CORS - For Now Use Default Allow All
-	ccors := cors.DefaultConfig()
-	ccors.AllowOriginFunc = func(origin string) bool {
-		return true
-	}
-	ccors.AllowCredentials = true
-	r.Use(cors.New(ccors))
-
-	// START:DEBUG
-	// r.Use(gindump.Dump())
-	// END:DEBUG
 
 	// Establish Routes
 	ginRouter(r)
