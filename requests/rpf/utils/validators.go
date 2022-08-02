@@ -37,6 +37,14 @@ func ValidateEmailFormat(value string) (string, string) {
 	return value, ""
 }
 
+func ValidateGUIDFormat(value string) (string, string) {
+	if !IsValidGUID(value) {
+		return "", "Parameter Does NOT Contain Valid a GUID"
+	}
+
+	return value, ""
+}
+
 // Value Contains a Value that can pass as a User Reference
 func ValidateUserReference(value string) (interface{}, string) {
 	// Is Valid Store ID
