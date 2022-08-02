@@ -21,15 +21,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBGetUserByID(r rpf.GINProcessor, c *gin.Context) {
-	// Get User Identifier (GLOBAL ID)
-	id := r.Get("user-id").(uint64)
-
+func dbGetUserByID(r rpf.GINProcessor, c *gin.Context, uid uint64) {
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	// Get Connection to User Registry
-	db, err := dbm.Connect(id)
+	// Get Connection to User Shard
+	db, err := dbm.Connect(uid)
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return
@@ -37,7 +34,7 @@ func DBGetUserByID(r rpf.GINProcessor, c *gin.Context) {
 
 	// Get User based on Type
 	user := &orm.User{}
-	err = user.ByID(db, common.LocalIDFromID(id))
+	err = user.ByID(db, common.LocalIDFromID(uid))
 
 	// Failed Retrieving User?
 	if err != nil { // YES: Database Error
@@ -53,6 +50,20 @@ func DBGetUserByID(r rpf.GINProcessor, c *gin.Context) {
 
 	// Save User
 	r.Set("user", user)
+}
+
+func DBGetUserFromRegistry(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request User
+	u := r.MustGet("registry-user").(*orm.UserRegistry)
+
+	dbGetUserByID(r, c, u.ID())
+}
+
+func DBGetUserByID(r rpf.GINProcessor, c *gin.Context) {
+	// Get User Identifier (GLOBAL ID)
+	uid := r.Get("user-id").(uint64)
+
+	dbGetUserByID(r, c, uid)
 }
 
 func DBInsertUser(r rpf.GINProcessor, c *gin.Context) {
@@ -86,4 +97,29 @@ func DBInsertUser(r rpf.GINProcessor, c *gin.Context) {
 
 	// Save User Sharded ID
 	r.SetLocal("user-id", id)
+}
+
+func DBUserUpdate(r rpf.GINProcessor, c *gin.Context) {
+	// Get User Identifier (GLOBAL ID)
+	id := r.Get("user-id").(uint64)
+
+	// Get User Object
+	e := r.MustGet("user").(*orm.User)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to User Shard
+	db, err := dbm.Connect(id)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Save Modifications
+	err = e.Flush(db, true)
+	if err != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
 }
