@@ -18,6 +18,17 @@ type QueryConditions struct {
 	limit  *uint64
 }
 
+func NewQueryConditions(f *SQLFWhere) *QueryConditions {
+	q := &QueryConditions{}
+
+	// Do we have Filter?
+	if f != nil { // YES: Use It
+		q.SetFilter(f)
+	}
+
+	return q
+}
+
 func (o QueryConditions) Filter() *SQLFWhere {
 	return o.filter
 }
