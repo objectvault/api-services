@@ -13,7 +13,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/objectvault/filter-parser v0.0.3
 	github.com/objectvault/goginrpf v0.0.7
-	github.com/objectvault/queue-interface v0.0.3
+	github.com/objectvault/queue-interface v0.0.4
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
 	github.com/pjacferreira/sqlf v1.1.2-pf
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
