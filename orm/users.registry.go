@@ -10,6 +10,7 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore ciphertext
 import (
 	"context"
 	"crypto/sha256"
@@ -38,13 +39,8 @@ type UserRegistry struct {
 }
 
 func UserRegistryFromUser(u *User) (*UserRegistry, error) {
-	r := &UserRegistry{
-		username:   u.UserName(),
-		email:      u.Email(),
-		name:       u.Name(),
-		ciphertext: u.ciphertext,
-	}
-
+	r := &UserRegistry{}
+	r.UpdateRegistry(u)
 	return r, nil
 }
 
@@ -351,12 +347,12 @@ func (o *UserRegistry) HasAllStates(states uint16) bool {
 
 func (o *UserRegistry) IsActive() bool {
 	// User Account Active
-	return !HasAllStates(o.state, STATE_INACTIVE)
+	return !HasAnyStates(o.state, STATE_INACTIVE|STATE_BLOCKED|STATE_DELETE)
 }
 
 func (o *UserRegistry) IsBlocked() bool {
 	// GLOBAL User Access Blocked
-	return HasAnyStates(o.state, STATE_INACTIVE|STATE_BLOCKED)
+	return HasAnyStates(o.state, STATE_BLOCKED|STATE_DELETE)
 }
 
 func (o *UserRegistry) IsReadOnly() bool {
@@ -451,6 +447,20 @@ func (o *UserRegistry) ClearStates(states uint16) {
 	if o.state != current {
 		o.dirty = true
 	}
+}
+
+func (o *UserRegistry) UpdateRegistry(u *User) error {
+	// Update Basic User Information
+	o.username = u.UserName()
+	o.email = u.Email()
+	o.name = u.Name()
+	o.ciphertext = u.ciphertext
+
+	if !o.IsNew() {
+		o.dirty = true
+	}
+
+	return nil
 }
 
 func (o *UserRegistry) TestPassword(password string) bool {

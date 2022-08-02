@@ -509,6 +509,36 @@ func (o *User) SetHash(hash string) error {
 	return nil
 }
 
+func (o *User) ResetHash(hash string) error {
+	// Is Password Hash Valid
+	if hash == "" {
+		return errors.New("Missing Password Hash")
+	}
+
+	h, e := hex.DecodeString(hash)
+	if e != nil {
+		return e
+	}
+
+	// Get Semi Random Text Bytes to Encrypt
+	pb, e := o.generatePlainText()
+	if e != nil {
+		return e
+	}
+
+	// Did We Generate Cypher Text?
+	ct, e := toCypherBytes(h, pb)
+	if e != nil { // NO: ABORT
+		return e
+	}
+
+	// New State
+	o.ciphertext = ct
+	o.dirty = true
+	o.updateRegistry = true
+	return nil
+}
+
 func (o *User) UpdateHash(old, hash string) error {
 	// Is Password Hash Valid
 	if old == "" || hash == "" {

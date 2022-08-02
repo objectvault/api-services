@@ -26,6 +26,8 @@ func codesOk(code int) (int, string) {
 		return http.StatusOK, "Logged Out!"
 	case 1003:
 		return http.StatusOK, "Logged In!"
+	case 1099:
+		return http.StatusOK, "Contact System Administrator."
 	case 1998: // TODO Set Proper Error Code
 		return http.StatusOK, "TO BE Implemented - Success Code"
 	default:
@@ -138,11 +140,16 @@ func codesObjectErrors(code int) (int, string) {
 		return http.StatusBadRequest, "Invalid Invitation ID!"
 	case 4391:
 		return http.StatusBadRequest, "Invitation Expired!"
-	case 4998: // TODO Set Proper Error Code
-		return http.StatusInternalServerError, "TO BE Implemented - Object Code"
 	// 4400 - 4499 : Invitation Related Error
 	case 4400:
 		return http.StatusBadRequest, "Template does not exist"
+		// 4500 - 4599 : Request Related Error
+	case 4500:
+		return http.StatusBadRequest, "Request does not exist"
+	case 4591:
+		return http.StatusBadRequest, "Request Expired!"
+	case 4998: // TODO Set Proper Error Code
+		return http.StatusInternalServerError, "TO BE Implemented - Object Code"
 	default:
 		log.Printf("[codesDatabaseErrors] Unrecognized Status Code [%d]\n", code)
 		return http.StatusBadRequest, "Unknown Reason"

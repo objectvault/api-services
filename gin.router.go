@@ -11,7 +11,7 @@ package main
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// cSpell:ignore amqp, objs, pkgme, sharded
+// cSpell:ignore amqp, objs, pkginvites, pkgme, pkgorg, pkpwd, pkgsession, pkgstore, pkgsystem, sharded
 
 import (
 	"github.com/objectvault/api-services/common"
@@ -22,6 +22,7 @@ import (
 	pkginvites "github.com/objectvault/api-services/requests/handlers/invitation"
 	pkgme "github.com/objectvault/api-services/requests/handlers/me"
 	pkgorg "github.com/objectvault/api-services/requests/handlers/org"
+	pkgpwd "github.com/objectvault/api-services/requests/handlers/password"
 	pkgsession "github.com/objectvault/api-services/requests/handlers/session"
 	pkgstore "github.com/objectvault/api-services/requests/handlers/store"
 	pkgsystem "github.com/objectvault/api-services/requests/handlers/system"
@@ -101,6 +102,13 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 		{
 			session.POST("/:id", pkgsession.Login) // IMPLEMENTED
 			session.DELETE("", pkgsession.Logout)  // IMPLEMENTED
+		}
+
+		// PASSWORD MANAGEMENT //
+		password := v1.Group("/password")
+		{
+			password.DELETE("/:email", pkgpwd.Recover)
+			password.POST("/:guid", pkgpwd.Reset)
 		}
 
 		// INVITATION : NO SESSION REQUIRED //
