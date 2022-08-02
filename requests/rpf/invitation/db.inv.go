@@ -45,11 +45,11 @@ func DBGetInvitationByID(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	// Get Org based on ID Type
+	// Get Invitation based on ID Type
 	entry := &orm.Invitation{}
 	err = entry.ByID(db, common.LocalIDFromID(id))
 
-	// Failed Retrieving User?
+	// Failed Retrieving Entry?
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return

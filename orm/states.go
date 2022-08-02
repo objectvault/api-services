@@ -11,16 +11,8 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-type States interface {
-	State() uint16
-	HasAnyStates(states uint16) bool
-	HasAllStates(states uint16) bool
-	SetStates(states uint16)
-	ClearStates(states uint16)
-}
-
 // FUNCTIONS
-const STATE_INACTIVE = 0x0001 // User Locked Out of System (USE: Too Many Failed Password Attemptrs)
+const STATE_INACTIVE = 0x0001 // User Locked Out of System (USE: Too Many Failed Password Attempts)
 const STATE_BLOCKED = 0x0002  // User/Organization Blocked (USE: Administrator Blocked User Access)
 const STATE_READONLY = 0x0004 // User/Organization Disabled All Modification Roles
 
@@ -29,7 +21,7 @@ const STATE_SYSTEM = 0x1000 // SYSTEM User/Organization
 const STATE_DELETE = 0x2000 // Object Marked for Deletion
 
 // MASKS
-const STATE_MASK_MARKERS = 0xF000   // MASK Upepr Bits
+const STATE_MASK_MARKERS = 0xF000   // MASK UPPER Bits
 const STATE_MASK_FUNCTIONS = 0x0FFF // MASK LOWER BITS
 
 func HasAnyStates(state, test uint16) bool {
@@ -46,4 +38,12 @@ func SetStates(state, set uint16) uint16 {
 
 func ClearStates(state, clear uint16) uint16 {
 	return state &^ clear
+}
+
+type States interface {
+	State() uint16
+	HasAnyStates(states uint16) bool
+	HasAllStates(states uint16) bool
+	SetStates(states uint16)
+	ClearStates(states uint16)
 }

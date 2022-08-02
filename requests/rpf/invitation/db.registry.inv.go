@@ -32,11 +32,11 @@ func DBRegistryInviteList(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	// List Invitiations
+	// List Invitations
 	q := r.MustGet("query-conditions").(*query.QueryConditions)
 	invites, err := orm.QueryInvitations(db, q, true)
 
-	// Failed Retrieving User?
+	// Failed Retrieving List?
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return
@@ -125,7 +125,7 @@ func DBGetRegistryInvitationByID(r rpf.GINProcessor, c *gin.Context) {
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	// Get Connection to Invitation Registry
+	// Get Connection to Registry
 	db, err := dbm.Connect(id)
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
@@ -159,8 +159,8 @@ func DBRegistryInvUpdate(r rpf.GINProcessor, c *gin.Context) {
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	// Connect to Global Registry Shard
-	db, err := dbm.ConnectTo(0, 0)
+	// Get Connection to Registry
+	db, err := dbm.Connect(e.ID())
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return
