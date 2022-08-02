@@ -97,3 +97,51 @@ func ExtractGINParameterUINTValue(r rpf.GINProcessor, c *gin.Context) {
 
 	r.SetLocal("request-value", u)
 }
+
+func ExtractGINParameterEmail(r rpf.GINProcessor, c *gin.Context) {
+	// Initial Post Parameter Tests
+	email, message := utils.ValidateGinParameter(c, "email", true, true, false)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	// Cleanup Email
+	email = strings.TrimSpace(email)
+	email = strings.ToLower(email)
+
+	// See if it is valid
+	email, message = utils.ValidateEmailFormat(email)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	r.SetLocal("request-email", email)
+}
+
+func ExtractGINParameterGUID(r rpf.GINProcessor, c *gin.Context) {
+	// Initial Post Parameter Tests
+	guid, message := utils.ValidateGinParameter(c, "guid", true, true, false)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	// Cleanup GUID
+	guid = strings.TrimSpace(guid)
+	guid = strings.ToLower(guid)
+
+	// See if it is valid
+	guid, message = utils.ValidateGUIDFormat(guid)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	r.SetLocal("request-guid", guid)
+}
