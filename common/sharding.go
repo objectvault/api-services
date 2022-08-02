@@ -21,8 +21,10 @@ const OTYPE_NOTSET = uint16(0x0000)     // Object Type NOT SET
 const OTYPE_USER = uint16(0x0001)       // USER Object
 const OTYPE_ORG = uint16(0x0002)        // ORGANIZATION Object
 const OTYPE_STORE = uint16(0x0003)      // STORE Object
-const OTYPE_KEY = uint16(0x00FD)        // KEY OBJECT
-const OTYPE_INVITATION = uint16(0x00FE) // INVITATION OBJECT
+const OTYPE_ACTION = uint16(0x00FB)     // ACTION Object
+const OTYPE_REQUEST = uint16(0x00FC)    // REQUEST Object
+const OTYPE_KEY = uint16(0x00FD)        // KEY Object
+const OTYPE_INVITATION = uint16(0x00FE) // INVITATION Object
 const OTYPE_OTHER = uint16(0x00FF)      // OTHER Object Type
 
 // BITS for VARIOUS SIZES
