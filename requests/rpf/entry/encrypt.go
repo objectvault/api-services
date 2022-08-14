@@ -11,6 +11,7 @@ package entry
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore skey
 import (
 	"github.com/objectvault/api-services/orm"
 
@@ -25,14 +26,14 @@ func DecryptStoreObject(r rpf.GINProcessor, c *gin.Context) {
 	o := r.MustGet("store-object").(*orm.StoreObject)
 
 	// Decrypt Object
-	t := &orm.StoreTemplateObject{}
-	e := t.DecryptObject(skey, o.Object())
+	ot := &orm.StoreTemplateObject{}
+	e := ot.DecryptObject(skey, o.Object())
 	if e != nil {
 		r.Abort(4998 /* TODO: ERROR [Invalid Store Key] */, nil)
 		return
 	}
 
-	r.SetLocal("store-template-object", t)
+	r.SetLocal("store-template-object", ot)
 }
 
 func EncryptStoreObject(r rpf.GINProcessor, c *gin.Context) {
@@ -43,7 +44,7 @@ func EncryptStoreObject(r rpf.GINProcessor, c *gin.Context) {
 	// Encrypt Object
 	ebs, e := ot.EncryptObject(skey)
 	if e != nil {
-		r.Abort(4998 /* TODO: ERROR [Failed to Encrypot Object] */, nil)
+		r.Abort(4998 /* TODO: ERROR [Failed to Encrypt Object] */, nil)
 	}
 
 	o.SetObject(ebs)
