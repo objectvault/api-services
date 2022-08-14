@@ -16,6 +16,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/objectvault/api-services/maps"
 	"github.com/objectvault/api-services/orm"
 )
 
@@ -25,19 +26,37 @@ type FullTemplateToJSON struct {
 
 func (o *FullTemplateToJSON) MarshalJSON() ([]byte, error) {
 	if !o.Template.IsValid() {
-		return nil, errors.New("Missing Required Structore Value [Template]")
+		return nil, errors.New("Missing Required Structure Value [Template]")
 	}
+
+	// Extract Template Model in Object Format
+	model, e := o.Template.ModelJSON()
+	if e != nil {
+		return nil, e
+	}
+
+	wrappedModel := maps.NewMapWrapper(model)
+
+	// Add Standard Definition for Title Field
+	wrappedModel.Set("fields.__title.label", "Title", false)
+	wrappedModel.Set("fields.__title.type", "string", false)
+	wrappedModel.Set("fields.__title.settings.max-length", 40, false)
+	wrappedModel.Set("fields.__title.settings.required", true, false)
+	wrappedModel.Set("fields.__title.settings.trim", true, false)
+	wrappedModel.Set("fields.__title.settings.allow-spaces", true, false)
 
 	return json.Marshal(&struct {
 		Name        string `json:"name"`
 		Version     uint16 `json:"version"`
 		Description string `json:"description"`
-		Model       string `json:"model"`
+		//		Model       string `json:"model"`
+		Model map[string]interface{} `json:"model"`
 	}{
 		Name:        o.Template.Template(),
 		Version:     o.Template.Version(),
 		Description: o.Template.Description(),
-		Model:       o.Template.Model(),
+		//		Model:       o.Template.Model(),
+		Model: model,
 	})
 }
 
