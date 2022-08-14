@@ -32,14 +32,14 @@ func (o *BasicStoreObjectToJSON) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(&struct {
 		Store  string `json:"store"`
-		ID     uint32 `json:"id"`
-		Parent uint32 `json:"parent"`
+		ID     string `json:"id"`
+		Parent string `json:"parent"`
 		Title  string `json:"title"`
 		Type   uint8  `json:"type"`
 	}{
 		Store:  fmt.Sprintf(":%x", o.Store),
-		ID:     o.Object.ID(),
-		Parent: o.Object.Parent(),
+		ID:     fmt.Sprintf(":%x", o.Object.ID()),
+		Parent: fmt.Sprintf(":%x", o.Object.Parent()),
 		Title:  o.Object.Title(),
 		Type:   o.Object.Type(),
 	})
@@ -75,16 +75,16 @@ func (o *FullStoreObjectToJSON) MarshalJSON() ([]byte, error) {
 	*/
 	return json.Marshal(&struct {
 		Store    string      `json:"store"`
-		Parent   uint32      `json:"parent"`
-		ID       uint32      `json:"id"`
+		Parent   string      `json:"parent"`
+		ID       string      `json:"id"`
 		Type     uint8       `json:"type"`
 		Title    string      `json:"title"`
 		Template interface{} `json:"template"`
 		Values   interface{} `json:"values"`
 	}{
 		Store:    fmt.Sprintf(":%x", o.Store),
-		Parent:   o.Object.Parent(),
-		ID:       o.Object.ID(),
+		Parent:   fmt.Sprintf(":%x", o.Object.Parent()),
+		ID:       fmt.Sprintf(":%x", o.Object.ID()),
 		Type:     o.Object.Type(),
 		Title:    o.Object.Title(),
 		Template: template,
@@ -109,13 +109,13 @@ func (o *StoreFolderObjectToJSON) MarshalJSON() ([]byte, error) {
 
 	return json.Marshal(&struct {
 		Store  string `json:"store"`
-		ID     uint32 `json:"id"`
-		Parent uint32 `json:"parent"`
+		ID     string `json:"id"`
+		Parent string `json:"parent"`
 		Title  string `json:"title"`
 	}{
 		Store:  fmt.Sprintf(":%x", o.Store),
-		ID:     o.Object.ID(),
-		Parent: o.Object.Parent(),
+		ID:     fmt.Sprintf(":%x", o.Object.ID()),
+		Parent: fmt.Sprintf(":%x", o.Object.Parent()),
 		Title:  o.Object.Title(),
 	})
 }
