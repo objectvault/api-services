@@ -14,6 +14,7 @@ package orm
 import (
 	"context"
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"log"
 	"strings"
@@ -222,6 +223,17 @@ func (o *Template) Description() string {
 
 func (o *Template) Model() string {
 	return o.model
+}
+
+func (o *Template) ModelJSON() (map[string]interface{}, error) {
+	// Return Model in JSON Format
+	var model map[string]interface{}
+	e := json.Unmarshal([]byte(o.model), &model)
+	if e != nil {
+		return nil, e
+	}
+
+	return model, nil
 }
 
 func (o *Template) Created() *time.Time {

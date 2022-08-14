@@ -1,4 +1,3 @@
-// cSpell:ignore ginrpf, gonic, objs, paulo, ferreira
 package store
 
 /*
@@ -11,6 +10,7 @@ package store
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore objs, vmap, xjson
 import (
 	"errors"
 	"fmt"
@@ -21,9 +21,9 @@ import (
 	"github.com/objectvault/api-services/requests/rpf/entry"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
+	"github.com/objectvault/api-services/requests/rpf/store"
 	"github.com/objectvault/api-services/xjson"
 
-	sharedstore "github.com/objectvault/api-services/requests/rpf/store"
 	rpf "github.com/objectvault/goginrpf"
 
 	"github.com/gin-gonic/gin"
@@ -37,7 +37,7 @@ func GetStoreObjects(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameter 'store'
-		sharedstore.ExtractGINParameterStore,
+		store.ExtractGINParameterStore,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Store
@@ -47,7 +47,7 @@ func GetStoreObjects(c *gin.Context) {
 			roles := []uint32{orm.Role(orm.CATEGORY_STORE|orm.SUBCATEGORY_OBJECT, orm.FUNCTION_LIST)}
 
 			// Initialize Request
-			sharedstore.GroupStoreRequestInitialize(r, storeID, roles).
+			store.GroupStoreRequestInitialize(r, storeID, roles).
 				Run()
 		},
 		entry.ExtractGINParameterParentID,
@@ -111,7 +111,7 @@ func GetStoreObject(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameter 'store'
-		sharedstore.ExtractGINParameterStore,
+		store.ExtractGINParameterStore,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Store
@@ -122,11 +122,11 @@ func GetStoreObject(c *gin.Context) {
 
 			// Initialize Request
 			// TODO: Assert Store Unlocked
-			sharedstore.GroupStoreRequestInitialize(r, storeID, roles).
+			store.GroupStoreRequestInitialize(r, storeID, roles).
 				Run()
 		},
 		// Assert Store is Open
-		sharedstore.AssertStoreOpen,
+		store.AssertStoreOpen,
 		// Extract Required Parameters
 		entry.ExtractGINParameterEntryID,
 		entry.AssertNotRootFolder,
@@ -145,7 +145,7 @@ func GetStoreObject(c *gin.Context) {
 				r.Abort(4998 /* TODO: Error [Unknown Object Type] */, nil)
 			}
 		},
-		// Extend and Save Store Sesstion //
+		// Extend and Save Store Session //
 		session.ExtendStoreSession,
 		session.SessionStoreSave,
 		session.SaveSession, // Update Session Cookie
@@ -163,7 +163,7 @@ func PostStoreObjectJSON(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameter 'store'
-		sharedstore.ExtractGINParameterStore,
+		store.ExtractGINParameterStore,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Store
@@ -174,11 +174,11 @@ func PostStoreObjectJSON(c *gin.Context) {
 
 			// Initialize Request
 			// TODO: Assert Store Unlocked
-			sharedstore.GroupStoreRequestInitialize(r, storeID, roles).
+			store.GroupStoreRequestInitialize(r, storeID, roles).
 				Run()
 		},
 		// Assert Store is Open
-		sharedstore.AssertStoreOpen,
+		store.AssertStoreOpen,
 		// Make sure parent Exists
 		entry.ExtractGINParameterParentID, // Extract Required Parameters
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -255,8 +255,23 @@ func PostStoreObjectJSON(c *gin.Context) {
 				return nil
 			})
 
+			// Object Template Values
+			vmap.Required("values", nil, func(v interface{}) (interface{}, error) {
+				if v == nil {
+					return nil, errors.New("Object Missing Values")
+				}
+
+				if _, ok := v.(map[string]interface{}); ok {
+					return v, nil
+				}
+				return nil, errors.New("Object has Invalid Values")
+			}, func(v interface{}) error {
+				t.SetValues(v.(map[string]interface{}))
+				return nil
+			})
+
 			// Object Title
-			vmap.Required("header.title", nil, func(v interface{}) (interface{}, error) {
+			vmap.Required("values.__title", nil, func(v interface{}) (interface{}, error) {
 				v, e := xjson.F_xToTrimmedString(v)
 				if e != nil {
 					return nil, e
@@ -270,21 +285,6 @@ func PostStoreObjectJSON(c *gin.Context) {
 			}, func(v interface{}) error {
 				o.SetTitle(v.(string))
 				t.SetTitle(v.(string))
-				return nil
-			})
-
-			// Object Template Values
-			vmap.Required("values", nil, func(v interface{}) (interface{}, error) {
-				if v == nil {
-					return nil, errors.New("Object Missing Values")
-				}
-
-				if _, ok := v.(map[string]interface{}); ok {
-					return v, nil
-				}
-				return nil, errors.New("Object has Invalid Values")
-			}, func(v interface{}) error {
-				t.SetValues(v.(map[string]interface{}))
 				return nil
 			})
 
@@ -314,7 +314,20 @@ func PostStoreObjectJSON(c *gin.Context) {
 			r.SetLocal("store-parent-id", pid)
 		},
 		entry.DBInsertStoreObject,
-		// Extend and Save Store Sesstion //
+		// Export Results //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			obj := r.MustGet("store-object").(*orm.StoreObject)
+
+			switch obj.Type() {
+			case orm.OBJECT_TYPE_FOLDER:
+				entry.ExportStoreObjectFolder(r, c)
+			case orm.OBJECT_TYPE_JSON:
+				entry.ExportStoreObjectJSON(r, c)
+			default:
+				r.Abort(4998 /* TODO: Error [Unknown Object Type] */, nil)
+			}
+		},
+		// Extend and Save Store Session //
 		session.ExtendStoreSession,
 		session.SessionStoreSave,
 		session.SaveSession, // Update Session Cookie
@@ -335,7 +348,7 @@ func PutStoreObjectJSON(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameter 'store'
-		sharedstore.ExtractGINParameterStore,
+		store.ExtractGINParameterStore,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Store
@@ -346,11 +359,11 @@ func PutStoreObjectJSON(c *gin.Context) {
 
 			// Initialize Request
 			// TODO: Assert Store Unlocked
-			sharedstore.GroupStoreRequestInitialize(r, storeID, roles).
+			store.GroupStoreRequestInitialize(r, storeID, roles).
 				Run()
 		},
 		// Assert Store is Open
-		sharedstore.AssertStoreOpen,
+		store.AssertStoreOpen,
 		// Extract Parent ID
 		entry.ExtractGINParameterParentID,
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -391,6 +404,7 @@ func PutStoreObjectJSON(c *gin.Context) {
 			m := r.MustGet("request-json").(xjson.T_xMap)
 			vmap := xjson.S_xJSONMap{Source: m}
 
+			// TODO: Can't update Template Name (But Can update Template Version)
 			// Template Name
 			vmap.Required("template.name", nil, func(v interface{}) (interface{}, error) {
 				v, e := xjson.F_xToTrimmedString(v)
@@ -423,24 +437,6 @@ func PutStoreObjectJSON(c *gin.Context) {
 				return nil
 			})
 
-			// Object Title
-			vmap.Required("header.title", nil, func(v interface{}) (interface{}, error) {
-				v, e := xjson.F_xToTrimmedString(v)
-				if e != nil {
-					return nil, e
-				}
-
-				s := v.(string)
-				if s == "" {
-					return nil, errors.New("Object Missing Title")
-				}
-				return s, nil
-			}, func(v interface{}) error {
-				o.SetTitle(v.(string))
-				t.SetTitle(v.(string))
-				return nil
-			})
-
 			// Object Template Values
 			vmap.Required("values", nil, func(v interface{}) (interface{}, error) {
 				if v == nil {
@@ -453,6 +449,23 @@ func PutStoreObjectJSON(c *gin.Context) {
 				return nil, errors.New("Object has Invalid Values")
 			}, func(v interface{}) error {
 				t.SetValues(v.(map[string]interface{}))
+				return nil
+			})
+
+			// Object Title
+			vmap.Required("values.__title", nil, func(v interface{}) (interface{}, error) {
+				v, e := xjson.F_xToTrimmedString(v)
+				if e != nil {
+					return nil, e
+				}
+
+				s := v.(string)
+				if s == "" {
+					return nil, errors.New("Object Missing Title")
+				}
+				return s, nil
+			}, func(v interface{}) error {
+				o.SetTitle(v.(string))
 				return nil
 			})
 
@@ -488,7 +501,7 @@ func PutStoreObjectJSON(c *gin.Context) {
 				r.Abort(4998 /* TODO: Error [Unknown Object Type] */, nil)
 			}
 		},
-		// Extend and Save Store Sesstion //
+		// Extend and Save Store Session //
 		session.ExtendStoreSession,
 		session.SessionStoreSave,
 		session.SaveSession, // Update Session Cookie
@@ -506,7 +519,7 @@ func DeleteStoreObject(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
 		// Extract Route Parameter 'store'
-		sharedstore.ExtractGINParameterStore,
+		store.ExtractGINParameterStore,
 		// Validate Basic Request Settings
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Store
@@ -517,18 +530,18 @@ func DeleteStoreObject(c *gin.Context) {
 
 			// Initialize Request
 			// TODO: Assert Store Unlocked
-			sharedstore.GroupStoreRequestInitialize(r, storeID, roles).
+			store.GroupStoreRequestInitialize(r, storeID, roles).
 				Run()
 		},
 		// Assert Store is Open
-		sharedstore.AssertStoreOpen,
+		store.AssertStoreOpen,
 		// Extract Required Parameters
 		entry.ExtractGINParameterEntryID,
 		entry.AssertNotRootFolder,
 		entry.DBGetStoreObjectByID,
 		entry.DBDeleteStoreObject,
 		entry.ExportStoreObjectRegistry,
-		// Extend and Save Store Sesstion //
+		// Extend and Save Store Session //
 		session.ExtendStoreSession,
 		session.SessionStoreSave,
 		session.SaveSession,

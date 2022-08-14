@@ -1,4 +1,3 @@
-// cSpell:ignore bson, paulo ferreira
 package orm
 
 /*
@@ -154,7 +153,7 @@ func (o *StoreTemplateObject) DecryptObject(key []byte, cbs []byte) error {
 		return errors.New("Encrypted Object too big")
 	}
 
-	// Decypted Bytes is JSON String
+	// Decrypted Bytes is JSON String
 	decrypted, e := toPlainBytes(key, cbs)
 	if e != nil {
 		return e
@@ -173,20 +172,11 @@ func (o *StoreTemplateObject) MarshalJSON() ([]byte, error) {
 		Version: o.version,
 	}
 
-	// Header Information
-	h := &struct {
-		Title string `json:"title"`
-	}{
-		Title: o.title,
-	}
-
 	return json.Marshal(&struct {
 		Template interface{} `json:"template"`
-		Header   interface{} `json:"header"`
 		Values   interface{} `json:"values"`
 	}{
 		Template: t,
-		Header:   h,
 		Values:   o.values,
 	})
 }
@@ -221,21 +211,17 @@ func (o *StoreTemplateObject) UnmarshalJSON(b []byte) error {
 		return e
 	}
 
-	// Extract Header Information
-	h := m["header"]
-	if h == nil {
-		return errors.New("JSON Missing 'header' structure")
-	}
-
-	e = o.extractHeader(h.(map[string]interface{}))
-	if e != nil {
-		return e
-	}
-
 	// Extract Values
 	v := m["values"]
-	if v != nil {
-		o.values = v.(map[string]interface{})
+	if v == nil {
+		return errors.New("JSON Missing 'values' structure")
+	}
+	o.values = v.(map[string]interface{})
+
+	// Extract Header Properties
+	e = o.extractHeaderProps()
+	if e != nil {
+		return e
 	}
 
 	return nil
@@ -275,11 +261,11 @@ func (o *StoreTemplateObject) extractTemplate(t map[string]interface{}) error {
 	return nil
 }
 
-func (o *StoreTemplateObject) extractHeader(h map[string]interface{}) error {
+func (o *StoreTemplateObject) extractHeaderProps() error {
 	// Extract Template Name
-	t := h["title"]
+	t := o.values["__title"]
 	if t == nil {
-		return errors.New("JSON Missing 'header.title'")
+		return errors.New("JSON Missing '__title'")
 	}
 
 	if title, ok := t.(string); ok {
@@ -288,7 +274,7 @@ func (o *StoreTemplateObject) extractHeader(h map[string]interface{}) error {
 			return e
 		}
 	} else {
-		return errors.New("JSON 'header.title' is not an non-empty string")
+		return errors.New("JSON '__title' is not an non-empty string")
 	}
 
 	return nil
