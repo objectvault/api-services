@@ -11,6 +11,7 @@ package entry
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore objs
 import (
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"

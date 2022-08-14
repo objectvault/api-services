@@ -275,7 +275,7 @@ func QueryStoreParentObjects(db *sql.DB, store uint32, parent uint32, q query.TQ
 	}
 
 	// DEBUG: Print SQL
-	fmt.Print(s.String())
+	fmt.Println(s.String())
 
 	// Execute Query
 	e = s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
@@ -599,7 +599,7 @@ func (o *StoreObject) Flush(db sqlf.Executor, force bool) error {
 				To(&id).
 				QueryRowAndClose(context.TODO(), db)
 
-			// Error Occured?
+			// Error Occurred?
 			if e == nil { // NO: Set Object ID
 				o.id = id
 			}
