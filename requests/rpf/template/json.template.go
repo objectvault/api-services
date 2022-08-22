@@ -42,8 +42,10 @@ func (o *FullTemplateToJSON) MarshalJSON() ([]byte, error) {
 	wrappedModel.Set("fields.__title.type", "string", false)
 	wrappedModel.Set("fields.__title.settings.max-length", 40, false)
 	wrappedModel.Set("fields.__title.settings.required", true, false)
-	wrappedModel.Set("fields.__title.settings.trim", true, false)
-	wrappedModel.Set("fields.__title.settings.allow-spaces", true, false)
+	wrappedModel.Set("fields.__title.checks.allow-empty", false, false)
+	wrappedModel.Set("fields.__title.transforms.trim", true, false)
+	wrappedModel.Set("fields.__title.transforms.single-space-between", true, false)
+	wrappedModel.Set("fields.__title.transforms.null-on-empty", true, false)
 
 	return json.Marshal(&struct {
 		Name        string `json:"name"`
