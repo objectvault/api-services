@@ -16,8 +16,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/objectvault/api-services/maps"
 	"github.com/objectvault/api-services/orm"
+	"github.com/objectvault/common/maps"
 )
 
 type FullTemplateToJSON struct {

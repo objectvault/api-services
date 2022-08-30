@@ -20,8 +20,8 @@ import (
 
 	"github.com/gofrs/uuid"
 
-	"github.com/objectvault/api-services/maps"
 	"github.com/objectvault/api-services/orm/mysql"
+	"github.com/objectvault/common/maps"
 	"github.com/pjacferreira/sqlf"
 )
 
