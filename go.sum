@@ -123,6 +123,8 @@ github.com/objectvault/queue-interface v0.0.3 h1:lmd7PkinaHqNEJM8wD70hVqg+d97TrX
 github.com/objectvault/queue-interface v0.0.3/go.mod h1:Gkrm8iTO9cpjqnn4PLW0DK53WuH5E4DzcKh7aSP8ISQ=
 github.com/objectvault/queue-interface v0.0.4 h1:vMh7YerHG3rSYwwczpy+Bp0l0gBm/vhB+FLbZAtlT3M=
 github.com/objectvault/queue-interface v0.0.4/go.mod h1:DRblH/fW4zgMA7VbI3C+Q8kb3sIsJaF6bvZUwVLlXQc=
+github.com/objectvault/queue-interface v0.0.5 h1:nVfyIEv6dSxkUVohUEMu+crKPLHJh96nqC6d6rRFb60=
+github.com/objectvault/queue-interface v0.0.5/go.mod h1:MGeKlHm5lqCols4tgVEgldm8swKpEKlwhk9IIyKeKyM=
 github.com/pelletier/go-toml/v2 v2.0.1/go.mod h1:r9LEWfGN8R5k0VXJ+0BkIe7MYkRdwZOjgMj2KwnJFUo=
 github.com/pelletier/go-toml/v2 v2.0.2 h1:+jQXlF3scKIcSEKkdHzXhCTDLPFi5r1wnK6yPS+49Gw=
 github.com/pelletier/go-toml/v2 v2.0.2/go.mod h1:MovirKjgVRESsAvNZlAjtFwV867yGuwRkXbG66OzopI=

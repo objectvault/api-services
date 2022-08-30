@@ -23,8 +23,8 @@ func CreateActionMessage(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// Initialize Action Message
-	// msg.SetParameters(oa.Parameters().Map())
-	// msg.SetProperties(oa.Properties().Map())
+	msg.SetParameters(oa.Parameters().Map())
+	msg.SetProperties(oa.Properties().Map())
 
 	// Save Activation
 	r.Set("queue-message", msg)

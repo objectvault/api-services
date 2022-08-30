@@ -14,7 +14,7 @@ require (
 	github.com/objectvault/common v0.0.2 // indirect
 	github.com/objectvault/filter-parser v0.0.3
 	github.com/objectvault/goginrpf v0.0.7
-	github.com/objectvault/queue-interface v0.0.4 // indirect
+	github.com/objectvault/queue-interface v0.0.5 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
 	github.com/pjacferreira/sqlf v1.1.2-pf
 	github.com/streadway/amqp v1.0.0 // indirect

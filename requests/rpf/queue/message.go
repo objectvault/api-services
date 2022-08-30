@@ -18,15 +18,15 @@ func CreateInvitationMessage(r rpf.GINProcessor, c *gin.Context) {
 	o := r.MustGet("registry-org").(*orm.OrgRegistry)
 
 	// DEFAULT: Organization Invitation
-	template := "invite-org"
+	ot := "organization"
 
 	// Is invitation for a store?
 	if common.IsObjectOfType(i.Object(), common.OTYPE_STORE) { // YES
-		template = "invite-store"
+		ot = "store"
 	}
 
 	// Create Email Message
-	msg, err := messages.NewInviteMessage(template, i.UID())
+	msg, err := messages.NewInviteMessage(ot, i.UID())
 	if err != nil { // Failed: Abort
 		r.Abort(5920, nil)
 		return
@@ -34,7 +34,7 @@ func CreateInvitationMessage(r rpf.GINProcessor, c *gin.Context) {
 
 	// Set Message Parameters
 	msg.SetTo(i.InviteeEmail())
-	msg.SetAtUser(r.MustGet("from-user-email").(string))
+	msg.SetByEmail(r.MustGet("from-user-email").(string))
 	msg.SetByUser(r.MustGet("from-user-name").(string))
 	msg.SetMessage(i.Message())
 	msg.SetObjectName(o.Name())
@@ -70,7 +70,7 @@ func InvitationToAction(r rpf.GINProcessor, c *gin.Context) {
 
 	// Set Message Parameters
 	msg.SetTo(i.InviteeEmail())
-	msg.SetAtUser(r.MustGet("from-user-email").(string))
+	msg.SetByEmail(r.MustGet("from-user-email").(string))
 	msg.SetByUser(r.MustGet("from-user-name").(string))
 	msg.SetMessage(i.Message())
 	msg.SetObjectName(o.Name())
