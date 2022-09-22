@@ -103,6 +103,8 @@ github.com/objectvault/common v0.0.1 h1:pc2stnB0AYyJ+KoQvGSqmh8b/5XbeSEP9qbxBUwm
 github.com/objectvault/common v0.0.1/go.mod h1:gd4F9OyEIm5Lz1N3emoXbEO+7ggKNkXrNG7AYv3KFUE=
 github.com/objectvault/common v0.0.2 h1:NYJzf2KI5fs7LEQ3l4a/ZMQkmEkitGctgaOdOdIYIL8=
 github.com/objectvault/common v0.0.2/go.mod h1:gd4F9OyEIm5Lz1N3emoXbEO+7ggKNkXrNG7AYv3KFUE=
+github.com/objectvault/common v0.0.3 h1:pLVo/pzjTmsLs/VExDAZiXFI+wZ6nCWTK2eWEwU8v/M=
+github.com/objectvault/common v0.0.3/go.mod h1:gd4F9OyEIm5Lz1N3emoXbEO+7ggKNkXrNG7AYv3KFUE=
 github.com/objectvault/filter-parser v0.0.1 h1:Vbb5EGE9F+Q1jIgm/pdPfM9qSxJCgmo5bzlRDIRp9uM=
 github.com/objectvault/filter-parser v0.0.1/go.mod h1:d9jMPcH6ia6/sfvAlLG3GZlKes35XErNXrgr7Mkb88s=
 github.com/objectvault/filter-parser v0.0.3 h1:IXjzAaDqLsdhJhylg4bzLiN6pupr5Hm+jYfvliACB9g=
@@ -125,6 +127,12 @@ github.com/objectvault/queue-interface v0.0.4 h1:vMh7YerHG3rSYwwczpy+Bp0l0gBm/vh
 github.com/objectvault/queue-interface v0.0.4/go.mod h1:DRblH/fW4zgMA7VbI3C+Q8kb3sIsJaF6bvZUwVLlXQc=
 github.com/objectvault/queue-interface v0.0.5 h1:nVfyIEv6dSxkUVohUEMu+crKPLHJh96nqC6d6rRFb60=
 github.com/objectvault/queue-interface v0.0.5/go.mod h1:MGeKlHm5lqCols4tgVEgldm8swKpEKlwhk9IIyKeKyM=
+github.com/objectvault/queue-interface v0.0.6 h1:CHHt2sF0POylSVb5eIrGnlAhzLp+GjBcgZD4EBVRX1E=
+github.com/objectvault/queue-interface v0.0.6/go.mod h1:SlDTVoDi42GKXH7pkNkB/Q0CcJZx1LJfBjpwhwxxRR0=
+github.com/objectvault/queue-interface v0.0.7 h1:c3pW1KsbCeI+ZfInJzQQ9JXtGTtt+usr00htgHerDGY=
+github.com/objectvault/queue-interface v0.0.7/go.mod h1:SlDTVoDi42GKXH7pkNkB/Q0CcJZx1LJfBjpwhwxxRR0=
+github.com/objectvault/queue-interface v0.0.8 h1:NySUwz3bmh1fh6tiTUdgwK/+hBMK4ojne3kOiPL87Ys=
+github.com/objectvault/queue-interface v0.0.8/go.mod h1:SlDTVoDi42GKXH7pkNkB/Q0CcJZx1LJfBjpwhwxxRR0=
 github.com/pelletier/go-toml/v2 v2.0.1/go.mod h1:r9LEWfGN8R5k0VXJ+0BkIe7MYkRdwZOjgMj2KwnJFUo=
 github.com/pelletier/go-toml/v2 v2.0.2 h1:+jQXlF3scKIcSEKkdHzXhCTDLPFi5r1wnK6yPS+49Gw=
 github.com/pelletier/go-toml/v2 v2.0.2/go.mod h1:MovirKjgVRESsAvNZlAjtFwV867yGuwRkXbG66OzopI=
