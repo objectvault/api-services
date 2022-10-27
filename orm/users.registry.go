@@ -463,6 +463,17 @@ func (o *UserRegistry) UpdateRegistry(u *User) error {
 	return nil
 }
 
+func (o *UserRegistry) UpdatePassword(u *User) error {
+	// Update User Password Hash
+	o.ciphertext = u.ciphertext
+
+	if !o.IsNew() {
+		o.dirty = true
+	}
+
+	return nil
+}
+
 func (o *UserRegistry) TestPassword(password string) bool {
 	// Convert USer Password to HASH
 	hasher := sha256.Sum256([]byte(password))
@@ -528,7 +539,7 @@ func (o *UserRegistry) Flush(db sqlf.Executor, force bool) error {
 			Set("email", o.email).
 			Set("state", o.state)
 
-		if len(o.ciphertext) == 0 {
+		if len(o.ciphertext) > 0 {
 			s.Set("ciphertext", o.ciphertext)
 		}
 
