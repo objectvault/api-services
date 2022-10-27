@@ -11,12 +11,19 @@ package me
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore objs, vmap, xjson
+
 import (
+	"errors"
+	"fmt"
+
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/user"
+	"github.com/objectvault/api-services/requests/rpf/utils"
+	"github.com/objectvault/api-services/xjson"
 
 	rpf "github.com/objectvault/goginrpf"
 
@@ -78,6 +85,110 @@ func DeleteMe(c *gin.Context) {
 			r.Abort(5999, nil)
 		},
 	}
+
+	// Start Request Processing
+	request.Run()
+}
+
+func ChangePassword(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("POST.ME.PASSWORD", c, 1000, shared.JSONResponse)
+
+	// SESSION: We have an active session for user that is not blocked
+	session.AddinActiveUserSession(request, func(o string) interface{} {
+		if o == "check-user-unlocked" {
+			return true
+		}
+
+		return nil
+	})
+
+	// Request Process //
+	request.Append(
+		// GET JSON Body //
+		shared.RequestExtractJSON,
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Extract and Validate JSON Message
+			m := r.MustGet("request-json").(xjson.T_xMap)
+			vmap := xjson.S_xJSONMap{Source: m}
+
+			// Current Password Hash
+			vmap.Required("current", nil, func(v interface{}) (interface{}, error) {
+				v, e := xjson.F_xToTrimmedString(v)
+				if e != nil {
+					return nil, e
+				}
+
+				s := v.(string)
+				if !utils.IsValidPasswordHash(s) {
+					return nil, errors.New("SYSTEM ERROR: Invalid Current Password")
+				}
+				return s, nil
+			}, func(v interface{}) error {
+				r.Set("hash", v.(string))
+				return nil
+			})
+
+			// Current Password Hash
+			vmap.Required("new", nil, func(v interface{}) (interface{}, error) {
+				v, e := xjson.F_xToTrimmedString(v)
+				if e != nil {
+					return nil, e
+				}
+
+				s := v.(string)
+				if !utils.IsValidPasswordHash(s) {
+					return nil, errors.New("SYSTEM ERROR: Invalid New Password")
+				}
+				return s, nil
+			}, func(v interface{}) error {
+				r.Set("new-hash", v.(string))
+				return nil
+			})
+
+			// Did we have an Error Processing the Map?
+			if vmap.Error != nil {
+				fmt.Println(vmap.Error)
+				fmt.Println(vmap.StringSrc())
+				r.Abort(5202, nil)
+				return
+			}
+		},
+		user.AssertCredentials, // See if User Password Correct
+		user.DBGetUserByID,     // GET User Object
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Hashes
+			hash := r.MustGet("hash").(string)
+			newHash := r.MustGet("new-hash").(string)
+
+			// Update User Password
+			u := r.MustGet("user").(*orm.User)
+			e := u.UpdateHash(hash, newHash)
+			if e != nil {
+				r.Abort(5400, nil)
+				return
+			}
+
+			// Update User Registry Password
+			ur := r.MustGet("registry-user").(*orm.UserRegistry)
+			e = ur.UpdatePassword(u)
+			if e != nil {
+				r.Abort(5400, nil)
+				return
+			}
+
+			// Set Modifier
+			e = u.SetModifier(ur.ID())
+			if e != nil {
+				r.Abort(5900, nil)
+			}
+		},
+		user.DBUserUpdate,
+		user.DBRegistryUserUpdate,
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()

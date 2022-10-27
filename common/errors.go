@@ -184,6 +184,9 @@ func codesServerErrors(code int) (int, string) {
 		return http.StatusInternalServerError, "Failed Connecting to Queue Server"
 	case 5303:
 		return http.StatusInternalServerError, "General Request Error"
+	// 5400 - 5499 : Object Related Errors
+	case 5400:
+		return http.StatusInternalServerError, "Failed to Modify Password"
 	// 5900 - 5999 : Unexpected Server Errors
 	case 5900: // Session Error
 		return http.StatusInternalServerError, "Unexpected Server Error"

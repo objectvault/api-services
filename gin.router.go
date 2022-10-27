@@ -314,6 +314,9 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			self.PUT("", pkgme.PutMe)
 			self.DELETE("", pkgme.DeleteMe)
 
+			// PASSWORD Change
+			self.POST("/password", pkgme.ChangePassword)
+
 			// LINKS
 			self.GET("/objects", pkgme.GetMyObjects)                       // IMPLEMENTED
 			self.GET("/objects/:object", pkgme.GetMyObject)                // IMPLEMENTED
