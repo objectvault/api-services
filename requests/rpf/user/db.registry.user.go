@@ -202,7 +202,7 @@ func DBRegisterUser(r rpf.GINProcessor, c *gin.Context) {
 
 func DBRegistryUserUpdate(r rpf.GINProcessor, c *gin.Context) {
 	// Get User Registry Entry
-	e := r.MustGet("user").(*orm.UserRegistry)
+	e := r.MustGet("registry-user").(*orm.UserRegistry)
 
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
