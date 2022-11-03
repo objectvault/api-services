@@ -85,7 +85,7 @@ func DBRegistryObjectUserFind(r rpf.GINProcessor, c *gin.Context) {
 	DBRegistryObjectUserFindOrNil(r, c)
 
 	if r.Aborted() || !r.HasLocal("registry-object-user") {
-		r.Abort(5998, nil) // TODO: Error [User not Registered with Organization]
+		r.Abort(4101, nil) // TODO: Error [User not Registered with Object]
 		return
 	}
 }
@@ -159,7 +159,7 @@ func DBRegistryOrgUserFind(r rpf.GINProcessor, c *gin.Context) {
 	DBRegistryObjectUserFindOrNil(r, c)
 
 	if r.Aborted() || !r.HasLocal("registry-object-user") {
-		r.Abort(5998, nil) // TODO: Error [User not Registered with Organization]
+		r.Abort(4101, nil) // TODO: Error [User not Registered with Organization]
 		return
 	}
 }
@@ -168,7 +168,7 @@ func DBRegisterUserWithOrg(r rpf.GINProcessor, c *gin.Context) {
 	// Get Organization Global ID
 	org_id := r.MustGet("org-id").(uint64)
 
-	// Get User Informtaion
+	// Get User Information
 	user := r.MustGet("registry-user").(*orm.UserRegistry)
 
 	// Create ORG Entry //
