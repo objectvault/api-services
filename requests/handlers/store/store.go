@@ -41,8 +41,6 @@ func GetStore(c *gin.Context) {
 	// Base Validation for Store Request
 	store.AddinGroupValidateStoreRequest(request, func(o string) interface{} {
 		switch o {
-		case "check-not-admin":
-			return true
 		case "check-user-unlocked":
 			return true
 		case "check-user-roles":
