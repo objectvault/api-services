@@ -80,7 +80,7 @@ func AssertNotSystemAdmin(r rpf.GINProcessor, c *gin.Context) {
 		r.Abort(3998 /* TODO: ERROR MESSAGE */, nil)
 		return
 	}
-	// ELSE: Admnin User Logged In (Continue)
+	// ELSE: Admin User Logged In (Continue)
 }
 
 func AssertIfSelf(r rpf.GINProcessor, c *gin.Context) {

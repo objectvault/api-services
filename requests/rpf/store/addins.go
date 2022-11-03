@@ -32,11 +32,6 @@ func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbac
 		DBGetRegistryStoreUser, // FIND User by Searching Store User Registry
 	)
 
-	// OPTION: Check if user is unblocked? (DEFAULT: Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-user-unlocked", true).(bool) {
-		g.Append(AssertStoreUserUnblocked) // Make sure user is Unblocked
-	}
-
 	/* NOTES:
 	 * Store are Children of Organizations.
 	 * So given only the Store ID how do we get the Organization?
