@@ -125,6 +125,9 @@ func DBRegistryUserFindByID(r rpf.GINProcessor, c *gin.Context) {
 }
 
 func DBRegistryUserFindByEmailOrNil(r rpf.GINProcessor, c *gin.Context) {
+	// Clear Existing Value for "registry-user"
+	r.Unset("registry-user")
+
 	// Get User Identifier
 	email := r.MustGet("user-email").(string)
 

@@ -114,9 +114,9 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 		// INVITATION : NO SESSION REQUIRED //
 		invitation := v1.Group("/invitation")
 		{
-			invitation.POST("/accept/:uid", pkginvites.PostInvitationAccept)
-			invitation.GET("/decline/:uid", pkginvites.GetInvitationDecline)
-			invitation.GET("/invite/:uid", pkginvites.GetNoSessionInviteInfo)
+			invitation.GET("/:uid", pkginvites.InvitationNoSessionInfo)
+			invitation.POST("/:uid", pkginvites.InvitationAccept)
+			invitation.DELETE("/:uid", pkginvites.InvitationDecline)
 		}
 
 		// INVITATION MANAGEMENT : SESSION REQUIRED //

@@ -25,6 +25,8 @@ func AddinNoExistingUserRegistration(g rpf.GINGroupProcessor, opts shared.TAddin
 		func(r rpf.GINProcessor, c *gin.Context) {
 			i := r.MustGet("invitation").(*orm.Invitation)
 			r.SetLocal("user-email", i.InviteeEmail())
+			// Save Invitee Information
+			r.SetLocal("invitee-registry-user", r.Get("registry-user"))
 		},
 		user.DBRegistryUserFindByEmailOrNil,
 		func(r rpf.GINProcessor, c *gin.Context) {

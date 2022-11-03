@@ -415,9 +415,9 @@ func doAcceptStoreInvite(r rpf.GINProcessor, c *gin.Context) {
 	group.Run()
 }
 
-func PostInvitationAccept(c *gin.Context) {
+func InvitationAccept(c *gin.Context) {
 	// Create Request
-	request := rpf.RootProcessor("POST.INVITATION.ACCEPT", c, 1000, shared.JSONResponse)
+	request := rpf.RootProcessor("POST.INVITATION", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
@@ -461,9 +461,9 @@ func PostInvitationAccept(c *gin.Context) {
 	request.Run()
 }
 
-func GetInvitationDecline(c *gin.Context) {
+func InvitationDecline(c *gin.Context) {
 	// Create Request
-	request := rpf.RootProcessor("GET.INVITATION.DECLINE", c, 1000, shared.JSONResponse)
+	request := rpf.RootProcessor("DELETE.INVITATION", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{
@@ -479,9 +479,9 @@ func GetInvitationDecline(c *gin.Context) {
 	request.Run()
 }
 
-func GetNoSessionInviteInfo(c *gin.Context) {
+func InvitationNoSessionInfo(c *gin.Context) {
 	// Create Request
-	request := rpf.RootProcessor("GET.INVITATION.INFO", c, 1000, shared.JSONResponse)
+	request := rpf.RootProcessor("GET.INVITATION", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{

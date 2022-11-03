@@ -270,7 +270,7 @@ func (o *Invitation) SetExpiration(t time.Time) error {
 func (o *Invitation) SetExpiresIn(days uint16) error {
 	// Have DB Connection?
 	if days == 0 { // NO: Abort
-		return errors.New("Numer of days should be > 0")
+		return errors.New("Number of days should be > 0")
 	}
 
 	now := time.Now()
@@ -396,14 +396,14 @@ func (o *Invitation) Flush(db sqlf.Executor, force bool) error {
 
 		_, e = s.Exec(context.TODO(), db)
 
-		// Error Occured?
+		// Error Occurred?
 		if e == nil { // NO: Get Last Insert ID
 			var id uint32
 			e = sqlf.Select("LAST_INSERT_ID()").
 				To(&id).
 				QueryRowAndClose(context.TODO(), db)
 
-			// Error Occured?
+			// Error Occurred?
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}
