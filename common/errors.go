@@ -116,7 +116,7 @@ func codesObjectErrors(code int) (int, string) {
 	case 4011: // Email Registered
 		return http.StatusBadRequest, "Email already registered"
 	case 4012: // User <--> Object Registration Exists
-		return http.StatusBadRequest, "User already regsitered with object"
+		return http.StatusBadRequest, "User already registered with object"
 	// 4100 - 4199 : Organization Related Errors
 	case 4100: // Organization Does not Exist
 		return http.StatusBadRequest, "Organization does not exist"
