@@ -106,7 +106,7 @@ func PostCreateStore(c *gin.Context) {
 		shared.RequestExtractJSON,
 		// Verify User Credentials //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Extract and Validat Post Parameters
+			// Extract and Validate Post Parameters
 			m := r.MustGet("request-json").(xjson.T_xMap)
 			vmap := xjson.S_xJSONMap{Source: m}
 
@@ -150,8 +150,8 @@ func PostCreateStore(c *gin.Context) {
 		store.DBInsertStore,
 		org.DBRegisterStoreWithOrg,
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Set Default Store Administration Roles
-			roles := []uint32{0x301FFFF, 0x302FFFF, 0x303FFFF, 0x304FFFF, 0x306FFFF}
+			// Set Default ALL Roles
+			roles := []uint32{0x301FFFF, 0x302FFFF, 0x303FFFF, 0x304FFFF, 0x306FFFF, 0x307FFFF, 0x308FFFF}
 			r.SetLocal("register-roles", roles)
 			r.SetLocal("register-as-admin", true)
 		},
