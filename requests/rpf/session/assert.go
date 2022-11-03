@@ -12,6 +12,8 @@ package session
  */
 
 import (
+	"github.com/objectvault/api-services/common"
+
 	rpf "github.com/objectvault/goginrpf"
 
 	"github.com/gin-contrib/sessions"
@@ -63,8 +65,8 @@ func AssertSystemAdmin(r rpf.GINProcessor, c *gin.Context) {
 
 	// Do we have a Admin Session?
 	id := session.Get("user-id")
-	if id == nil || id != 0 { // NO: Not Admin Session - Abort
-		r.Abort(3998 /* TODO: ERROR MESSAGE */, nil)
+	if id == nil || id != common.SYSTEM_ADMINISTRATOR { // NO: Not Admin Session - Abort
+		r.Abort(4101 /* ACCESS DENIED */, nil)
 		return
 	}
 	// ELSE: Admin User Logged In (Continue)
@@ -76,8 +78,8 @@ func AssertNotSystemAdmin(r rpf.GINProcessor, c *gin.Context) {
 
 	// Do we have a Admin Session?
 	id := session.Get("user-id")
-	if id != nil && id == 0 { // NO: Admin Logged In - Abort
-		r.Abort(3998 /* TODO: ERROR MESSAGE */, nil)
+	if id != nil && id == common.SYSTEM_ADMINISTRATOR { // NO: Admin Logged In - Abort
+		r.Abort(4101 /* ACCESS DENIED */, nil)
 		return
 	}
 	// ELSE: Admin User Logged In (Continue)

@@ -12,6 +12,7 @@ package user
  */
 
 import (
+	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
 
 	rpf "github.com/objectvault/goginrpf"
@@ -23,7 +24,7 @@ func AssertNotSystemUserRegistry(r rpf.GINProcessor, c *gin.Context) {
 	registry := r.MustGet("registry-user").(*orm.UserRegistry)
 
 	// Is System User?
-	if registry.ID() == 0 { // YES: Abort
+	if registry.ID() == common.SYSTEM_ADMINISTRATOR { // YES: Abort
 		r.Abort(4101, nil)
 		return
 	}
