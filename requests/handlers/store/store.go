@@ -11,9 +11,12 @@ package store
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore skey
+
 import (
 	"fmt"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/org"
@@ -24,7 +27,6 @@ import (
 
 	rpf "github.com/objectvault/goginrpf"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
@@ -33,22 +35,27 @@ func GetStore(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("GET.STORE", c, 1000, shared.JSONResponse)
 
+	// Required Roles : Store Access with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_STORE|orm.SUBCATEGORY_STORE, orm.FUNCTION_READ)}
+
+	// Base Validation for Store Request
+	store.AddinGroupValidateStoreRequest(request, func(o string) interface{} {
+		switch o {
+		case "check-not-admin":
+			return true
+		case "check-user-unlocked":
+			return true
+		case "check-user-roles":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		// Extract Route Parameter 'store'
-		store.ExtractGINParameterStore,
-		// Validate Basic Request Settings
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Get Request Store
-			storeID := r.MustGet("request-store").(uint64)
-
-			// Required Roles : Organization Access with Read Function
-			roles := []uint32{orm.Role(orm.CATEGORY_STORE|orm.SUBCATEGORY_STORE, orm.FUNCTION_READ)}
-
-			// Initialize Request
-			store.GroupStoreRequestInitialize(r, storeID, roles).
-				Run()
-		},
+	request.Append(
 		// GET Store Entry
 		store.DBGetStoreByID,
 		// GET Store's Organization Entry
@@ -59,8 +66,10 @@ func GetStore(c *gin.Context) {
 		org.DBRegistryOrgStoreFind,
 		// Export Results //
 		store.ExportStoreFull,
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -128,7 +137,7 @@ func IsStoreOpen(c *gin.Context) {
 				func(r rpf.ProcessorIF, c *gin.Context) {
 					request.Append(
 						func(r rpf.GINProcessor, c *gin.Context) {
-							// Extend Store Session (BY: 1 Minute). This avoids situations in which the next request might fail if we were close to experation period
+							// Extend Store Session (BY: 1 Minute). This avoids situations in which the next request might fail if we were close to expiration period
 							ss.Extend(1)
 
 							// Save Session and Key
