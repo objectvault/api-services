@@ -90,7 +90,7 @@ func AddinRequestParamsOrg(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
 
 // Global initial organization request validation
 func AddinGroupValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
-	// OPTION: Request ORganization System Organization? (DEFAULT: NO)
+	// OPTION: Request Organization System Organization? (DEFAULT: NO)
 	if shared.HelperAddinOptionsCallback(opts, "system-organization", false).(bool) {
 		// ORGANIZATION for Request is System Organization //
 		g.Append(
