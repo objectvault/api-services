@@ -41,7 +41,7 @@ type Organization struct {
 
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
 
-func GetOrgID(db sqlf.Executor, alias string) (uint32, error) {
+func GetShardOrgID(db sqlf.Executor, alias string) (uint32, error) {
 	// Query Results Values
 	var id uint32
 
@@ -339,7 +339,7 @@ func (o *Organization) Flush(db sqlf.Executor, force bool) error {
 		// Error Occurred?
 		if e == nil { // NO: Get New Org's ID
 			// Error Occurred?
-			id, e := GetOrgID(db, o.alias)
+			id, e := GetShardOrgID(db, o.alias)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}

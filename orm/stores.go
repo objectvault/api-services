@@ -42,7 +42,7 @@ type Store struct {
 
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
 
-func GetStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error) {
+func GetShardStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error) {
 	// Query Results Values
 	var id uint32
 
@@ -370,7 +370,7 @@ func (o *Store) Flush(db sqlf.Executor, force bool) error {
 		// Error Occurred?
 		if e == nil { // NO: Get New Store's ID
 			// Error Occurred?
-			id, e := GetStoreID(db, *o.org, o.alias)
+			id, e := GetShardStoreID(db, *o.org, o.alias)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}
