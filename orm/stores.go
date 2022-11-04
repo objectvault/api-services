@@ -11,6 +11,8 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore storename
+
 import (
 	"context"
 	"database/sql"
@@ -39,6 +41,26 @@ type Store struct {
 }
 
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
+
+func GetStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error) {
+	// Query Results Values
+	var id uint32
+
+	// Create SQL Statement
+	e := sqlf.From("stores").
+		Select("id").To(&id).
+		Where("id_org = ?", org).
+		Where("storename = ?", alias).
+		QueryRowAndClose(context.TODO(), db)
+
+		// Error Executing Query?
+	if e != nil && e != sql.ErrNoRows { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return id, nil
+}
 
 // IsDirty Have the Object Properties Changed since last Serialization?
 func (o *Store) IsDirty() bool {
@@ -343,16 +365,12 @@ func (o *Store) Flush(db sqlf.Executor, force bool) error {
 			Set("storename", o.alias).
 			Set("name", o.name).
 			Set("creator", o.creator).
-			Exec(context.TODO(), db)
+			ExecAndClose(context.TODO(), db)
 
 		// Error Occurred?
-		if e == nil { // NO: Get Last Insert ID
-			var id uint32
-			e = sqlf.Select("LAST_INSERT_ID()").
-				To(&id).
-				QueryRowAndClose(context.TODO(), db)
-
+		if e == nil { // NO: Get New Store's ID
 			// Error Occurred?
+			id, e := GetStoreID(db, *o.org, o.alias)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}
