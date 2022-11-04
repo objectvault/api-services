@@ -25,23 +25,6 @@ import (
 	"github.com/pjacferreira/sqlf"
 )
 
-// Store Object Definition
-type Store struct {
-	dirty          bool       // Is Entry Dirty?
-	updateRegistry bool       // Do we need to Update the Registry?
-	stored         bool       // Is Entry Stored in Database
-	id             *uint32    // LOCAL Store ID
-	org            *uint64    // Global Organization ID store Belongs To
-	alias          string     // Store Alias
-	name           *string    // Store Name (Can be NULL)
-	creator        *uint64    // Global User ID of Creator
-	created        *time.Time // Created TimeStamp
-	modifier       *uint64    // Global User ID of Last Modifier
-	modified       *time.Time // Modification TimeStamp
-}
-
-// TODO Implement Delete (Both From Within an Entry and Without a Structure)
-
 func GetShardStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error) {
 	// Query Results Values
 	var id uint32
@@ -61,6 +44,23 @@ func GetShardStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error)
 
 	return id, nil
 }
+
+// Store Object Definition
+type Store struct {
+	dirty          bool       // Is Entry Dirty?
+	updateRegistry bool       // Do we need to Update the Registry?
+	stored         bool       // Is Entry Stored in Database
+	id             *uint32    // LOCAL Store ID
+	org            *uint64    // Global Organization ID store Belongs To
+	alias          string     // Store Alias
+	name           *string    // Store Name (Can be NULL)
+	creator        *uint64    // Global User ID of Creator
+	created        *time.Time // Created TimeStamp
+	modifier       *uint64    // Global User ID of Last Modifier
+	modified       *time.Time // Modification TimeStamp
+}
+
+// TODO Implement Delete (Both From Within an Entry and Without a Structure)
 
 // IsDirty Have the Object Properties Changed since last Serialization?
 func (o *Store) IsDirty() bool {
@@ -157,7 +157,7 @@ func (o *Store) ByAlias(db *sql.DB, alias string) error {
 
 	// Is Incoming Parameter Valid?
 	if alias == "" { // NO
-		return errors.New("Missing Required Parameter 'orgname'")
+		return errors.New("Missing Required Parameter 'storename'")
 	}
 
 	// Execute Query

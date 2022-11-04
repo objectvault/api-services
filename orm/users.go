@@ -11,6 +11,8 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore cypherbytes, ciphertext, lastpwdchg, lastpwdchange, maxpwddays
+
 import (
 	"context"
 	"crypto/sha256"
@@ -46,10 +48,27 @@ func toPlainBytes(hash []byte, cipherbytes []byte) ([]byte, error) {
 	return plainbytes, nil
 }
 
-/* TODO Evaluate Security Risk
- * Is it better to save the Users Password Salted in the Database
- * or have the transmitted password be salted?
- * Current Solution unsalted password in database, salted request password
+func GetShardUserID(db sqlf.Executor, email string) (uint32, error) {
+	// Query Results Values
+	var id uint32
+
+	// Create SQL Statement
+	e := sqlf.From("users").
+		Select("id").To(&id).
+		Where("email = ?", email).
+		QueryRowAndClose(context.TODO(), db)
+
+		// Error Executing Query?
+	if e != nil && e != sql.ErrNoRows { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return id, nil
+}
+
+/* NOTE: User Password has can not be salted as it used as the basis
+ * for the decryption keys, and you can't retrieve the unsalted hash
  */
 
 // User Profile
@@ -618,45 +637,33 @@ func (o *User) Flush(db sqlf.Executor, force bool) error {
 	// Is New Entry?
 	var e error
 	if o.IsNew() { // YES: Create
-
-		// Is Creator Set
+		// Is Creator Set?
 		if o.creator == nil {
 			return errors.New("Creation User not Set")
 		}
 
-		// Is Password Hash Set
+		// Is Password Hash Set?
 		if len(o.ciphertext) == 0 {
 			return errors.New("Password Hash not Set")
 		}
 
 		// CREATE USER RECORD: Execute Insert
-		s := sqlf.InsertInto("users").
+		_, e := sqlf.InsertInto("users").
 			Set("name", o.name).
 			Set("username", o.username).
 			Set("email", o.email).
 			Set("ciphertext", o.ciphertext).
-			Set("creator", o.creator)
+			Set("creator", o.creator).
+			ExecAndClose(context.TODO(), db)
 
-		_, e = s.Exec(context.TODO(), db)
-
-		// Error Occured?
-		if e != nil { // YES: Abort
-			return e
+		// Error Occurred?
+		if e == nil { // NO: Get New User's ID
+			// Error Occurred?
+			id, e := GetShardUserID(db, o.email)
+			if e == nil { // NO: Set Object ID
+				o.id = &id
+			}
 		}
-
-		// Get Last Insert ID (the Local User ID)
-		var id uint32
-		e = sqlf.Select("LAST_INSERT_ID()").
-			To(&id).
-			QueryRow(context.TODO(), db)
-
-		// Error Occured?
-		if e != nil { // YES: Abort
-			return e
-		}
-
-		// Set User ID
-		o.id = &id
 	} else { // NO: Update
 		if o.id == nil {
 			return errors.New("User ID not Set")

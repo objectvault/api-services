@@ -25,22 +25,6 @@ import (
 	"github.com/pjacferreira/sqlf"
 )
 
-// Organization Object Definition
-type Organization struct {
-	dirty          bool       // Is Entry Dirty?
-	updateRegistry bool       // Do we need to Update the Registry?
-	stored         bool       // Is Entry Stored in Database
-	id             *uint32    // LOCAL Organization ID
-	alias          string     // Organization Alias
-	name           *string    // Organization Name (Can be NULL)
-	creator        *uint64    // Global User ID of Creator
-	created        *time.Time // Created TimeStamp
-	modifier       *uint64    // Global User ID of Last Modifier
-	modified       *time.Time // Modification TimeStamp
-}
-
-// TODO Implement Delete (Both From Within an Entry and Without a Structure)
-
 func GetShardOrgID(db sqlf.Executor, alias string) (uint32, error) {
 	// Query Results Values
 	var id uint32
@@ -59,6 +43,22 @@ func GetShardOrgID(db sqlf.Executor, alias string) (uint32, error) {
 
 	return id, nil
 }
+
+// Organization Object Definition
+type Organization struct {
+	dirty          bool       // Is Entry Dirty?
+	updateRegistry bool       // Do we need to Update the Registry?
+	stored         bool       // Is Entry Stored in Database
+	id             *uint32    // LOCAL Organization ID
+	alias          string     // Organization Alias
+	name           *string    // Organization Name (Can be NULL)
+	creator        *uint64    // Global User ID of Creator
+	created        *time.Time // Created TimeStamp
+	modifier       *uint64    // Global User ID of Last Modifier
+	modified       *time.Time // Modification TimeStamp
+}
+
+// TODO Implement Delete (Both From Within an Entry and Without a Structure)
 
 // IsDirty Have the Object Properties Changed since last Serialization?
 func (o *Organization) IsDirty() bool {
@@ -325,6 +325,7 @@ func (o *Organization) Flush(db sqlf.Executor, force bool) error {
 	// Is New Entry?
 	var e error
 	if o.IsNew() { // YES: Create
+		// Is Creator Set?
 		if o.creator == nil {
 			return errors.New("Creation User not Set")
 		}
