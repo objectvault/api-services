@@ -16,6 +16,7 @@ import (
 
 	rpf "github.com/objectvault/goginrpf"
 
+	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/org"
 	"github.com/objectvault/api-services/requests/rpf/session"
@@ -25,12 +26,55 @@ import (
 
 // Service Handlers //
 
+// List Active System Templates
+func ListSystemTemplates(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("GET.ORG.TEMPLATES.SYSTEM", c, 1000, shared.JSONResponse)
+
+	// Required Roles : Organization Object Template Access with List Function
+	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_TEMPLATE, orm.FUNCTION_LIST)}
+
+	// Basic Request Validate
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		if o == "roles" { // Roles to Verify
+			return roles
+		}
+
+		return nil
+	})
+
+	// ORGANIZATION for Request is System Organization //
+	request.Append(
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// List comes from System Organization
+			r.SetLocal("system-org", common.SYSTEM_ORGANIZATION)
+		})
+
+	// Addin Get Template List for Object and Export
+	template.AddinGetObjectTemplateList(request, func(o string) interface{} {
+		switch o {
+		case "source-object": // Source ID Parameter
+			return "system-org"
+		case "export": // Export List
+			return true
+		default: // Use Default
+			return nil
+		}
+	})
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
+}
+
 // List Active Organization Templates
 func ListTemplates(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("GET.ORG.TEMPLATES", c, 1000, shared.JSONResponse)
 
-	// Required Roles : SYSTEM Organization Object Template Access with List Function
+	// Required Roles : Organization Object Template Access with List Function
 	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_TEMPLATE, orm.FUNCTION_LIST)}
 
 	// Basic Request Validate
@@ -124,7 +168,7 @@ func AddTemplateToOrg(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("POST.STORE.TEMPLATE", c, 1000, shared.JSONResponse)
 
-	// Required Roles : SYSTEM Organization Object Template Access with Create Function
+	// Required Roles : Organization Object Template Access with Create Function
 	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_TEMPLATE, orm.FUNCTION_CREATE)}
 
 	// Basic Request Validate
@@ -166,7 +210,7 @@ func DeleteTemplateFromOrg(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("DELETE.ORG.TEMPLATE", c, 1000, shared.JSONResponse)
 
-	// Required Roles : SYSTEM Organization Object Template Access with Read Function
+	// Required Roles : Organization Object Template Access with Read Function
 	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_TEMPLATE, orm.FUNCTION_DELETE)}
 
 	// Basic Request Validate

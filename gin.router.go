@@ -244,6 +244,7 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			organization.PUT("/user/:user/roles", pkgorg.PutOrgUserRoles)
 
 			// ORGANIZATION TEMPLATE ACCESS (LIST / GET)
+			organization.GET("/templates/system", pkgorg.ListSystemTemplates)
 			organization.GET("/templates", pkgorg.ListTemplates)
 			organization.GET("/template/:template", pkgorg.GetTemplate)
 			organization.POST("/template/:template", pkgorg.AddTemplateToOrg)
