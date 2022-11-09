@@ -11,7 +11,10 @@ package main
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore keypairs, staticcheck
+
 import (
+	"crypto/sha256"
 	"log"
 	"strings"
 
@@ -37,26 +40,24 @@ func InitializeSessionStore(r *gin.Engine) bool {
 	cookieID := common.ConfigProperty(cookieSettings, "id", "__sid")
 
 	// Secure Cookie HASH Key (SALT for Authentication)
-	keyHASH := common.ConfigProperty(cookieSettings, "hash", nil)
-	if keyHASH == nil {
-		keyHASH = "**HASH-KEY-REQUIRED**"
-		log.Println("[InitializeSessionStore] No Key Set for Cookie Hashing")
+	secret := common.ConfigProperty(cookieSettings, "secret", nil)
+	if secret == nil {
+		secret = "**HASH-KEY-REQUIRED**"
+		log.Println("[InitializeSessionStore] No Key Set for Cookie Security")
 	}
-	hash := []byte(keyHASH.(string))
+	// Create Keypairs for Gorilla Cookies secure cookie
+	// SEE: Links to See how keypairs us used (Basically half the array is used for authentication)
+	// half is used for encryption)
+	// session store: https://github.com/gorilla/sessions/blob/master/store.go
+	// secure cookie: https://github.com/gorilla/securecookie/blob/master/securecookie.go
 
-	// Secure Cookie Encryption String
-	keyEncryption := common.ConfigProperty(cookieSettings, "encryption", nil)
-	var secure []byte
-	if keyEncryption != nil {
-		secure = []byte(keyEncryption.(string))
-	} else {
-		log.Println("[InitializeSessionStore] No Key Set for Cookie Encryption")
-	}
+	// Convert Secret to a Hash for More Security
+	keypairs := sha256.Sum256([]byte(secret.(string)))
 
 	// Create Store based on Type
 	switch storeType {
 	case "cookie":
-		store = cookie.NewStore(hash, secure)
+		store = cookie.NewStore(keypairs[:])
 		options := common.ConfigProperty(cookieSettings, "options", nil).(map[string]interface{})
 
 		// Set Defaults Cookie Options
