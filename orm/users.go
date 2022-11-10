@@ -59,7 +59,7 @@ func GetShardUserID(db sqlf.Executor, email string) (uint32, error) {
 		QueryRowAndClose(context.TODO(), db)
 
 		// Error Executing Query?
-	if e != nil && e != sql.ErrNoRows { // YES
+	if e != nil { // YES
 		log.Printf("query error: %v\n", e)
 		return 0, e
 	}
@@ -659,7 +659,8 @@ func (o *User) Flush(db sqlf.Executor, force bool) error {
 		// Error Occurred?
 		if e == nil { // NO: Get New User's ID
 			// Error Occurred?
-			id, e := GetShardUserID(db, o.email)
+			var id uint32
+			id, e = GetShardUserID(db, o.email)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}

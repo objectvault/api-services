@@ -36,7 +36,7 @@ func GetShardOrgID(db sqlf.Executor, alias string) (uint32, error) {
 		QueryRowAndClose(context.TODO(), db)
 
 		// Error Executing Query?
-	if e != nil && e != sql.ErrNoRows { // YES
+	if e != nil { // YES
 		log.Printf("query error: %v\n", e)
 		return 0, e
 	}
@@ -340,7 +340,8 @@ func (o *Organization) Flush(db sqlf.Executor, force bool) error {
 		// Error Occurred?
 		if e == nil { // NO: Get New Org's ID
 			// Error Occurred?
-			id, e := GetShardOrgID(db, o.alias)
+			var id uint32
+			id, e = GetShardOrgID(db, o.alias)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}

@@ -25,6 +25,25 @@ import (
 	"github.com/pjacferreira/sqlf"
 )
 
+func GetShardInviteID(db sqlf.Executor, uid string) (uint32, error) {
+	// Query Results Values
+	var id uint32
+
+	// Create SQL Statement
+	e := sqlf.From("invites").
+		Select("id").To(&id).
+		Where("uid = ?", uid).
+		QueryRowAndClose(context.TODO(), db)
+
+		// Error Executing Query?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return id, nil
+}
+
 // Invitation Object Definition
 type Invitation struct {
 	dirty         bool       // Is Entry Dirty?
@@ -394,16 +413,13 @@ func (o *Invitation) Flush(db sqlf.Executor, force bool) error {
 			s.Set("message", o.message)
 		}
 
-		_, e = s.Exec(context.TODO(), db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 
 		// Error Occurred?
-		if e == nil { // NO: Get Last Insert ID
-			var id uint32
-			e = sqlf.Select("LAST_INSERT_ID()").
-				To(&id).
-				QueryRowAndClose(context.TODO(), db)
-
+		if e == nil { // NO: Get New Org's ID
 			// Error Occurred?
+			var id uint32
+			id, e = GetShardInviteID(db, o.uid)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}
