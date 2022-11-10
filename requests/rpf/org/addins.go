@@ -49,7 +49,10 @@ func BaseValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackO
 		g.Append(
 			object.DBRegistryOrgUserFind,
 			object.AssertObjectUserUnblocked,
-		) // Make sure user is Unblocked
+			func(r rpf.GINProcessor, c *gin.Context) {
+				r.Set("registry-object-user-session", r.MustGet("registry-object-user"))
+			},
+		)
 	}
 
 	// OPTION: Check user's org roles? (DEFAULT: Check)

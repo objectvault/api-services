@@ -12,6 +12,7 @@ package object
  */
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/orm/query"
 	"github.com/objectvault/api-services/requests/rpf/shared"
@@ -83,15 +84,41 @@ func ExportRegistryObjUserFull(r rpf.GINProcessor, c *gin.Context) {
 }
 
 func ExportRegistryObjUserBasic(r rpf.GINProcessor, c *gin.Context) {
-	// Get Organization Information
+	// Get User Organization Information
 	registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
-	// Transform for Export
-	d := &BasicRegObjectUserToJSON{
-		Registry: registry,
+	// Get Session Store
+	session := sessions.Default(c)
+
+	// Extract User Information from Session
+	id := session.Get("user-id").(uint64)
+
+	// Allow self to export roles (by default)
+	exportRoles := registry.User() == id
+
+	// Need to go deeper?
+	if !exportRoles {
+		// Do we have user session organization registry?
+		v := r.Get("registry-object-user-session")
+		if v != nil { // YES: See if we has Roles Read Permissions
+			rou := v.(*orm.ObjectUserRegistry)
+			r := rou.GetSubCategoryRole(orm.SUBCATEGORY_ROLES)
+			exportRoles = r != 0 && orm.RoleMatchFunctions(orm.FUNCTION_READ, r)
+		}
 	}
 
-	r.SetResponseDataValue("user", d)
+	// Should we export roles?
+	if exportRoles { // YES
+		d := &BasicRegObjectUserToJSON{
+			Registry: registry,
+		}
+		r.SetResponseDataValue("user", d)
+	} else { // NO
+		d := &NoRolesRegObjectUserToJSON{
+			Registry: registry,
+		}
+		r.SetResponseDataValue("user", d)
+	}
 }
 
 // USER <--> OBJECT //
