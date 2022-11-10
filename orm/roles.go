@@ -21,6 +21,8 @@ type I_Roles interface {
 	IsRolesEmpty() bool
 	HasRole(role uint32) bool
 	HasExactRole(role uint32) bool
+	GetCategoryRole(category uint16) uint32
+	GetSubCategoryRole(subcategory uint16) uint32
 	AddRole(role uint32) bool
 	AddRoles(roles []uint32) bool
 	RemoveRole(role uint32) bool
@@ -83,6 +85,10 @@ func RoleCategory(role uint32) uint16 {
 	return uint16((role & 0xFFFF0000) >> 16)
 }
 
+func RoleSubCategory(role uint32) uint16 {
+	return uint16((role & 0x00FF0000) >> 16)
+}
+
 func RoleFunctions(role uint32) uint16 {
 	return uint16(role & 0x0000FFFF)
 }
@@ -90,6 +96,11 @@ func RoleFunctions(role uint32) uint16 {
 func RoleMatchCategory(category uint16, role uint32) bool {
 	ct := RoleCategory(role)
 	return category == ct
+}
+
+func RoleMatchSubCategory(subcategory uint16, role uint32) bool {
+	ct := RoleSubCategory(role)
+	return (subcategory & 0x00FF) == ct
 }
 
 func RoleMatchFunctions(from, to uint32) bool {
@@ -147,6 +158,26 @@ func (o *S_Roles) HasRole(role uint32) bool {
 	return false
 }
 
+func (o *S_Roles) HasCategory(category uint16) bool {
+	for _, r := range o.roles {
+		if RoleMatchCategory(category, r) {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (o *S_Roles) HasSubCategory(subcategory uint16) bool {
+	for _, r := range o.roles {
+		if RoleMatchSubCategory(subcategory, r) {
+			return true
+		}
+	}
+
+	return false
+}
+
 func (o *S_Roles) HasExactRole(role uint32) bool {
 	for _, r := range o.roles {
 		if RoleExactMatch(role, r) {
@@ -179,6 +210,26 @@ func (o *S_Roles) AddRole(role uint32) bool {
 	}
 
 	return false
+}
+
+func (o *S_Roles) GetCategoryRole(category uint16) uint32 {
+	for _, r := range o.roles {
+		if RoleMatchCategory(category, r) {
+			return r
+		}
+	}
+
+	return 0
+}
+
+func (o *S_Roles) GetSubCategoryRole(subcategory uint16) uint32 {
+	for _, r := range o.roles {
+		if RoleMatchSubCategory(subcategory, r) {
+			return r
+		}
+	}
+
+	return 0
 }
 
 func (o *S_Roles) AddRoles(roles []uint32) bool {
