@@ -11,6 +11,8 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore objtype
+
 import (
 	"context"
 	"database/sql"
@@ -24,13 +26,33 @@ import (
 	"github.com/pjacferreira/sqlf"
 )
 
+func GetShardObjectID(db sqlf.Executor, store uint32, title string) (uint32, error) {
+	// Query Results Values
+	var id uint32
+
+	// Create SQL Statement
+	e := sqlf.From("objects").
+		Select("id").To(&id).
+		Where("id_store = ?", store).
+		Where("title = ?", title).
+		QueryRowAndClose(context.TODO(), db)
+
+		// Error Executing Query?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return id, nil
+}
+
 // STORE Object Definition
 type StoreObject struct {
 	dirty    bool       // Is Entry Dirty?
 	stored   bool       // Is Entry Stored in Database
 	store    uint32     // KEY: SHARD Local Store ID
 	parent   uint32     // KEY: Parent Object ID (0 == ROOT)
-	id       uint32     // KEY: SHARD UNIQUE Local Object ID
+	id       *uint32    // KEY: SHARD UNIQUE Local Object ID
 	title    string     // Object Title
 	objtype  uint8      // Object Type
 	object   []byte     // Encrypted Store Object
@@ -52,7 +74,7 @@ func ChildObjectFromParent(p *StoreObject) (*StoreObject, error) {
 	// Create Child Object
 	o := &StoreObject{
 		store:  p.store,
-		parent: p.id,
+		parent: p.parent,
 	}
 
 	return o, nil
@@ -178,11 +200,14 @@ func QueryStoreObjects(db *sql.DB, store uint32, query string) ([]StoreObject, e
 
 	// Execute Query
 	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
+		// Save Object ID (New Memory Area)
+		object_id := id
+
 		o := StoreObject{
 			stored:  true,
 			store:   store,
 			parent:  parent,
-			id:      id,
+			id:      &object_id,
 			title:   title,
 			objtype: objtype,
 		}
@@ -279,11 +304,14 @@ func QueryStoreParentObjects(db *sql.DB, store uint32, parent uint32, q query.TQ
 
 	// Execute Query
 	e = s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
+		// Save Object ID (New Memory Area)
+		object_id := id
+
 		o := StoreObject{
 			stored:  true,
 			store:   store,
 			parent:  parent,
-			id:      id,
+			id:      &object_id,
 			title:   title,
 			objtype: objtype,
 		}
@@ -350,7 +378,7 @@ func (o *StoreObject) ByID(db *sql.DB, id uint32) error {
 
 	// Did we retrieve an entry?
 	if e == nil { // YES
-		o.id = id
+		o.id = &id
 
 		if object.Valid {
 			s := object.String
@@ -405,7 +433,7 @@ func (o *StoreObject) ByKey(db *sql.DB, store uint32, id uint32) error {
 	// Did we retrieve an entry?
 	if e == nil { // YES
 		o.store = store
-		o.id = id
+		o.id = &id
 
 		if object.Valid {
 			s := object.String
@@ -438,7 +466,11 @@ func (o *StoreObject) Parent() uint32 {
 }
 
 func (o *StoreObject) ID() uint32 {
-	return o.id
+	if o.id == nil {
+		return 0
+	}
+
+	return *o.id
 }
 
 func (o *StoreObject) Title() string {
@@ -581,7 +613,6 @@ func (o *StoreObject) Flush(db sqlf.Executor, force bool) error {
 			InsertInto("objects").
 			Set("id_store", o.store).
 			Set("id_parent", o.parent).
-			Set("id", o.id).
 			Set("title", o.title).
 			Set("type", o.objtype).
 			Set("creator", o.creator)
@@ -590,18 +621,15 @@ func (o *StoreObject) Flush(db sqlf.Executor, force bool) error {
 			s.Set("object", o.object)
 		}
 
-		_, e = s.Exec(context.TODO(), db)
+		_, e = s.ExecAndClose(context.TODO(), db)
 
-		// Error Occured?
-		if e == nil { // NO: Get Last Insert ID
-			var id uint32
-			e = sqlf.Select("LAST_INSERT_ID()").
-				To(&id).
-				QueryRowAndClose(context.TODO(), db)
-
+		// Error Occurred?
+		if e == nil { // NO: Get New Org's ID
 			// Error Occurred?
+			var id uint32
+			id, e = GetShardObjectID(db, o.store, o.title)
 			if e == nil { // NO: Set Object ID
-				o.id = id
+				o.id = &id
 			}
 		}
 	} else { // NO: Update
@@ -649,7 +677,7 @@ func (o *StoreObject) isValidForUpdate() string {
 	if o.store == 0 {
 		return "Object Missing Parent Store ID"
 	}
-	if o.id == 0 {
+	if o.id == nil {
 		return "Object Missing ID"
 	}
 	if o.modifier == nil {
@@ -662,7 +690,7 @@ func (o *StoreObject) reset() {
 	// Clean Entry
 	o.store = 0
 	o.parent = 0
-	o.id = 0
+	o.id = nil
 	o.title = ""
 	o.objtype = 0
 	o.object = nil
