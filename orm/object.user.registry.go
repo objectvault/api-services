@@ -11,6 +11,8 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore cypherbytes, ciphertext, plainbytes, userid
+
 import (
 	"context"
 	"crypto/sha256"
@@ -367,6 +369,19 @@ func (o *ObjectUserRegistry) IsReadOnly() bool {
 	return (o.state & 0x2) != 0
 }
 
+func (o *ObjectUserRegistry) IsRolesManager() bool {
+	// ROLES Manager Requires User Read/List/Update
+	r := o.roles.GetSubCategoryRole(SUBCATEGORY_USER)
+	b := RoleMatchFunctions(FUNCTION_READ|FUNCTION_LIST, r)
+
+	// Has Required User Permissions?
+	if b { // YES: See if has Required Roles Permissions
+		r = o.roles.GetSubCategoryRole(SUBCATEGORY_ROLES)
+		b = b && RoleMatchFunctions(FUNCTION_READ|FUNCTION_UPDATE, r)
+	}
+	return b
+}
+
 func (o *ObjectUserRegistry) State() uint16 {
 	return o.state
 }
@@ -494,12 +509,19 @@ func (o *ObjectUserRegistry) Flush(db sqlf.Executor, force bool) error {
 		if o.ciphertext != nil {
 			s.Set("ciphertext", o.ciphertext)
 		}
-
 	}
 
 	// Do we have Roles to Set?
 	if !o.IsRolesEmpty() { // YES
 		s.Set("roles", o.RolesToCSV())
+		if o.IsRolesManager() {
+			s.Set("role_mgr", 1)
+		} else {
+			s.Set("role_mgr", 0)
+		}
+	} else {
+		s.Set("roles", nil)
+		s.Set("role_mgr", 0)
 	}
 
 	// Execute Statement
