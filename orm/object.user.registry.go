@@ -306,6 +306,14 @@ func (o *ObjectUserRegistry) HasExactRole(role uint32) bool {
 	return o.roles.HasExactRole(role)
 }
 
+func (o *ObjectUserRegistry) GetCategoryRole(category uint16) uint32 {
+	return o.roles.GetCategoryRole(category)
+}
+
+func (o *ObjectUserRegistry) GetSubCategoryRole(subcategory uint16) uint32 {
+	return o.roles.GetSubCategoryRole(subcategory)
+}
+
 func (o *ObjectUserRegistry) AddRole(role uint32) bool {
 	modified := o.roles.AddRole(role)
 	o.dirty = o.dirty || modified

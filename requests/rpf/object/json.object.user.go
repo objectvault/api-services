@@ -19,7 +19,7 @@ import (
 	"github.com/objectvault/api-services/orm"
 )
 
-// ORGANIZATION USER //
+// OBJECT USER //
 type BasicRegObjectUserToJSON struct {
 	Registry *orm.ObjectUserRegistry
 }
@@ -41,6 +41,28 @@ func (o *BasicRegObjectUserToJSON) MarshalJSON() ([]byte, error) {
 		Alias:  o.Registry.UserName(),
 		State:  o.Registry.State(),
 		Roles:  o.Registry.RolesToCSV(),
+	})
+}
+
+type NoRolesRegObjectUserToJSON struct {
+	Registry *orm.ObjectUserRegistry
+}
+
+func (o *NoRolesRegObjectUserToJSON) MarshalJSON() ([]byte, error) {
+	if !o.Registry.IsValid() {
+		return nil, errors.New("Missing Required Structore Value [Entry]")
+	}
+
+	return json.Marshal(&struct {
+		Object string `json:"object"`
+		User   string `json:"user"`
+		Alias  string `json:"username"`
+		State  uint16 `json:"state"`
+	}{
+		Object: fmt.Sprintf(":%x", o.Registry.Object()),
+		User:   fmt.Sprintf(":%x", o.Registry.User()),
+		Alias:  o.Registry.UserName(),
+		State:  o.Registry.State(),
 	})
 }
 

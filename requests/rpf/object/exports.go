@@ -26,11 +26,24 @@ func ExportRegistryObjUsersList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entries
 	users := r.Get("registry-object-users").(query.TQueryResults)
 
+	exportRoles := false
+	user := r.Get("registry-object-user").(*orm.ObjectUserRegistry)
+	if user != nil {
+		r := user.GetSubCategoryRole(orm.SUBCATEGORY_ROLES)
+		exportRoles = r != 0 && orm.RoleMatchFunctions(orm.FUNCTION_READ, r)
+	}
+
 	list := &shared.ExportList{
 		List: users,
 		ValueMapper: func(v interface{}) interface{} {
-			return &BasicRegObjectUserToJSON{
-				Registry: v.(*orm.ObjectUserRegistry),
+			if exportRoles {
+				return &BasicRegObjectUserToJSON{
+					Registry: v.(*orm.ObjectUserRegistry),
+				}
+			} else {
+				return &NoRolesRegObjectUserToJSON{
+					Registry: v.(*orm.ObjectUserRegistry),
+				}
 			}
 		},
 		FieldMapper: func(f string) string {
