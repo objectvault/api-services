@@ -40,6 +40,12 @@ func CreateInvitationMessage(r rpf.GINProcessor, c *gin.Context) {
 	msg.SetObjectName(o.Name())
 	msg.SetExpiration(*i.Expiration())
 
+	// Is invitation for a store?
+	if common.IsObjectOfType(i.Object(), common.OTYPE_STORE) { // YES
+		s := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
+		msg.SetStoreName(s.StoreAlias())
+	}
+
 	// Save Activation
 	r.Set("queue-message", msg)
 }
