@@ -230,6 +230,11 @@ func GetStoreUser(c *gin.Context) {
 
 // TODO IMPLEMENT: DELETE User from Store
 func DeleteStoreUser(c *gin.Context) {
+	/* IMPLEMENTATION NOTE:
+	 * It shouldn't be possible to delete last user from store, since
+	 * the last user has to be, implicitly, the last role/invite manager
+	 */
+
 	// Create Request
 	request := rpf.RootProcessor("DELETE.STORE.USER", c, 1000, shared.JSONResponse)
 
@@ -251,10 +256,20 @@ func DeleteStoreUser(c *gin.Context) {
 	// Request Processing
 	request.Append(
 		/* REQUEST VALIDATION */
+		object.AssertNotLastUserRolesManager,
+		object.AssertNotLastUserInvitesManager,
 		func(r rpf.GINProcessor, c *gin.Context) {
-			r.Abort(5999, nil)
+			// Get Registry Object User Entry
+			entry := r.Get("registry-object-user").(*orm.ObjectUserRegistry)
+			r.Set("registry-user-id", entry.User())
+			r.Set("registry-object-id", entry.Object())
 		},
+		object.DBDeleteRegistryUserObject,
+		object.DBDeleteRegistryObjectUser,
 	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
