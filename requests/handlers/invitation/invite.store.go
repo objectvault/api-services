@@ -27,6 +27,7 @@ import (
 	"github.com/objectvault/api-services/requests/rpf/invitation"
 	"github.com/objectvault/api-services/requests/rpf/keys"
 	"github.com/objectvault/api-services/requests/rpf/object"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/store"
@@ -188,34 +189,16 @@ func CreateStoreInvitation(c *gin.Context) {
 			r.SetLocal("user-id", u.ID())
 		},
 		object.DBRegistryObjectUserFind,
+		// Make sure we don't have existing store invitation
+		invitation.AssertNoPendingInvitation,
 	)
 
-	// Make Sure Invitee is NOT Registered with Store
-	request.Append(
-		func(r rpf.GINProcessor, c *gin.Context) {
-			u := r.MustGet("registry-user").(*orm.UserRegistry)
-			i := r.MustGet("invitation").(*orm.Invitation)
-
-			// Find User Object Reqgistry
-			r.SetLocal("object-id", i.Object())
-			r.SetLocal("user-id", u.ID())
-
-			// TODO: Optimize if it's not needed don't save it
-			r.SetLocal("registry-organization-user", r.Get("registry-object-user"))
-			r.Unset("registry-object-user")
-		},
-		object.DBRegistryObjectUserFindOrNil,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			ou := r.Get("registry-object-user")
-			if ou != nil { // ABORT: User already registered with Object
-				r.Abort(4012, nil)
-			}
-		},
-		invitation.AssertNoPendingInvitation, // Make sure we don't an existing store invitation
-	)
+	// Test if Object User Registration Already Exists
+	object.AddinNoExistingUserRegistration(request, nil)
 
 	// Register Invitation
 	request.Append(
+		// (Re)Open Store Session
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// User Credentials
 			hash := r.MustGet("hash").(string)
@@ -250,6 +233,24 @@ func CreateStoreInvitation(c *gin.Context) {
 		session.SessionStoreSave,
 		// RESPONSE
 		invitation.ExportRegistryInv,
+	)
+
+	// Queue Invitation
+	request.Append(
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
+
+			// Get Session User's Email and Name for Invitation
+			r.SetLocal("from-user-email", session.Get("user-email"))
+			r.SetLocal("from-user-name", session.Get("user-name"))
+
+			// Message Queue
+			r.SetLocal("queue", "action:start")
+		},
+		queue.CreateInvitationMessage,
+		queue.SendQueueMessage,
 	)
 
 	// Save Session

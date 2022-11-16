@@ -166,6 +166,12 @@ func CreateOrgInvitation(c *gin.Context) {
 		// Register Invitation
 		invitation.DBInsertInvitation,
 		invitation.DBRegisterInvitation,
+		// RESPONSE //
+		invitation.ExportRegistryInv,
+	)
+
+	// Queue Invitation
+	request.Append(
 		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Session Store
@@ -180,8 +186,6 @@ func CreateOrgInvitation(c *gin.Context) {
 		},
 		queue.CreateInvitationMessage,
 		queue.SendQueueMessage,
-		// RESPONSE //
-		invitation.ExportRegistryInv,
 	)
 
 	// Save Session

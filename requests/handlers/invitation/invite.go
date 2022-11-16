@@ -11,6 +11,8 @@ package invitation
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore ASTAND, ASTEQ, OTYPE, vmap, xjson
+
 import (
 	"errors"
 	"fmt"
@@ -837,7 +839,7 @@ func DeleteInvite(c *gin.Context) {
 
 			// Request Process //
 			request.Append(
-				// Get Invitation Regsitry Entry
+				// Get Invitation Registry Entry
 				invitation.ExtractGINParameterInvitationID,
 				invitation.DBGetRegistryInvitationByID,
 				// Assert Invitation Meets Requirements
