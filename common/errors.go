@@ -115,22 +115,39 @@ func codesObjectErrors(code int) (int, string) {
 		return http.StatusBadRequest, "Alias already Exists"
 	case 4011: // Email Registered
 		return http.StatusBadRequest, "Email already registered"
-	case 4012: // User <--> Object Registration Exists
+	// 4050 - 4099 : Object User Related Errors
+	case 4050: // User <--> Object Registration Exists
 		return http.StatusBadRequest, "User already registered with object"
+	case 4051: // Store Does not Exist
+		return http.StatusBadRequest, "User not registered with object"
+	case 4052: // Action not Permitted
+		return http.StatusBadRequest, "Access Denied"
+	case 4053: // Store Access Blocked
+		return http.StatusBadRequest, "User Access Blocked"
+	case 4054: // User in Read Only
+		return http.StatusBadRequest, "User in Read Only Mode"
+	case 4060: // Trying to DELETE last Store USer
+		return http.StatusBadRequest, "Last Objects User"
+	case 4061: // Trying to DELETE last Roles Manager
+		return http.StatusBadRequest, "Last Objects Roles Manager"
+	case 4062: // Trying to DELETE last Invitation Manager
+		return http.StatusBadRequest, "Last Objects Invitation Manager"
 	// 4100 - 4199 : Organization Related Errors
 	case 4100: // Organization Does not Exist
 		return http.StatusBadRequest, "Organization does not exist"
 	case 4101: // Action not allowed
 		return http.StatusBadRequest, "Access Denied"
-	// 4200 - 4299 : User Activation Related Errors
-	case 4200: // Failed to Create User Activation Code
-		return http.StatusBadRequest, "Activation does not exist"
-	case 4201: // Activation Code is Invalid (serves for Expired Codes Too)
-		return http.StatusBadRequest, "Invalid Activation Code"
-	case 4202: // User Already Active
-		return http.StatusBadRequest, "User already activated!"
-	case 4203: // Failed to Create User Activation Code
-		return http.StatusBadRequest, "Failed to Create/Send Activation Code. Retry!"
+	// 4200 - 4249 : Store Related Errors
+	case 4200: // Store Does not Exist
+		return http.StatusBadRequest, "Store does not exist"
+	case 4201: // Action not Permitted
+		return http.StatusBadRequest, "Access Denied"
+	case 4202: // Store Has not been Opened
+		return http.StatusBadRequest, "Store is Closed"
+	case 4203: // Store Access Blocked
+		return http.StatusBadRequest, "Store Access Blocked"
+	case 4204: // Store Read Only
+		return http.StatusBadRequest, "Store Read Only Mode"
 	// 4300 - 4399 : Invitation Related Error
 	case 4300:
 		return http.StatusBadRequest, "Invitation Accept, requires Session by the invitee!"

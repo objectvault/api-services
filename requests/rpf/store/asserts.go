@@ -11,6 +11,8 @@ package store
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore skey
+
 import (
 	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
@@ -31,29 +33,15 @@ func AssertStoreUnblocked(r rpf.GINProcessor, c *gin.Context) {
 
 	// Is the Store Blocked?
 	if entry.IsBlocked() { // YES: Abort
-		r.Abort(4003, nil) // TODO: Specific Error
+		r.Abort(4203, nil) // TODO: Specific Error
 		return
 	}
 }
-
-/*
-func AssertStoreUserUnblocked(r rpf.GINProcessor, c *gin.Context) {
-	// Get Request Store's User Entry
-	entry := r.MustGet("registry-store-user").(*orm.ObjectUserRegistry)
-
-	// Is the User Blocked?
-	if entry.IsBlocked() { // YES: Can't Access Org Information
-		r.Abort(4001, nil)
-		return
-	}
-}
-*/
 
 func AssertStoreOpen(r rpf.GINProcessor, c *gin.Context) {
 	// Store ID
 	id := r.MustGet("store-id").(uint64)
 
-	// Get Request Store's User Entr
 	// Get Session Store
 	s := sessions.Default(c)
 
@@ -63,7 +51,7 @@ func AssertStoreOpen(r rpf.GINProcessor, c *gin.Context) {
 
 	// Does Store Key Exist in Session?
 	if key == nil { // NO
-		r.Abort(4998 /* TODO: ERROR [Store is not Open for User] */, nil)
+		r.Abort(4202, nil)
 		return
 	}
 
@@ -84,6 +72,7 @@ func AssertStoreOpen(r rpf.GINProcessor, c *gin.Context) {
 }
 
 // REGISTRY STORE <--> USER  //
+
 func AssertStoreUserUnblocked(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entry
 	r.SetLocal("registry-object-user", r.MustGet("registry-store-user"))
@@ -102,7 +91,8 @@ func AssertUserHasOneRoleInStore(r rpf.GINProcessor, c *gin.Context) {
 	object.AssertUserHasOneRoleInObject(r, c)
 }
 
-// ENTRIES //
+// STORE <--> OBJECTS //
+
 func AssertFolderObject(r rpf.GINProcessor, c *gin.Context) {
 	obj := r.MustGet("store-object").(*orm.StoreObject)
 
