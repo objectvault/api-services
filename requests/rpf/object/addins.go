@@ -41,7 +41,7 @@ func AddinNoExistingUserRegistration(g rpf.GINGroupProcessor, opts shared.TAddin
 						u := g.MustGet("registry-user").(*orm.UserRegistry)
 						i := g.MustGet("invitation").(*orm.Invitation)
 
-						// Find User Object Reqgistry
+						// Find User Object Registry
 						g.SetLocal("object-id", i.Object())
 						g.SetLocal("user-id", u.ID())
 

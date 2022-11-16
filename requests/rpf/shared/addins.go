@@ -20,7 +20,7 @@ import (
 type TAddinCallbackOptions func(string) interface{}
 
 func HelperAddinOptionsCallback(c TAddinCallbackOptions, opt string, d interface{}) interface{} {
-	// Do we have a vallback?
+	// Do we have a callback?
 	if c != nil { // YES: Request Option Value
 		v := c(opt)
 		// Is Option Value NIL

@@ -62,7 +62,7 @@ func AssertNoPendingInvitation(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	// Are there pending Inviations
+	// Are there any pending Invitations
 	dup, err := orm.HasPendingInvitation(db, i.Object(), i.InviteeEmail())
 	if err != nil { // UNKNOWN: Database Error
 		r.Abort(5100, nil)

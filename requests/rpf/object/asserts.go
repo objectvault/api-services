@@ -35,7 +35,7 @@ func AssertObjectUserAdmin(r rpf.GINProcessor, c *gin.Context) {
 	// Get Request Org's USer Entry
 	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
-	// Is Admin User in Ob ject?
+	// Is Admin User in Object?
 	if !entry.IsAdminUser() { // NO
 		r.Abort(5998, nil) // TODO: Specific Error
 		return
@@ -93,4 +93,72 @@ func AssertUserHasOneRoleInObject(r rpf.GINProcessor, c *gin.Context) {
 		r.Abort(5998, nil) // TODO: Choose Correct Error - User Doesn't Have Required Roles
 		return
 	}
+}
+
+func AssertNotLastUserRolesManager(r rpf.GINProcessor, c *gin.Context) {
+	// Get Registry Object User Entry
+	entry := r.Get("registry-object-user").(*orm.ObjectUserRegistry)
+
+	// Is Roles Manager?
+	if entry.IsRolesManager() {
+		// Object ID
+		oid := entry.Object()
+
+		// Get Database Connection Manager
+		dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+		// Able to Connect to Object Registry Shard
+		db, e := dbm.Connect(oid)
+		if e != nil { // ERROR: Database Error
+			r.Abort(5100, nil)
+			return
+		}
+
+		// Get Existing Roles Manager Count
+		count, e := orm.CountRegisteredObjectRoleManagers(db, oid)
+		if e != nil { // ERROR: Abort
+			r.Abort(5100, nil)
+			return
+		}
+
+		// Do we have more than one 1 Roles Manager?
+		if count <= 1 { // NO: Abort
+			r.Abort(4061, nil)
+		}
+	}
+	// ELSE: No Need to Check
+}
+
+func AssertNotLastUserInvitesManager(r rpf.GINProcessor, c *gin.Context) {
+	// Get Registry Object User Entry
+	entry := r.Get("registry-object-user").(*orm.ObjectUserRegistry)
+
+	// Is Invitation Manager?
+	if entry.IsInvitationManager() {
+		// Object ID
+		oid := entry.Object()
+
+		// Get Database Connection Manager
+		dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+		// Able to Connect to Object Registry Shard
+		db, e := dbm.Connect(oid)
+		if e != nil { // ERROR: Database Error
+			r.Abort(5100, nil)
+			return
+		}
+
+		// Get Existing Invitation Manager Count
+		count, e := orm.CountRegisteredObjectInviteManagers(db, oid)
+		if e != nil { // ERROR: Abort
+			r.Abort(5100, nil)
+			return
+		}
+
+		// Do we have more than one 1 Invitation Manager?
+		if count <= 1 { // NO: Abort
+			r.Abort(4061, nil)
+		}
+	}
+	// ELSE: No Need to Check
 }
