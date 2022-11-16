@@ -39,6 +39,29 @@ type ObjectUserRegistry struct {
 	ciphertext []byte  // Encrypted Store Key
 }
 
+func DeleteRegisteredObjectUser(db *sql.DB, object uint64, user uint64) (bool, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("registry_object_users").
+		Where("id_user = ? and id_object= ?", user, object)
+
+	// Execute Count
+	_, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+
+	/* IGNORE RESULT - Assume that if no error than entry deleted
+	  // How many rows deleted?
+		c, e := r.RowsAffected()
+		if e != nil { // YES
+			log.Printf("query error: %v\n", e)
+			return false, e
+		}
+	*/
+	return true, nil
+}
+
 func CountRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
@@ -62,6 +85,56 @@ func CountRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditi
 
 	// Execute Count
 	e = s.QueryRowAndClose(context.TODO(), db)
+
+	// Error Occurred?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return count, nil
+}
+
+func CountRegisteredObjectRoleManagers(db *sql.DB, object uint64) (uint64, error) {
+	// Query Results Values
+	var count uint64
+
+	// Create SQL Statement
+	s := sqlf.From("registry_object_users").
+		Select("COUNT(*)").To(&count).
+		Where("id_object = ?", object).
+		Where("mgr_Roles = ?", 1)
+
+	// DEBUG: Print SQL
+	fmt.Println(s.String())
+
+	// Execute Count
+	e := s.QueryRowAndClose(context.TODO(), db)
+
+	// Error Occurred?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return count, nil
+}
+
+func CountRegisteredObjectInviteManagers(db *sql.DB, object uint64) (uint64, error) {
+	// Query Results Values
+	var count uint64
+
+	// Create SQL Statement
+	s := sqlf.From("registry_object_users").
+		Select("COUNT(*)").To(&count).
+		Where("id_object = ?", object).
+		Where("mgr_invites = ?", 1)
+
+	// DEBUG: Print SQL
+	fmt.Println(s.String())
+
+	// Execute Count
+	e := s.QueryRowAndClose(context.TODO(), db)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -390,6 +463,19 @@ func (o *ObjectUserRegistry) IsRolesManager() bool {
 	return b
 }
 
+func (o *ObjectUserRegistry) IsInvitationManager() bool {
+	// ROLES Manager Requires User Read/List/Update
+	r := o.roles.GetSubCategoryRole(SUBCATEGORY_USER)
+	b := RoleMatchFunctions(FUNCTION_READ|FUNCTION_LIST, r)
+
+	// Has Required User Permissions?
+	if b { // YES: See if has Required Roles Permissions
+		r = o.roles.GetSubCategoryRole(SUBCATEGORY_INVITE)
+		b = b && RoleMatchFunctions(FUNCTION_READ|FUNCTION_CREATE|FUNCTION_DELETE, r)
+	}
+	return b
+}
+
 func (o *ObjectUserRegistry) State() uint16 {
 	return o.state
 }
@@ -522,14 +608,24 @@ func (o *ObjectUserRegistry) Flush(db sqlf.Executor, force bool) error {
 	// Do we have Roles to Set?
 	if !o.IsRolesEmpty() { // YES
 		s.Set("roles", o.RolesToCSV())
-		if o.IsRolesManager() {
-			s.Set("role_mgr", 1)
-		} else {
-			s.Set("role_mgr", 0)
+
+		// Has Permissions of a Roles Manager?
+		if o.IsRolesManager() { // YES
+			s.Set("mgr_roles", 1)
+		} else { // NO
+			s.Set("mgr_roles", 0)
 		}
-	} else {
+
+		// Has Permissions of an Invitation Manager?
+		if o.IsInvitationManager() { // YES
+			s.Set("mgr_invites", 1)
+		} else { // NO
+			s.Set("mgr_invites", 0)
+		}
+	} else { // Roles Empty
 		s.Set("roles", nil)
-		s.Set("role_mgr", 0)
+		s.Set("mgr_roles", 0)
+		s.Set("mgr_invites", 0)
 	}
 
 	// Execute Statement

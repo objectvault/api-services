@@ -26,7 +26,7 @@ func DBRegistryUserObjsList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	// Get Connection to User Registry
+	// Connect to User Shard
 	db, err := dbm.Connect(user_id)
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
@@ -57,7 +57,7 @@ func DBRegistryUserObjFindOrNil(r rpf.GINProcessor, c *gin.Context) {
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	// Get Connection to Users Org Registry
+	// Connect to User Shard
 	db, err := dbm.Connect(user)
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
@@ -97,7 +97,7 @@ func DBRegistryUserObjFlush(r rpf.GINProcessor, c *gin.Context) {
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	// Connect to Global Registry Shard
+	// Connect to User Shard
 	db, err := dbm.Connect(e.User())
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
@@ -155,4 +155,27 @@ func DBRegisterOrgWithUser(r rpf.GINProcessor, c *gin.Context) {
 
 	// Flush Entry
 	DBRegistryUserObjFlush(r, c)
+}
+
+func DBDeleteRegistryUserObject(r rpf.GINProcessor, c *gin.Context) {
+	// Get Entry Coordinate
+	uid := r.MustGet("registry-user-id").(uint64)
+	oid := r.MustGet("registry-object-id").(uint64)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Connect to User Registry Shard
+	db, e := dbm.Connect(uid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Delete Entry
+	_, e = orm.DeleteRegisteredUserObject(db, uid, oid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
 }

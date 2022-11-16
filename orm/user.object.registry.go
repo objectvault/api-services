@@ -35,6 +35,29 @@ type UserObjectRegistry struct {
 	favorite bool    // FLAG: Is Container Favorite
 }
 
+func DeleteRegisteredUserObject(db *sql.DB, user uint64, object uint64) (bool, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("registry_user_objects").
+		Where("id_user = ? and id_object= ?", user, object)
+
+	// Execute Count
+	_, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+
+	/* IGNORE RESULT - Assume that if no error than entry deleted
+	  // How many rows deleted?
+		c, e := r.RowsAffected()
+		if e != nil { // YES
+			log.Printf("query error: %v\n", e)
+			return 0, e
+		}
+	*/
+	return true, nil
+}
+
 func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
