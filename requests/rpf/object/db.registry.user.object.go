@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBRegistryUserObjsList(r rpf.GINProcessor, c *gin.Context) {
+func DBRegistryUserObjectsList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Required Parameters
 	user_id := r.MustGet("user-id").(uint64)
 
@@ -35,7 +35,7 @@ func DBRegistryUserObjsList(r rpf.GINProcessor, c *gin.Context) {
 
 	// List Registered User Orgs
 	q := r.MustGet("query-conditions").(*query.QueryConditions)
-	list, err := orm.QueryRegisteredUserObjects(db, user_id, q, true)
+	list, err := orm.UserObjectsQuery(db, user_id, q, true)
 
 	// Failed Retrieving User?
 	if err != nil { // YES: Database Error
@@ -173,7 +173,7 @@ func DBDeleteRegistryUserObject(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// Delete Entry
-	_, e = orm.DeleteRegisteredUserObject(db, uid, oid)
+	_, e = orm.UserObjectDelete(db, uid, oid)
 	if e != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return

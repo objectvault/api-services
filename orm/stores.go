@@ -25,7 +25,68 @@ import (
 	"github.com/pjacferreira/sqlf"
 )
 
-func GetShardStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error) {
+// Store Object Definition
+type Store struct {
+	dirty          bool       // Is Entry Dirty?
+	stored         bool       // Is Entry Stored in Database
+	updateRegistry bool       // Do we need to Update the Registry?
+	id             *uint32    // LOCAL Store ID
+	org            *uint64    // Global Organization ID store Belongs To
+	alias          string     // Store Alias
+	name           *string    // Store Name (Can be NULL)
+	creator        *uint64    // Global User ID of Creator
+	created        *time.Time // Created TimeStamp
+	modifier       *uint64    // Global User ID of Last Modifier
+	modified       *time.Time // Modification TimeStamp
+}
+
+func StoreMarkDeleted(db *sql.DB, user uint64, store uint32) (bool, error) {
+	// Create SQL Statement
+	s := sqlf.Update("stores").
+		Set("deleted", 1).
+		Set("modifier", user).
+		Where("id = ?", store)
+
+	// Execute
+	r, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+
+	// How many rows updated?
+	c, e := r.RowsAffected()
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+	return c > 0, nil
+}
+
+func StoreDelete(db *sql.DB, store uint32) (bool, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("stores").
+		Where("id = ?", store)
+
+	// Execute
+	_, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+
+	/* IGNORE RESULT - Assume that if no error than entry deleted
+	  // How many rows deleted?
+		c, e := r.RowsAffected()
+		if e != nil { // YES
+			log.Printf("query error: %v\n", e)
+			return 0, e
+		}
+	*/
+	return true, nil
+}
+
+func StoreGetLocalID(db sqlf.Executor, org uint64, alias string) (uint32, error) {
 	// Query Results Values
 	var id uint32
 
@@ -44,23 +105,6 @@ func GetShardStoreID(db sqlf.Executor, org uint64, alias string) (uint32, error)
 
 	return id, nil
 }
-
-// Store Object Definition
-type Store struct {
-	dirty          bool       // Is Entry Dirty?
-	updateRegistry bool       // Do we need to Update the Registry?
-	stored         bool       // Is Entry Stored in Database
-	id             *uint32    // LOCAL Store ID
-	org            *uint64    // Global Organization ID store Belongs To
-	alias          string     // Store Alias
-	name           *string    // Store Name (Can be NULL)
-	creator        *uint64    // Global User ID of Creator
-	created        *time.Time // Created TimeStamp
-	modifier       *uint64    // Global User ID of Last Modifier
-	modified       *time.Time // Modification TimeStamp
-}
-
-// TODO Implement Delete (Both From Within an Entry and Without a Structure)
 
 // IsDirty Have the Object Properties Changed since last Serialization?
 func (o *Store) IsDirty() bool {
@@ -371,7 +415,7 @@ func (o *Store) Flush(db sqlf.Executor, force bool) error {
 		if e == nil { // NO: Get New Store's ID
 			// Error Occurred?
 			var id uint32
-			id, e = GetShardStoreID(db, *o.org, o.alias)
+			id, e = StoreGetLocalID(db, *o.org, o.alias)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}

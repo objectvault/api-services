@@ -24,7 +24,7 @@ import (
 // OBJECTS //
 func ExportStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
 	// Get List
-	sid := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	objs := r.Get("store-objects").(query.TQueryResults)
 
 	ores := &shared.ExportList{
@@ -58,7 +58,7 @@ func ExportStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
 
 func ExportStoreObjectFolder(r rpf.GINProcessor, c *gin.Context) {
 	// Get Required Information
-	sid := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	obj := r.MustGet("store-object").(*orm.StoreObject)
 
 	// Transform for Export
@@ -72,7 +72,7 @@ func ExportStoreObjectFolder(r rpf.GINProcessor, c *gin.Context) {
 
 func ExportStoreObjectRegistry(r rpf.GINProcessor, c *gin.Context) {
 	// Get Required Information
-	sid := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	obj := r.MustGet("store-object").(*orm.StoreObject)
 
 	// Transform for Export
@@ -86,7 +86,7 @@ func ExportStoreObjectRegistry(r rpf.GINProcessor, c *gin.Context) {
 
 func ExportStoreObjectJSON(r rpf.GINProcessor, c *gin.Context) {
 	// Get Required Information
-	sid := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	obj := r.MustGet("store-object").(*orm.StoreObject)
 	t := r.MustGet("store-template-object").(*orm.StoreTemplateObject)
 

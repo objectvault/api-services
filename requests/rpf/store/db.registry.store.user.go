@@ -19,36 +19,57 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBRegistryStoreUserList(r rpf.GINProcessor, c *gin.Context) {
-	r.SetLocal("object-id", r.MustGet("store-id").(uint64))
+func DBStoreUsersList(r rpf.GINProcessor, c *gin.Context) {
+	r.SetLocal("object-id", r.MustGet("request-store").(uint64))
 
 	// Redirect to Object Registry
-	object.DBRegistryObjectUsersList(r, c)
+	object.DBObjectUsersList(r, c)
 }
 
-func DBGetRegistryStoreUser(r rpf.GINProcessor, c *gin.Context) {
+func DBStoreUserGet(r rpf.GINProcessor, c *gin.Context) {
 	// Store User Registry Entry Already Exists?
 	if r.Has("registry-store-user") { // YES: Do Nothing
 		return
 	}
 
 	// Get Object Registry from Store ID
-	r.SetLocal("object-id", r.MustGet("store-id").(uint64))
-	object.DBRegistryObjectUserFind(r, c)
+	r.SetLocal("object-id", r.MustGet("request-store").(uint64))
+	object.DBObjectUserFind(r, c)
 	if !r.Aborted() {
 		// Save Entry
 		r.SetLocal("registry-store-user", r.MustGet("registry-object-user"))
 	}
 }
 
-func DBGetRegistryUserStore(r rpf.GINProcessor, c *gin.Context) {
+func DBStoreUsersDeleteAll(r rpf.GINProcessor, c *gin.Context) {
+	// Get Store Global ID
+	sid := r.MustGet("request-store").(uint64)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Store Shard
+	db, e := dbm.Connect(sid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	_, e = orm.ObjectUsersDeleteAll(db, sid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+}
+
+func DBUserStoreGet(r rpf.GINProcessor, c *gin.Context) {
 	// Store User Registry Entry Already Exists?
 	if r.Has("registry-user-store") { // YES: Do Nothing
 		return
 	}
 
 	// Get Object Registry from Store ID
-	r.SetLocal("object-id", r.MustGet("store-id").(uint64))
+	r.SetLocal("object-id", r.MustGet("request-store").(uint64))
 	object.DBRegistryUserObjFind(r, c)
 	if !r.Aborted() {
 		// Save Entry
@@ -58,17 +79,17 @@ func DBGetRegistryUserStore(r rpf.GINProcessor, c *gin.Context) {
 
 func DBRegisterStoreWithUser(r rpf.GINProcessor, c *gin.Context) {
 	// Get Store Global ID
-	storeID := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 
 	// Get User Global ID
-	userID := r.MustGet("user-id").(uint64)
+	uid := r.MustGet("user-id").(uint64)
 
 	// Get Store Entry
 	store := r.MustGet("store").(*orm.Store)
 
 	// Create Registry Entry
 	o := &orm.UserObjectRegistry{}
-	o.SetKey(userID, storeID)
+	o.SetKey(uid, sid)
 	o.SetAlias(store.Alias())
 
 	// Flush Registry Entry
@@ -82,15 +103,15 @@ func DBRegisterStoreWithUser(r rpf.GINProcessor, c *gin.Context) {
 
 func DBRegisterUserWithNewStore(r rpf.GINProcessor, c *gin.Context) {
 	// Get Store Global ID
-	storeID := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 
-	// Get User Informtaion
+	// Get User Information
 	user := r.MustGet("registry-user").(*orm.UserRegistry)
 	userHash := r.MustGet("hash").(string)
 
 	// Create Registry Entry
 	o := &orm.ObjectUserRegistry{}
-	o.SetKey(storeID, user.ID())
+	o.SetKey(sid, user.ID())
 	o.SetUserName(user.UserName())
 
 	// Are specific roles to be set?
@@ -113,7 +134,7 @@ func DBRegisterUserWithNewStore(r rpf.GINProcessor, c *gin.Context) {
 
 	// Flush Changes
 	r.SetLocal("registry-object-user", o)
-	object.DBRegistryObjectUserFlush(r, c)
+	object.DBObjectUserFlush(r, c)
 	if !r.Aborted() {
 		// Save Entry
 		r.SetLocal("registry-store-user", o)
@@ -122,7 +143,7 @@ func DBRegisterUserWithNewStore(r rpf.GINProcessor, c *gin.Context) {
 
 func DBRegisterUserWithExistingStore(r rpf.GINProcessor, c *gin.Context) {
 	// Get Store Global ID
-	storeID := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	storeKey := r.MustGet("store-key").([]byte)
 
 	// Get User Information
@@ -131,7 +152,7 @@ func DBRegisterUserWithExistingStore(r rpf.GINProcessor, c *gin.Context) {
 
 	// Create Registry Entry
 	o := &orm.ObjectUserRegistry{}
-	o.SetKey(storeID, user.ID())
+	o.SetKey(sid, user.ID())
 	o.SetUserName(user.UserName())
 
 	// Are specific roles to be set?
@@ -154,17 +175,17 @@ func DBRegisterUserWithExistingStore(r rpf.GINProcessor, c *gin.Context) {
 
 	// Flush Changes
 	r.SetLocal("registry-object-user", o)
-	object.DBRegistryObjectUserFlush(r, c)
+	object.DBObjectUserFlush(r, c)
 	if !r.Aborted() {
 		// Save Entry
 		r.SetLocal("registry-store-user", o)
 	}
 }
 
-func DBRegistryStoreUserUpdate(r rpf.GINProcessor, c *gin.Context) {
+func DBStoreUserUpdate(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entry
 	r.SetLocal("registry-object-user", r.MustGet("registry-store-user"))
-	object.DBRegistryObjectUserFlush(r, c)
+	object.DBObjectUserFlush(r, c)
 }
 
 func DBRegistryUpdateFromUser(r rpf.GINProcessor, c *gin.Context) {
@@ -178,6 +199,6 @@ func DBRegistryUpdateFromUser(r rpf.GINProcessor, c *gin.Context) {
 
 		// Update Registry Fields
 		o.SetUserName(u.UserName())
-		object.DBRegistryObjectUserFlush(r, c)
+		object.DBObjectUserFlush(r, c)
 	}
 }

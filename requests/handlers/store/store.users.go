@@ -66,7 +66,7 @@ func GetStoreUsers(c *gin.Context) {
 			}
 		},
 		// Query Store for List //
-		store.DBRegistryStoreUserList,
+		store.DBStoreUsersList,
 		// Export Results //
 		object.ExportRegistryObjUsersList,
 	)
@@ -265,7 +265,7 @@ func DeleteStoreUser(c *gin.Context) {
 			r.Set("registry-object-id", entry.Object())
 		},
 		object.DBDeleteRegistryUserObject,
-		object.DBDeleteRegistryObjectUser,
+		object.DBObjectUserDelete,
 	)
 
 	// Save Session
@@ -297,7 +297,7 @@ func GetStoreUserLock(c *gin.Context) {
 	// Request Processing
 	request.Append(
 		// FIND User by Searching Store User Registry
-		store.DBGetRegistryStoreUser,
+		store.DBStoreUserGet,
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -348,7 +348,7 @@ func PutStoreUserLock(c *gin.Context) {
 				registry.ClearStates(orm.STATE_READONLY)
 			}
 		},
-		store.DBRegistryStoreUserUpdate,
+		store.DBStoreUserUpdate,
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -434,7 +434,7 @@ func PutStoreUserBlock(c *gin.Context) {
 				registry.ClearStates(orm.STATE_BLOCKED)
 			}
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -517,7 +517,7 @@ func PutStoreUserState(c *gin.Context) {
 
 			registry.SetStates(uint16(states))
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -565,7 +565,7 @@ func DeleteStoreUserState(c *gin.Context) {
 
 			registry.ClearStates(uint16(states))
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -595,7 +595,7 @@ func ToggleStoreUserAdmin(c *gin.Context) {
 		// Extract : GIN Parameter 'uint' //
 		shared.ExtractGINParameterUINTValue,
 		// FIND User by Searching Store User Registry
-		store.DBGetRegistryStoreUser,
+		store.DBStoreUserGet,
 		// TODO: Can't Toggle SELF
 		// TODO: Last Store Admin Can't be Removed
 		// UPDATE Registry Entry
@@ -612,7 +612,7 @@ func ToggleStoreUserAdmin(c *gin.Context) {
 				registry.AddRoles(roles)
 			}
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// Request Response //
 		object.ExportRegistryObjUserFull,
 		session.SaveSession, // Update Session Cookie
@@ -675,7 +675,7 @@ func PutStoreUserRoles(c *gin.Context) {
 			csv := r.MustGet("roles-csv").(string)
 			registry.RolesFromCSV(csv)
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// Request Response //
 		object.ExportRegistryObjUserBasic,
 	)

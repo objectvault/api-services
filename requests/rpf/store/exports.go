@@ -37,7 +37,7 @@ func ExportStoreFull(r rpf.GINProcessor, c *gin.Context) {
 
 func ExportStoreBasic(r rpf.GINProcessor, c *gin.Context) {
 	// Get Organization Information
-	store_id := r.MustGet("store-id").(uint64)
+	store_id := r.MustGet("request-store").(uint64)
 	store := r.MustGet("store").(*orm.Store)
 
 	// Transform for Export

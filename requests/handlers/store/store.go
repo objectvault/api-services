@@ -55,13 +55,13 @@ func GetStore(c *gin.Context) {
 	// Request Processing Chain
 	request.Append(
 		// GET Store Entry
-		store.DBGetStoreByID,
+		store.DBStoreGetByID,
 		// GET Store's Organization Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			store := r.MustGet("store").(*orm.Store)
 			r.SetLocal("org-id", store.Organization())
 		},
-		org.DBRegistryOrgStoreFind,
+		org.DBOrgStoreFind,
 		// Export Results //
 		store.ExportStoreFull,
 	)
@@ -183,25 +183,8 @@ func OpenStore(c *gin.Context) {
 			store.GroupOrgStoreRequestInitialize(r, roles, true, true).
 				Run()
 		},
-		/*
-			// Validate Basic Store Permissions
-			func(r rpf.GINProcessor, c *gin.Context) {
-				// Required Roles : At least Allow Read of Store
-				roles := []uint32{orm.Role(orm.CATEGORY_STORE|orm.SUBCATEGORY_STORE_ROLES, orm.FUNCTION_READONLY)}
-
-				// Get Session User
-				userID := r.MustGet("user-id").(uint64)
-
-				// Get Store ID
-				storeID := r.MustGet("store-id").(uint64)
-
-				// Initialize Request
-				store.GroupAssertUserStorePermissions(r, userID, storeID, roles, true).
-					Run()
-			},
-		*/
 		session.AssertNotSystemAdmin,
-		store.DBGetRegistryStoreUser,
+		store.DBStoreUserGet,
 		// REQUEST Validation - POST Parameters //
 		/* TODO: PROBLEM: Currently if User Changes Password
 		 * All of the Stores Keys Have to be unsealed and re-sealed with

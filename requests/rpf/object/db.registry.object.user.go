@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBRegistryObjectUsersList(r rpf.GINProcessor, c *gin.Context) {
+func DBObjectUsersList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Object Identifier
 	obj := r.MustGet("object-id").(uint64)
 
@@ -35,7 +35,7 @@ func DBRegistryObjectUsersList(r rpf.GINProcessor, c *gin.Context) {
 
 	// List Registered Org Users
 	q := r.MustGet("query-conditions").(*query.QueryConditions)
-	users, err := orm.QueryRegisteredObjectUsers(db, obj, q, true)
+	users, err := orm.ObjectUsersQuery(db, obj, q, true)
 
 	// Failed Retrieving User?
 	if err != nil { // YES: Database Error
@@ -47,7 +47,7 @@ func DBRegistryObjectUsersList(r rpf.GINProcessor, c *gin.Context) {
 	r.Set("registry-object-users", users)
 }
 
-func DBRegistryObjectUserFindOrNil(r rpf.GINProcessor, c *gin.Context) {
+func DBObjectUserFindOrNil(r rpf.GINProcessor, c *gin.Context) {
 	// Get Object Identifier
 	obj := r.MustGet("object-id").(uint64)
 
@@ -81,8 +81,8 @@ func DBRegistryObjectUserFindOrNil(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func DBRegistryObjectUserFind(r rpf.GINProcessor, c *gin.Context) {
-	DBRegistryObjectUserFindOrNil(r, c)
+func DBObjectUserFind(r rpf.GINProcessor, c *gin.Context) {
+	DBObjectUserFindOrNil(r, c)
 
 	if r.Aborted() || !r.HasLocal("registry-object-user") {
 		r.Abort(4101, nil) // TODO: Error [User not Registered with Object]
@@ -90,7 +90,7 @@ func DBRegistryObjectUserFind(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func DBRegistryObjectUserFlush(r rpf.GINProcessor, c *gin.Context) {
+func DBObjectUserFlush(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entry
 	e := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
@@ -112,7 +112,7 @@ func DBRegistryObjectUserFlush(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func DBRegistryUpdateFromUser(r rpf.GINProcessor, c *gin.Context) {
+func DBObjectUserUpdateFromUser(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entry
 	e := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
@@ -149,14 +149,14 @@ func DBRegistryOrgUsersList(r rpf.GINProcessor, c *gin.Context) {
 	r.SetLocal("object-id", r.MustGet("org-id"))
 
 	// Redirect to Object Registry
-	DBRegistryObjectUsersList(r, c)
+	DBObjectUsersList(r, c)
 }
 
-func DBRegistryOrgUserFind(r rpf.GINProcessor, c *gin.Context) {
+func DBOrgUserFind(r rpf.GINProcessor, c *gin.Context) {
 	r.SetLocal("object-id", r.MustGet("org-id"))
 
 	// Redirect to Object Registry
-	DBRegistryObjectUserFindOrNil(r, c)
+	DBObjectUserFindOrNil(r, c)
 
 	if r.Aborted() || !r.HasLocal("registry-object-user") {
 		r.Abort(4101, nil) // TODO: Error [User not Registered with Organization]
@@ -188,10 +188,10 @@ func DBRegisterUserWithOrg(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	r.SetLocal("registry-object-user", e)
-	DBRegistryObjectUserFlush(r, c)
+	DBObjectUserFlush(r, c)
 }
 
-func DBDeleteRegistryObjectUser(r rpf.GINProcessor, c *gin.Context) {
+func DBObjectUserDelete(r rpf.GINProcessor, c *gin.Context) {
 	// Get Entry Coordinate
 	oid := r.MustGet("registry-object-id").(uint64)
 	uid := r.MustGet("registry-user-id").(uint64)
@@ -207,7 +207,7 @@ func DBDeleteRegistryObjectUser(r rpf.GINProcessor, c *gin.Context) {
 	}
 
 	// Delete Entry
-	_, e = orm.DeleteRegisteredObjectUser(db, oid, uid)
+	_, e = orm.ObjectUserDelete(db, oid, uid)
 	if e != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return

@@ -213,6 +213,8 @@ func codesServerErrors(code int) (int, string) {
 		return http.StatusInternalServerError, "System Error Creating Queue Message"
 	case 5921: // Queue Message Publish Error
 		return http.StatusInternalServerError, "System Error Publishing Queue Message"
+	case 5997: // TODO Single Shard Request
+		return http.StatusInternalServerError, "TO BE Implemented - Single Shard Only"
 	case 5998: // TODO Set Proper Error Code
 		return http.StatusInternalServerError, "TO BE Implemented - Error Code"
 	case 5999: // TODO Error

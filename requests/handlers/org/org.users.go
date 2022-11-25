@@ -241,7 +241,7 @@ func GetOrgUser(c *gin.Context) {
 			id := r.MustGet("request-user").(uint64)
 			r.SetLocal("user-id", id)
 		},
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// Request Response //
 		object.ExportRegistryObjUserBasic,
 	)
@@ -308,7 +308,7 @@ func GetOrgUserLock(c *gin.Context) {
 	// Request Process //
 	request.Append(
 		// FIND Store by Searching Org Store Registry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -345,7 +345,7 @@ func PutOrgUserLock(c *gin.Context) {
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
 		// SEARCH Registry for Entry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -357,7 +357,7 @@ func PutOrgUserLock(c *gin.Context) {
 				registry.ClearStates(orm.STATE_READONLY)
 			}
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -392,7 +392,7 @@ func GetOrgUserBlock(c *gin.Context) {
 	// Request Process //
 	request.Append(
 		// FIND Store by Searching Org Store Registry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -429,7 +429,7 @@ func PutOrgUserBlock(c *gin.Context) {
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
 		// SEARCH Registry for Entry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -441,7 +441,7 @@ func PutOrgUserBlock(c *gin.Context) {
 				registry.ClearStates(orm.STATE_BLOCKED)
 			}
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -475,7 +475,7 @@ func GetOrgUserState(c *gin.Context) {
 	// Request Process //
 	request.Append(
 		// FIND Store by Searching Org Store Registry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -511,7 +511,7 @@ func PutOrgUserState(c *gin.Context) {
 		// Extract : GIN Parameter 'uint' //
 		shared.ExtractGINParameterUINTValue,
 		// SEARCH Registry for Entry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -520,7 +520,7 @@ func PutOrgUserState(c *gin.Context) {
 
 			registry.SetStates(uint16(states))
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -557,7 +557,7 @@ func DeleteOrgUserState(c *gin.Context) {
 		// Extract : GIN Parameter 'uint' //
 		shared.ExtractGINParameterUINTValue,
 		// SEARCH Registry for Entry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -566,7 +566,7 @@ func DeleteOrgUserState(c *gin.Context) {
 
 			registry.ClearStates(uint16(states))
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -597,7 +597,7 @@ func ToggleOrgUserAdmin(c *gin.Context) {
 		// Extract : GIN Parameter 'uint' //
 		shared.ExtractGINParameterUINTValue,
 		// SEARCH Registry for Entry
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// TODO: Can't Toggle SELF
 		// TODO: Last Organization Admin Can't be Removed
 		// UPDATE Registry Entry
@@ -630,7 +630,7 @@ func ToggleOrgUserAdmin(c *gin.Context) {
 				}
 			}
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// Request Response //
 		object.ExportRegistryObjUserFull,
 	}
@@ -687,14 +687,14 @@ func PutOrgUserRoles(c *gin.Context) {
 			id := r.MustGet("request-user")
 			r.SetLocal("user-id", id)
 		},
-		object.DBRegistryOrgUserFind,
+		object.DBOrgUserFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 			csv := r.MustGet("roles-csv").(string)
 			registry.RolesFromCSV(csv)
 		},
-		object.DBRegistryObjectUserFlush,
+		object.DBObjectUserFlush,
 		// Request Response //
 		object.ExportRegistryObjUserBasic,
 	)

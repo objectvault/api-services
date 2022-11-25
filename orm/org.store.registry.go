@@ -1,4 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
+// cSpell:ignore bson, storeid, storename
 package orm
 
 /*
@@ -28,15 +28,58 @@ type OrgStoreRegistry struct {
 	States
 	dirty       bool    // Is Entry Dirty?
 	stored      bool    // Is Entry Stored in Database
+	deleted     bool    // Is Entry Deleted
 	org         *uint64 // KEY: GLOBAL Organization ID
 	store       *uint64 // KEY: GLOBAL User ID
 	store_alias string  // Store Alias
 	state       uint16  // Store State in Organization
 }
 
-// TODO Implement Delete (Both From Within an Entry and Without a Structure)
+func OrgStoresDeleteAll(db *sql.DB, org uint64) (uint64, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("registry_org_stores").
+		Where("id_org= ?", org)
 
-func CountRegisteredOrgStores(db *sql.DB, org uint64, q query.TQueryConditions) (uint64, error) {
+	// Execute
+	r, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	// How many rows deleted?
+	c, e := r.RowsAffected()
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return uint64(c), nil
+}
+
+func OrgStoreDelete(db *sql.DB, org uint64, store uint64) (bool, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("registry_org_stores").
+		Where("id_org = ? and id_store= ?", org, store)
+
+	// Execute
+	r, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+
+	// How many rows deleted?
+	c, e := r.RowsAffected()
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return false, e
+	}
+
+	return c > 0, nil
+}
+
+func OrgStoresCount(db *sql.DB, org uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -57,7 +100,7 @@ func CountRegisteredOrgStores(db *sql.DB, org uint64, q query.TQueryConditions) 
 	return count, nil
 }
 
-func QueryRegisteredStores(db *sql.DB, org uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+func OrgStoresQuery(db *sql.DB, org uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
 	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
@@ -118,11 +161,20 @@ func QueryRegisteredStores(db *sql.DB, org uint64, q query.TQueryConditions, c b
 	// Apply Organization Filter
 	s.Where("id_org = ?", org)
 
+	// Apply Extra Query Conditions
+	e := query.ApplyFilterConditions(s, q)
+	if e != nil { // Error Occurred
+		// DEBUG: Print SQL
+		log.Print(s.String())
+		log.Printf("query error: %v\n", e)
+		return nil, e
+	}
+
 	// DEBUG: Print SQL
 	fmt.Print(s.String())
 
 	// Execute Query
-	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
+	e = s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		storeid := id
 		o := OrgStoreRegistry{
 			org:         &org,
@@ -142,7 +194,7 @@ func QueryRegisteredStores(db *sql.DB, org uint64, q query.TQueryConditions, c b
 
 	// Is Count of Entries Requested?
 	if c { // YES: Count Entries under Same Conditions
-		count, e := CountRegisteredOrgStores(db, org, q)
+		count, e := OrgStoresCount(db, org, q)
 		if e != nil {
 			return nil, e
 		}
@@ -226,6 +278,28 @@ func (o *OrgStoreRegistry) ByAlias(db *sql.DB, org uint64, store string) error {
 	}
 
 	return nil
+}
+
+func (o *OrgStoreRegistry) IsDeleted() bool {
+	return o.deleted
+}
+
+func (o *OrgStoreRegistry) Delete(db *sql.DB) (bool, error) {
+	if o.deleted {
+		return false, nil
+	}
+
+	if o.org == nil || o.store == nil {
+		return false, errors.New("Can't Delete - Invalid entry")
+	}
+
+	b, e := OrgStoreDelete(db, *o.org, *o.store)
+	if e != nil {
+		return false, nil
+	}
+
+	o.deleted = b
+	return o.deleted, nil
 }
 
 // IsDirty Have the Object Properties Changed since last Serialization?

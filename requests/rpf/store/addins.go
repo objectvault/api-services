@@ -26,10 +26,7 @@ import (
 func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
 	session.AddinActiveUserSession(g, opts)
 	g.Append(
-		func(r rpf.GINProcessor, c *gin.Context) { // Get Store
-			r.SetLocal("store-id", r.MustGet("request-store"))
-		},
-		DBGetRegistryStoreUser, // FIND User by Searching Store User Registry
+		DBStoreUserGet, // FIND User by Searching Store User Registry
 	)
 
 	/* NOTES:
@@ -41,33 +38,33 @@ func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbac
 	// OPTION: Check if organization is unblocked? (DEFAULT: Check)
 	if shared.HelperAddinOptionsCallback(opts, "check-org-unlocked", true).(bool) {
 		g.Append(
-			DBGetStoreByID, // Get Store from ID
+			DBStoreGetByID, // Get Store from ID
 			func(r rpf.GINProcessor, c *gin.Context) { // Get Store Organization
 				s := r.MustGet("store").(*orm.Store)
 				r.SetLocal("org-id", s.Organization())
 			},
 			org.DBRegistryOrgFindByID, // Get Organization Registry
-			org.AssertOrgUnblocked,    // Make Sure Orga Unblocked
+			org.AssertOrgUnblocked,    // Make Sure Org Unblocked
 		)
 
 		// OPTION: Check if store is unblocked? (DEFAULT: Check)
 		if shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool) {
 			g.Append(
-				org.DBRegistryOrgStoreFind, // Find Store's Organization  Registry
-				AssertStoreUnblocked,       // Make Store Unblocked
+				org.DBOrgStoreFind,   // Find Store's Organization  Registry
+				AssertStoreUnblocked, // Make Store Unblocked
 			)
 		}
 	} else // OPTION: Check if store is unblocked (but skip org check)? (DEFAULT: Check)
 	if shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool) {
 		g.Append(
-			DBGetStoreByID, // Get Store from ID
+			DBStoreGetByID, // Get Store from ID
 			func(r rpf.GINProcessor, c *gin.Context) { // Get Store Organization
 				s := r.MustGet("store").(*orm.Store)
 				r.SetLocal("org-id", s.Organization())
 			},
-			org.DBRegistryOrgFindByID,  // Get Organization Registry
-			org.DBRegistryOrgStoreFind, // Find Store's Organization  Registry
-			AssertStoreUnblocked,       // Make Store Unblocked
+			org.DBRegistryOrgFindByID, // Get Organization Registry
+			org.DBOrgStoreFind,        // Find Store's Organization  Registry
+			AssertStoreUnblocked,      // Make Store Unblocked
 		)
 	}
 
@@ -95,6 +92,33 @@ func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbac
 	}
 
 	return g
+}
+
+// REQUEST TYPE :org/:store //
+
+// Extract GIN Request Parameters for a organization/store request
+func AddinRequestParamsOrgStore(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {
+	g.Append(
+		org.ExtractGINParameterOrg,
+		ExtractGINParameterStore,
+	)
+	return g
+}
+
+// Global initial organization/user request validation
+func AddinGroupValidateOrgStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
+	// Extract Request Parameter
+	AddinRequestParamsOrgStore(g)
+
+	// Validate Basic User Request Requirements
+	return org.BaseValidateOrgRequest(g,
+		func(o string) interface{} {
+			if o == "assert-not-system" { // Org Store Requests not allowed on system organization
+				return true
+			}
+
+			return opts(o)
+		})
 }
 
 // REQUEST TYPE :store //
@@ -149,7 +173,7 @@ func AddinRequestStoreUserRegistry(g rpf.GINGroupProcessor) rpf.GINGroupProcesso
 			r.SetLocal("object-id", r.MustGet("request-store"))
 			r.SetLocal("user-id", r.MustGet("request-user"))
 		},
-		object.DBRegistryObjectUserFind,
+		object.DBObjectUserFind,
 	)
 	return g
 }

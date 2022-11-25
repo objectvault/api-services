@@ -40,7 +40,7 @@ func AssertStoreUnblocked(r rpf.GINProcessor, c *gin.Context) {
 
 func AssertStoreOpen(r rpf.GINProcessor, c *gin.Context) {
 	// Store ID
-	id := r.MustGet("store-id").(uint64)
+	id := r.MustGet("request-store").(uint64)
 
 	// Get Session Store
 	s := sessions.Default(c)

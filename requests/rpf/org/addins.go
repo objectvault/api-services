@@ -28,26 +28,33 @@ import (
 func BaseValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
 	session.AddinActiveUserSession(g, opts)
 
+	// Get Request Organization Registry Information
+	g.Append(
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("org", r.MustGet("request-org"))
+		},
+		DBRegistryOrgFind,
+		func(r rpf.GINProcessor, c *gin.Context) {
+			o := r.MustGet("registry-org").(*orm.OrgRegistry)
+			r.SetLocal("request-org", o.ID())
+			r.SetLocal("org-id", o.ID())
+		},
+	)
+
 	// OPTION: Check if organization is unblocked? (DEFAULT: Check)
 	if shared.HelperAddinOptionsCallback(opts, "check-org-unlocked", true).(bool) {
-		g.Append(
-			func(r rpf.GINProcessor, c *gin.Context) {
-				r.SetLocal("org", r.MustGet("request-org"))
-			},
-			DBRegistryOrgFind,
-			AssertOrgUnblocked,
-			func(r rpf.GINProcessor, c *gin.Context) {
-				o := r.MustGet("registry-org").(*orm.OrgRegistry)
-				r.SetLocal("request-org", o.ID())
-				r.SetLocal("org-id", o.ID())
-			},
-		)
+		g.Append(AssertOrgUnblocked)
 	}
 
-	// OPTION: Check if user is unblocked? (DEFAULT: Check)
+	// OPTION: Check if organization is SYSTEM Organization? (DEFAULT: No Check)
+	if shared.HelperAddinOptionsCallback(opts, "assert-not-system", false).(bool) {
+		g.Append(AssertNotSystemOrgRegistry)
+	}
+
+	// OPTION: Check if session user is unblocked? (DEFAULT: Check)
 	if shared.HelperAddinOptionsCallback(opts, "check-user-unlocked", true).(bool) {
 		g.Append(
-			object.DBRegistryOrgUserFind,
+			object.DBOrgUserFind,
 			object.AssertObjectUserUnblocked,
 			func(r rpf.GINProcessor, c *gin.Context) {
 				r.Set("registry-object-user-session", r.MustGet("registry-object-user"))
@@ -110,7 +117,7 @@ func AddinGroupValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCal
 	return BaseValidateOrgRequest(g, opts)
 }
 
-// REQUEST TYPE :store/:user //
+// REQUEST TYPE :org/:user //
 
 // Extract GIN Request Parameters for a organization/user request
 func AddinRequestParamsOrgUser(g rpf.GINGroupProcessor) rpf.GINGroupProcessor {

@@ -31,14 +31,14 @@ func GroupAssertUserStorePermissions(parent rpf.GINProcessor, userid uint64, sto
 	// User to
 	group.SetLocal("user-id", userid)
 
-	// Organization
-	group.SetLocal("store-id", storeid)
+	// Store
+	group.SetLocal("request-store", storeid)
 
 	// Required Roles
 	group.SetLocal("roles-required", roles)
 
 	group.Chain = rpf.ProcessChain{
-		DBGetRegistryStoreUser, // Get Store Entry for User
+		DBStoreUserGet, // Get Store Entry for User
 	}
 
 	// Check if User is Store Locked?
@@ -125,13 +125,13 @@ func GroupOrgStoreRequestInitialize(parent rpf.GINProcessor, roles []uint32, loa
 	// Load Org Store Registry Entry
 	if loadRegistry { // YES
 		group.Chain = append(group.Chain,
-			org.DBRegistryOrgStoreFind,
+			org.DBOrgStoreFind,
 			func(r rpf.GINProcessor, c *gin.Context) {
 				r.LocalToGlobal("registry-store")
 
 				// Save Store ID
 				s := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-				r.Set("store-id", s.Store())
+				r.Set("request-store", s.Store())
 			},
 		)
 	}
@@ -180,7 +180,6 @@ func GroupStoreRequestInitialize(parent rpf.GINProcessor, storeID uint64, roles 
 
 				// Save Store Information
 				r.Set("request-store", storeID)
-				r.Set("store-id", storeID)
 			}
 		},
 	}
@@ -197,10 +196,6 @@ func GroupStoreUserRequestInitialize(parent rpf.GINProcessor, roles []uint32) *r
 		// Extract : GIN Parameters 'org' and 'store' //
 		ExtractGINParameterStore,
 		user.ExtractGINParameterUser,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-store").(uint64)
-			r.Set("store-id", id)
-		},
 		// Get Session User
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Is User Session?
@@ -215,14 +210,14 @@ func GroupStoreUserRequestInitialize(parent rpf.GINProcessor, roles []uint32) *r
 		},
 		// Validate Session Users Permission
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Get Request Organization
-			storeID := r.MustGet("store-id").(uint64)
+			// Get Request Store
+			sid := r.MustGet("request-store").(uint64)
 
 			// Get Session User
-			userID := r.MustGet("user-id").(uint64)
+			uid := r.MustGet("user-id").(uint64)
 
 			// Check User has Permissions in Store
-			GroupAssertUserStorePermissions(r, userID, storeID, roles, true, false).
+			GroupAssertUserStorePermissions(r, uid, sid, roles, true, false).
 				Run()
 		},
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -243,10 +238,6 @@ func GroupStoreUserAdminRequestInitialize(parent rpf.GINProcessor, roles []uint3
 		// Extract : GIN Parameters 'org' and 'store' //
 		ExtractGINParameterStore,
 		user.ExtractGINParameterUser,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-store").(uint64)
-			r.Set("store-id", id)
-		},
 		// Get Session User
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Is User Session?
@@ -261,14 +252,14 @@ func GroupStoreUserAdminRequestInitialize(parent rpf.GINProcessor, roles []uint3
 		},
 		// Validate Session Users Permission
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Get Request Organization
-			storeID := r.MustGet("store-id").(uint64)
+			// Get Request Store
+			sid := r.MustGet("request-store").(uint64)
 
 			// Get Session User
-			userID := r.MustGet("user-id").(uint64)
+			uid := r.MustGet("user-id").(uint64)
 
 			// Check User has Permissions in Store
-			GroupAssertUserStorePermissions(r, userID, storeID, roles, true, true).
+			GroupAssertUserStorePermissions(r, uid, sid, roles, true, true).
 				Run()
 		},
 		func(r rpf.GINProcessor, c *gin.Context) {

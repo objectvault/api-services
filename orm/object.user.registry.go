@@ -39,12 +39,33 @@ type ObjectUserRegistry struct {
 	ciphertext []byte  // Encrypted Store Key
 }
 
-func DeleteRegisteredObjectUser(db *sql.DB, object uint64, user uint64) (bool, error) {
+func ObjectUsersDeleteAll(db *sql.DB, object uint64) (uint64, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("registry_object_users").
+		Where("id_object= ?", object)
+
+	// Execute
+	r, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	// How many entries deleted?
+	c, e := r.RowsAffected()
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+	return uint64(c), nil
+}
+
+func ObjectUserDelete(db *sql.DB, object uint64, user uint64) (bool, error) {
 	// Create SQL Statement
 	s := sqlf.DeleteFrom("registry_object_users").
 		Where("id_user = ? and id_object= ?", user, object)
 
-	// Execute Count
+	// Execute
 	_, e := s.ExecAndClose(context.TODO(), db)
 	if e != nil { // YES
 		log.Printf("query error: %v\n", e)
@@ -62,7 +83,7 @@ func DeleteRegisteredObjectUser(db *sql.DB, object uint64, user uint64) (bool, e
 	return true, nil
 }
 
-func CountRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditions) (uint64, error) {
+func ObjectUsersCount(db *sql.DB, object uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -95,7 +116,7 @@ func CountRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditi
 	return count, nil
 }
 
-func CountRegisteredObjectRoleManagers(db *sql.DB, object uint64) (uint64, error) {
+func ObjectUsersRoleManagersCount(db *sql.DB, object uint64) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -120,7 +141,7 @@ func CountRegisteredObjectRoleManagers(db *sql.DB, object uint64) (uint64, error
 	return count, nil
 }
 
-func CountRegisteredObjectInviteManagers(db *sql.DB, object uint64) (uint64, error) {
+func ObjectUsersInviteManagersCount(db *sql.DB, object uint64) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -145,7 +166,7 @@ func CountRegisteredObjectInviteManagers(db *sql.DB, object uint64) (uint64, err
 	return count, nil
 }
 
-func QueryRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+func ObjectUsersQuery(db *sql.DB, object uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
 	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
@@ -248,7 +269,7 @@ func QueryRegisteredObjectUsers(db *sql.DB, object uint64, q query.TQueryConditi
 
 	// Is Count of Entries Requested?
 	if c { // YES: Count Entries under Same Conditions
-		count, e := CountRegisteredObjectUsers(db, object, q)
+		count, e := ObjectUsersCount(db, object, q)
 		if e != nil {
 			return nil, e
 		}

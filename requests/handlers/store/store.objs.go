@@ -1,3 +1,4 @@
+// cSpell:ignore objs, vmap, xjson
 package store
 
 /*
@@ -10,7 +11,6 @@ package store
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// cSpell:ignore objs, vmap, xjson
 import (
 	"errors"
 	"fmt"
@@ -76,7 +76,7 @@ func GetStoreObjects(c *gin.Context) {
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.SetLocal("store-parent-id", r.MustGet("request-parent-id"))
 		},
-		entry.DBStoreObjectList,
+		entry.DBStoreObjectsList,
 		// Export Results //
 		entry.ExportStoreObjectList,
 		session.SaveSession, // Update Session Cookie
@@ -86,7 +86,7 @@ func GetStoreObjects(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: MASS Delete Store Objects
+// TODO IMPLEMENT: MASS Delete (List) of Store Objects
 func DeleteStoreObjects(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("DELETE.STORE.OBJS", c, 1000, shared.JSONResponse)
@@ -103,7 +103,6 @@ func DeleteStoreObjects(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: READ Store Object
 func GetStoreObject(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("GET.STORE.OBJ", c, 1000, shared.JSONResponse)
@@ -130,7 +129,7 @@ func GetStoreObject(c *gin.Context) {
 		// Extract Required Parameters
 		entry.ExtractGINParameterEntryID,
 		entry.AssertNotRootFolder,
-		entry.DBGetStoreObjectByID,
+		entry.DBStoreObjectGetByID,
 		entry.DecryptStoreObject,
 		// Export Results //
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -155,7 +154,6 @@ func GetStoreObject(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: Create Store Object
 func PostStoreObjectJSON(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("POST.STORE.OBJ.JSON", c, 1000, shared.JSONResponse)
@@ -194,7 +192,7 @@ func PostStoreObjectJSON(c *gin.Context) {
 
 				// See if Object ID Exists and is Folder Object
 				group.Chain = rpf.ProcessChain{
-					entry.DBGetStoreObjectByID,
+					entry.DBStoreObjectGetByID,
 					entry.AssertFolderObject,
 					func(r rpf.GINProcessor, c *gin.Context) {
 						r.SetLocal("store-parent-object", r.MustGet("store-object"))
@@ -304,7 +302,7 @@ func PostStoreObjectJSON(c *gin.Context) {
 		// Set Object
 		func(r rpf.GINProcessor, c *gin.Context) {
 			o := r.MustGet("store-object").(*orm.StoreObject)
-			sid := r.MustGet("store-id").(uint64)
+			sid := r.MustGet("request-store").(uint64)
 			pid := r.MustGet("request-parent-id").(uint32)
 
 			// Initialize Store Object
@@ -313,7 +311,7 @@ func PostStoreObjectJSON(c *gin.Context) {
 
 			r.SetLocal("store-parent-id", pid)
 		},
-		entry.DBInsertStoreObject,
+		entry.DBStoreObjectInsert,
 		// Export Results //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			obj := r.MustGet("store-object").(*orm.StoreObject)
@@ -337,7 +335,6 @@ func PostStoreObjectJSON(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: UPDATE Store Object
 func PutStoreObjectJSON(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("PUT.STORE.OBJ.JSON", c, 1000, shared.JSONResponse)
@@ -379,7 +376,7 @@ func PutStoreObjectJSON(c *gin.Context) {
 
 				// See if Object ID Exists and is Folder Object
 				group.Chain = rpf.ProcessChain{
-					entry.DBGetStoreObjectByID,
+					entry.DBStoreObjectGetByID,
 					entry.AssertFolderObject,
 					func(r rpf.GINProcessor, c *gin.Context) {
 						r.SetLocal("store-parent-object", r.MustGet("store-object"))
@@ -392,7 +389,7 @@ func PutStoreObjectJSON(c *gin.Context) {
 		// Extract Updated Object ID
 		entry.ExtractGINParameterEntryID,
 		entry.AssertNotRootFolder,
-		entry.DBGetStoreObjectByID,
+		entry.DBStoreObjectGetByID,
 		entry.DecryptStoreObject,
 		// PROCESS JSON Object //
 		shared.RequestExtractJSON, // Has to have a JSON Body
@@ -487,7 +484,7 @@ func PutStoreObjectJSON(c *gin.Context) {
 
 			r.SetLocal("store-parent-id", pid)
 		},
-		entry.DBUpdateStoreObject,
+		entry.DBStoreObjectUpdate,
 		// Export Results //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			obj := r.MustGet("store-object").(*orm.StoreObject)
@@ -538,8 +535,8 @@ func DeleteStoreObject(c *gin.Context) {
 		// Extract Required Parameters
 		entry.ExtractGINParameterEntryID,
 		entry.AssertNotRootFolder,
-		entry.DBGetStoreObjectByID,
-		entry.DBDeleteStoreObject,
+		entry.DBStoreObjectGetByID,
+		entry.DBStoreObjectDelete,
 		entry.ExportStoreObjectRegistry,
 		// Extend and Save Store Session //
 		session.ExtendStoreSession,

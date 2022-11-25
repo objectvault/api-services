@@ -1,4 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
+// cSpell:ignore bson, objtype
 package orm
 
 /*
@@ -10,8 +10,6 @@ package orm
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-
-// cSpell:ignore objtype
 
 import (
 	"context"
@@ -25,26 +23,6 @@ import (
 	"github.com/objectvault/api-services/orm/query"
 	"github.com/pjacferreira/sqlf"
 )
-
-func GetShardObjectID(db sqlf.Executor, store uint32, title string) (uint32, error) {
-	// Query Results Values
-	var id uint32
-
-	// Create SQL Statement
-	e := sqlf.From("objects").
-		Select("id").To(&id).
-		Where("id_store = ?", store).
-		Where("title = ?", title).
-		QueryRowAndClose(context.TODO(), db)
-
-		// Error Executing Query?
-	if e != nil { // YES
-		log.Printf("query error: %v\n", e)
-		return 0, e
-	}
-
-	return id, nil
-}
 
 // STORE Object Definition
 type StoreObject struct {
@@ -80,22 +58,63 @@ func ChildObjectFromParent(p *StoreObject) (*StoreObject, error) {
 	return o, nil
 }
 
-func DeleteStoreObjectFolder(db *sql.DB, store uint32, folder uint32) error {
+func StoreObjectGetLocalID(db sqlf.Executor, store uint32, title string) (uint32, error) {
+	// Query Results Values
+	var id uint32
 
-	// Delete Child Objects
-	_, e := sqlf.DeleteFrom("objects").
-		Where("id_store = ? and id_parent = ?", store, folder).
-		ExecAndClose(context.TODO(), db)
+	// Create SQL Statement
+	e := sqlf.From("objects").
+		Select("id").To(&id).
+		Where("id_store = ?", store).
+		Where("title = ?", title).
+		QueryRowAndClose(context.TODO(), db)
 
-		// Error Occurred?
+		// Error Executing Query?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return id, nil
+}
+
+func StoreObjectsDeleteAll(db *sql.DB, store uint32) (uint64, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("objects").
+		Where("id_store= ?", store)
+
+	// Execute
+	r, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	// How many entries deleted?
+	c, e := r.RowsAffected()
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+	return uint64(c), nil
+}
+
+func StoreObjectDeleteFolder(db *sql.DB, store uint32, folder uint32) error {
+	// See how many sub-folders in parent
+	c, e := CountStoreParentObjectType(db, store, folder, OBJECT_TYPE_FOLDER)
 	if e != nil { // YES
 		log.Printf("query error: %v\n", e)
 		return e
 	}
 
-	// Delete Folder Object
+	// Does parent have sub-folders?
+	if c > 0 { // YES: Abort
+		return errors.New("Parent contains sub-folders")
+	}
+
+	// Delete Child Objects and Parent Folder Object
 	_, e = sqlf.DeleteFrom("objects").
-		Where("id_store = ? and id = ?", store, folder).
+		Where("id_store = ? and (id = ? or id_parent = ?)", store, folder, folder).
 		ExecAndClose(context.TODO(), db)
 
 	// Error Occurred?
@@ -103,13 +122,13 @@ func DeleteStoreObjectFolder(db *sql.DB, store uint32, folder uint32) error {
 		log.Printf("query error: %v\n", e)
 	}
 
-	return e
+	return nil
 }
 
-func DeleteStoreObject(db *sql.DB, store uint32, oid uint32) error {
-	// Delete Folder Object
+func StoreObjectDelete(db *sql.DB, store uint32, oid uint32) error {
+	// Delete Store Object (NOT FOLDER)
 	_, e := sqlf.DeleteFrom("objects").
-		Where("id_store = ? and id = ?", store, oid).
+		Where("id_store = ? and id = ? and type <> 0", store, oid).
 		ExecAndClose(context.TODO(), db)
 
 	// Error Occurred?
@@ -120,7 +139,7 @@ func DeleteStoreObject(db *sql.DB, store uint32, oid uint32) error {
 	return e
 }
 
-func CountStoreObject(db *sql.DB, store uint32, q query.TQueryConditions) (uint64, error) {
+func StoreObjectCount(db *sql.DB, store uint32, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -140,6 +159,25 @@ func CountStoreObject(db *sql.DB, store uint32, q query.TQueryConditions) (uint6
 
 	// Execute Count
 	e = s.QueryRowAndClose(context.TODO(), db)
+
+	// Error Occurred?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return count, nil
+}
+
+func CountStoreParentObjectType(db *sql.DB, store uint32, parent uint32, otype uint8) (uint64, error) {
+	// Query Results Values
+	var count uint64
+
+	// Create SQL Statement
+	e := sqlf.From("objects").
+		Select("COUNT(*)").To(&count).
+		Where("id_store = ? and id_parent = ? and type = ?", store, parent, otype).
+		QueryRowAndClose(context.TODO(), db)
 
 	// Error Occurred?
 	if e != nil { // YES
@@ -627,7 +665,7 @@ func (o *StoreObject) Flush(db sqlf.Executor, force bool) error {
 		if e == nil { // NO: Get New Org's ID
 			// Error Occurred?
 			var id uint32
-			id, e = GetShardObjectID(db, o.store, o.title)
+			id, e = StoreObjectGetLocalID(db, o.store, o.title)
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}

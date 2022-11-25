@@ -232,7 +232,7 @@ func GetMyObjects(c *gin.Context) {
 			}
 		},
 		// Query User for List //
-		object.DBRegistryUserObjsList,
+		object.DBRegistryUserObjectsList,
 		// Export Results //
 		object.ExportRegistryUserObjsList,
 		session.SaveSession, // Update Session Cookie
@@ -290,7 +290,7 @@ func GetMyFavoriteObjects(c *gin.Context) {
 			}
 		},
 		// Query User for List //
-		object.DBRegistryUserObjsList,
+		object.DBRegistryUserObjectsList,
 		// Export Results //
 		object.ExportRegistryUserObjsList,
 		session.SaveSession, // Update Session Cookie
@@ -399,7 +399,7 @@ func GetMyOrgs(c *gin.Context) {
 			}
 		},
 		// Query User for List //
-		object.DBRegistryUserObjsList,
+		object.DBRegistryUserObjectsList,
 		// Export Results //
 		object.ExportRegistryUserObjsList,
 		session.SaveSession, // Update Session Cookie
@@ -481,7 +481,7 @@ func GetMyStores(c *gin.Context) {
 			}
 		},
 		// Query User for List //
-		user.DBRegistryUserStoreList,
+		user.DBUserStoresList,
 		// Export Results //
 		object.ExportRegistryUserObjsList,
 		session.SaveSession, // Update Session Cookie

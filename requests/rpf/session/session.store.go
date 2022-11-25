@@ -87,7 +87,7 @@ func ExtendStoreSession(r rpf.GINProcessor, c *gin.Context) {
 	session := sessions.Default(c)
 
 	// Store ID
-	sid := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	skey := CreateStoreKey(sid)
 
 	// Have Existing Store Session?
@@ -136,7 +136,7 @@ func SessionStoreClose(r rpf.GINProcessor, c *gin.Context) {
 	session := sessions.Default(c)
 
 	// Store ID
-	sid := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 	skey := CreateStoreKey(sid)
 
 	// Have Existing Store Session?

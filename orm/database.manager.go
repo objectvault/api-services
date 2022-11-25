@@ -11,6 +11,8 @@ package orm
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore sharded
+
 import (
 	"database/sql"
 	"errors"
@@ -34,6 +36,18 @@ func NewDBManager(c *common.ShardedDatabase) *DBSessionManager {
 	}
 
 	return manager
+}
+
+func (m *DBSessionManager) Groups() int {
+	return len(m.config.Groups)
+}
+
+func (m *DBSessionManager) ShardsInGroup(gid uint16) int {
+	group, e := m.getShardGroup(&m.config.Groups, gid)
+	if e != nil {
+		return -1
+	}
+	return len(group.Shards)
 }
 
 func (m *DBSessionManager) Connect(id uint64) (*sql.DB, error) {

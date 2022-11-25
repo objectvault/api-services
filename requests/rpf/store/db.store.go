@@ -22,20 +22,20 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBGetStoreByID(r rpf.GINProcessor, c *gin.Context) {
+func DBStoreGetByID(r rpf.GINProcessor, c *gin.Context) {
 	// Store Entry Already Exists?
 	if r.Has("store") { // YES: Do Nothing
 		return
 	}
 
 	// Get Identifier
-	id := r.MustGet("store-id").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
 	// Get Connection to Organization's Shard
-	db, err := dbm.Connect(id)
+	db, err := dbm.Connect(sid)
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return
@@ -43,7 +43,7 @@ func DBGetStoreByID(r rpf.GINProcessor, c *gin.Context) {
 
 	// Get Entity Based on Shard ID
 	entry := &orm.Store{}
-	err = entry.ByID(db, common.LocalIDFromID(id))
+	err = entry.ByID(db, common.LocalIDFromID(sid))
 
 	// Failed Retrieve?
 	if err != nil { // YES: Database Error
@@ -61,26 +61,57 @@ func DBGetStoreByID(r rpf.GINProcessor, c *gin.Context) {
 	r.SetLocal("store", entry)
 }
 
-func DBDeleteStoreByID(r rpf.GINProcessor, c *gin.Context) {
-	/*
-		// Get Identifier
-		id := r.MustGet("store-id").(uint64)
+func DBStoreMarkDeletedByID(r rpf.GINProcessor, c *gin.Context) {
+	// Get Identifier
+	sid := r.MustGet("request-store").(uint64)
+	uid := r.MustGet("user-id").(uint64)
 
-		// Get Database Connection Manager
-		dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-		// Get Connection to Organization's Shard
-		db, err := dbm.Connect(id)
-		if err != nil { // YES: Database Error
-			r.Abort(5100, nil)
-			return
-		}
-	*/
-	// TODO: IMPLEMENT
-	r.Abort(5999, nil)
+	// Get Connection to Store's Shard
+	db, e := dbm.Connect(sid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Mark Store Deleted
+	b, e := orm.StoreMarkDeleted(db, uid, common.LocalIDFromID(sid))
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Does Store Exist?
+	if !b { // NO: Abort
+		r.Abort(4200, nil)
+	}
 }
 
-func DBInsertStore(r rpf.GINProcessor, c *gin.Context) {
+func DBStoreDeleteByID(r rpf.GINProcessor, c *gin.Context) {
+	// Get Identifier
+	sid := r.MustGet("request-store").(uint64)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Store's Shard
+	db, e := dbm.Connect(sid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Delete Store Entry
+	_, e = orm.StoreDelete(db, common.LocalIDFromID(sid))
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+}
+
+func DBStoreInsert(r rpf.GINProcessor, c *gin.Context) {
 	// Get Store
 	store := r.MustGet("store").(*orm.Store)
 
@@ -116,31 +147,31 @@ func DBInsertStore(r rpf.GINProcessor, c *gin.Context) {
 	fmt.Printf("STORE ID [%s]\n", h)
 
 	// Save Shard Information and Organization Entry
-	r.SetLocal("store-id", store_id)
+	r.SetLocal("request-store", store_id)
 }
 
-func DBUpdateStore(r rpf.GINProcessor, c *gin.Context) {
-	// Store ID
-	store_id := r.MustGet("store-id").(uint64)
+func DBStoreUpdate(r rpf.GINProcessor, c *gin.Context) {
+	// Get Identifier
+	sid := r.MustGet("request-store").(uint64)
 
 	// Get Store
 	store := r.MustGet("store").(*orm.Store)
 
 	// User ID of Modifier
-	user_id := r.MustGet("user-id").(uint64)
+	uid := r.MustGet("user-id").(uint64)
 
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
 	// Get Connection to Shard
-	db, err := dbm.Connect(store_id)
+	db, err := dbm.Connect(sid)
 	if err != nil { // YES: Database Error
 		r.Abort(5100, nil)
 		return
 	}
 
 	// Set Modifier
-	store.SetModifier(user_id)
+	store.SetModifier(uid)
 
 	// Save Store
 	err = store.Flush(db, false)

@@ -1,4 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
+// cSpell:ignore bson, ltype
 package orm
 
 /*
@@ -35,12 +35,33 @@ type UserObjectRegistry struct {
 	favorite bool    // FLAG: Is Container Favorite
 }
 
-func DeleteRegisteredUserObject(db *sql.DB, user uint64, object uint64) (bool, error) {
+func UserObjectsDeleteAll(db *sql.DB, object uint64) (uint64, error) {
+	// Create SQL Statement
+	s := sqlf.DeleteFrom("registry_user_objects").
+		Where("id_object= ?", object)
+
+	// Execute
+	r, e := s.ExecAndClose(context.TODO(), db)
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	// How many entries deleted?
+	c, e := r.RowsAffected()
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+	return uint64(c), nil
+}
+
+func UserObjectDelete(db *sql.DB, user uint64, object uint64) (bool, error) {
 	// Create SQL Statement
 	s := sqlf.DeleteFrom("registry_user_objects").
 		Where("id_user = ? and id_object= ?", user, object)
 
-	// Execute Count
+	// Execute
 	_, e := s.ExecAndClose(context.TODO(), db)
 	if e != nil { // YES
 		log.Printf("query error: %v\n", e)
@@ -58,7 +79,7 @@ func DeleteRegisteredUserObject(db *sql.DB, user uint64, object uint64) (bool, e
 	return true, nil
 }
 
-func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions) (uint64, error) {
+func UserObjectsByTypeCount(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -84,7 +105,7 @@ func CountRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q q
 	return count, nil
 }
 
-func CountRegisteredUserObjects(db *sql.DB, user uint64, q query.TQueryConditions) (uint64, error) {
+func UserObjectsCount(db *sql.DB, user uint64, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -111,7 +132,7 @@ func CountRegisteredUserObjects(db *sql.DB, user uint64, q query.TQueryCondition
 }
 
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
-func QueryRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+func UserObjectsByTypeQuery(db *sql.DB, user uint64, ltype uint16, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
 	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
@@ -209,7 +230,7 @@ func QueryRegisteredUserObjectsByType(db *sql.DB, user uint64, ltype uint16, q q
 	return list, nil
 }
 
-func QueryRegisteredUserObjects(db *sql.DB, user uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+func UserObjectsQuery(db *sql.DB, user uint64, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
 	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 

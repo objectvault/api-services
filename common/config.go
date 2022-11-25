@@ -1,4 +1,4 @@
-// cSpell:ignore gonic, orgs, paulo, ferreira
+// cSpell:ignore gonic, orgs, sharded
 package common
 
 /*

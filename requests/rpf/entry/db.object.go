@@ -22,9 +22,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
-	// Get Identifier's
-	sid := r.MustGet("store-id").(uint64)
+func DBStoreObjectsList(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Parameters
+	sid := r.MustGet("request-store").(uint64)
 	pid := r.MustGet("store-parent-id").(uint32)
 
 	// Get Database Connection Manager
@@ -51,9 +51,9 @@ func DBStoreObjectList(r rpf.GINProcessor, c *gin.Context) {
 	r.Set("store-objects", objs)
 }
 
-func DBGetStoreObjectByID(r rpf.GINProcessor, c *gin.Context) {
-	// Get User Identifier (GLOBAL ID)
-	sid := r.MustGet("store-id").(uint64)
+func DBStoreObjectGetByID(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Parameters
+	sid := r.MustGet("request-store").(uint64)
 	oid := r.MustGet("request-entry-id").(uint32)
 
 	// Get Database Connection Manager
@@ -86,10 +86,10 @@ func DBGetStoreObjectByID(r rpf.GINProcessor, c *gin.Context) {
 	r.SetLocal("store-object", obj)
 }
 
-func DBInsertStoreObject(r rpf.GINProcessor, c *gin.Context) {
-	// Get Organization ID
+func DBStoreObjectInsert(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Parameters
+	sid := r.MustGet("request-store").(uint64)
 	obj := r.MustGet("store-object").(*orm.StoreObject)
-	sid := r.MustGet("store-id").(uint64)
 
 	// User ID of Creator
 	uid := r.MustGet("user-id").(uint64)
@@ -115,10 +115,10 @@ func DBInsertStoreObject(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func DBUpdateStoreObject(r rpf.GINProcessor, c *gin.Context) {
-	// Get Organization ID
+func DBStoreObjectUpdate(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Parameters
+	sid := r.MustGet("request-store").(uint64)
 	obj := r.MustGet("store-object").(*orm.StoreObject)
-	sid := r.MustGet("store-id").(uint64)
 
 	// User ID of Creator
 	uid := r.MustGet("user-id").(uint64)
@@ -144,9 +144,9 @@ func DBUpdateStoreObject(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func DBDeleteStoreObject(r rpf.GINProcessor, c *gin.Context) {
-	// Get Organization ID
-	sid := r.MustGet("store-id").(uint64)
+func DBStoreObjectDelete(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Parameters
+	sid := r.MustGet("request-store").(uint64)
 	obj := r.MustGet("store-object").(*orm.StoreObject)
 
 	// Get Database Connection Manager
@@ -161,8 +161,29 @@ func DBDeleteStoreObject(r rpf.GINProcessor, c *gin.Context) {
 
 	switch obj.Type() {
 	case orm.OBJECT_TYPE_FOLDER:
-		orm.DeleteStoreObjectFolder(db, common.LocalIDFromID(sid), obj.ID())
+		orm.StoreObjectDeleteFolder(db, common.LocalIDFromID(sid), obj.ID())
 	default:
-		orm.DeleteStoreObject(db, common.LocalIDFromID(sid), obj.ID())
+		orm.StoreObjectDelete(db, common.LocalIDFromID(sid), obj.ID())
+	}
+}
+
+func DBStoreObjectsDeleteAll(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Parameters
+	sid := r.MustGet("request-store").(uint64)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Store Shard
+	db, e := dbm.Connect(sid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	_, e = orm.StoreObjectsDeleteAll(db, common.LocalIDFromID(sid))
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
 	}
 }

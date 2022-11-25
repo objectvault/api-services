@@ -20,7 +20,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBRegistryUserStoreList(r rpf.GINProcessor, c *gin.Context) {
+func DBUserStoresList(r rpf.GINProcessor, c *gin.Context) {
 	// Get Required Parameters
 	user_id := r.MustGet("user-id").(uint64)
 
@@ -36,7 +36,7 @@ func DBRegistryUserStoreList(r rpf.GINProcessor, c *gin.Context) {
 
 	// List Registered User Orgs
 	q := r.MustGet("query-conditions").(*query.QueryConditions)
-	list, err := orm.QueryRegisteredUserObjectsByType(db, user_id, common.OTYPE_STORE, q, true)
+	list, err := orm.UserObjectsByTypeQuery(db, user_id, common.OTYPE_STORE, q, true)
 
 	// Failed Retrieving User?
 	if err != nil { // YES: Database Error
@@ -46,4 +46,28 @@ func DBRegistryUserStoreList(r rpf.GINProcessor, c *gin.Context) {
 
 	// Save List
 	r.Set("registry-user-objects", list)
+}
+
+func DBSingleShardUsersObjectDeleteAll(r rpf.GINProcessor, c *gin.Context) {
+	// Get Required Parameters
+	rid := r.MustGet("reference-id").(uint64)
+	oid := r.MustGet("object-id").(uint64)
+
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
+
+	// Get Connection to Reference IDs Group and Shard
+	db, e := dbm.Connect(rid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Delete Entry
+	_, e = orm.UserObjectsDeleteAll(db, oid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
 }

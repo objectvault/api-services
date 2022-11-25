@@ -115,7 +115,7 @@ func AssertNotLastUserRolesManager(r rpf.GINProcessor, c *gin.Context) {
 		}
 
 		// Get Existing Roles Manager Count
-		count, e := orm.CountRegisteredObjectRoleManagers(db, oid)
+		count, e := orm.ObjectUsersRoleManagersCount(db, oid)
 		if e != nil { // ERROR: Abort
 			r.Abort(5100, nil)
 			return
@@ -149,7 +149,7 @@ func AssertNotLastUserInvitesManager(r rpf.GINProcessor, c *gin.Context) {
 		}
 
 		// Get Existing Invitation Manager Count
-		count, e := orm.CountRegisteredObjectInviteManagers(db, oid)
+		count, e := orm.ObjectUsersInviteManagersCount(db, oid)
 		if e != nil { // ERROR: Abort
 			r.Abort(5100, nil)
 			return

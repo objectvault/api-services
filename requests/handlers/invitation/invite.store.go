@@ -188,7 +188,7 @@ func CreateStoreInvitation(c *gin.Context) {
 			r.SetLocal("object-id", s.Organization())
 			r.SetLocal("user-id", u.ID())
 		},
-		object.DBRegistryObjectUserFind,
+		object.DBObjectUserFind,
 		// Make sure we don't have existing store invitation
 		invitation.AssertNoPendingInvitation,
 	)

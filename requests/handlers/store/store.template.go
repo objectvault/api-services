@@ -126,7 +126,7 @@ func AddTemplateToStore(c *gin.Context) {
 		template.DBGetTemplate,
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Set Object
-			r.SetLocal("object-id", r.MustGet("store-id"))
+			r.SetLocal("object-id", r.MustGet("request-store"))
 			// Get Template
 			t := r.MustGet("template").(*orm.Template)
 			r.SetLocal("template-title", t.Title())
@@ -166,7 +166,7 @@ func DeleteTemplateFromStore(c *gin.Context) {
 		template.ExtractGINParameterTemplate,
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Set Object to To Search
-			r.SetLocal("object-id", r.MustGet("store-id"))
+			r.SetLocal("object-id", r.MustGet("request-store"))
 			r.SetLocal("template-name", r.MustGet("request-template"))
 		},
 		template.AssertTemplateInObject,

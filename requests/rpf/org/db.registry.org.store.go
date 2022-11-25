@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func DBRegistryOrgStoreList(r rpf.GINProcessor, c *gin.Context) {
+func DBOrgStoresList(r rpf.GINProcessor, c *gin.Context) {
 	// Get User Identifier
 	org := r.MustGet("org-id").(uint64)
 
@@ -35,7 +35,7 @@ func DBRegistryOrgStoreList(r rpf.GINProcessor, c *gin.Context) {
 
 	// List Registered Org Stores
 	q := r.MustGet("query-conditions").(*query.QueryConditions)
-	stores, err := orm.QueryRegisteredStores(db, org, q, true)
+	stores, err := orm.OrgStoresQuery(db, org, q, true)
 
 	// Failed Retrieving User?
 	if err != nil { // YES: Database Error
@@ -47,7 +47,7 @@ func DBRegistryOrgStoreList(r rpf.GINProcessor, c *gin.Context) {
 	r.Set("registry-stores", stores)
 }
 
-func DBRegistryOrgStoreFind(r rpf.GINProcessor, c *gin.Context) {
+func DBOrgStoreFind(r rpf.GINProcessor, c *gin.Context) {
 	// GetSearch Parameters
 	org := r.MustGet("org-id").(uint64)
 	store := r.MustGet("request-store")
@@ -87,10 +87,10 @@ func DBRegisterStoreWithOrg(r rpf.GINProcessor, c *gin.Context) {
 	store := r.MustGet("store").(*orm.Store)
 
 	// Get Store Global ID
-	store_id := r.MustGet("store-id").(uint64)
+	store_id := r.MustGet("request-store").(uint64)
 
 	// Get Parent Organization ID
-	org_id := r.MustGet("org-id").(uint64)
+	org_id := r.MustGet("request-org").(uint64)
 
 	// Get Database Connection Manager
 	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
@@ -118,20 +118,30 @@ func DBRegisterStoreWithOrg(r rpf.GINProcessor, c *gin.Context) {
 	r.SetLocal("registry-store", e)
 }
 
-func DBRegistryDeleteStore(r rpf.GINProcessor, c *gin.Context) {
-	// Get Store
-	// registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
+func DBOrgStoreDelete(r rpf.GINProcessor, c *gin.Context) {
+	// Get Entry
+	oid := r.MustGet("request-org").(uint64)
+	sid := r.MustGet("request-store").(uint64)
 
-	// TODO : Implement
+	// Get Database Connection Manager
+	dbm := c.MustGet("dbm").(*orm.DBSessionManager)
 
-	/* IDEA:
-	 * - Mark Store Registration as Deleted
-	 * - Queue Action to Delete Store from System (With All Associated Objects)
-	 */
-	r.Abort(5999, nil)
+	// Registry ORG <--> STORE is On Organization Shard
+	db, e := dbm.Connect(oid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
+
+	// Delete Entry
+	_, e = orm.OrgStoreDelete(db, oid, sid)
+	if e != nil { // YES: Database Error
+		r.Abort(5100, nil)
+		return
+	}
 }
 
-func DBRegistryOrgStoreUpdate(r rpf.GINProcessor, c *gin.Context) {
+func DBOrgStoreUpdate(r rpf.GINProcessor, c *gin.Context) {
 	// Get Store Registry Entry
 	e := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
 
@@ -153,7 +163,7 @@ func DBRegistryOrgStoreUpdate(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func DBRegistryUpdateFromStore(r rpf.GINProcessor, c *gin.Context) {
+func DBOrgStoreUpdateFromStore(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entry
 	e := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
 

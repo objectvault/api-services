@@ -49,7 +49,7 @@ func AddinNoExistingUserRegistration(g rpf.GINGroupProcessor, opts shared.TAddin
 						g.SetLocal("registry-object-user-save", g.Get("registry-object-user"))
 						g.Unset("registry-object-user")
 					},
-					DBRegistryObjectUserFindOrNil,
+					DBObjectUserFindOrNil,
 					func(g rpf.GINProcessor, c *gin.Context) {
 						ou := g.Get("registry-object-user")
 						if ou != nil { // ABORT: User already registered with Object

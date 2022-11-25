@@ -69,7 +69,7 @@ func groupAcceptOrganizationInvite(parent rpf.GINProcessor, u *orm.UserRegistry,
 				r.SetLocal("register-roles", inv.Roles())
 			}
 		},
-		object.DBRegistryObjectUserFindOrNil,
+		object.DBObjectUserFindOrNil,
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Does Registration Already Exist?
 			if r.Has("registry-object-user") {
@@ -78,7 +78,7 @@ func groupAcceptOrganizationInvite(parent rpf.GINProcessor, u *orm.UserRegistry,
 					u.AddRoles(r.MustGet("register-roles").([]uint32))
 				}
 
-				object.DBRegistryObjectUserFlush(r, c)
+				object.DBObjectUserFlush(r, c)
 			} else { // NO: Register User with Org
 				object.DBRegisterUserWithOrg(r, c)
 			}
@@ -118,10 +118,9 @@ func groupAcceptStoreInvite(parent rpf.GINProcessor, u *orm.UserRegistry, i *orm
 		func(r rpf.GINProcessor, c *gin.Context) {
 			inv := r.MustGet("registry-invitation").(*orm.InvitationRegistry)
 
-			r.SetLocal("store-id", inv.Object())
 			r.SetLocal("request-store", inv.Object())
 		},
-		store.DBGetStoreByID,
+		store.DBStoreGetByID,
 		// Verify Store Parent Organization Unlocked
 		func(r rpf.GINProcessor, c *gin.Context) {
 			store := r.MustGet("store").(*orm.Store)
@@ -131,7 +130,7 @@ func groupAcceptStoreInvite(parent rpf.GINProcessor, u *orm.UserRegistry, i *orm
 		org.DBRegistryOrgFindByID,
 		org.AssertOrgUnblocked,
 		// Verify Store Unlocked
-		org.DBRegistryOrgStoreFind,
+		org.DBOrgStoreFind,
 		store.AssertStoreUnblocked,
 		// Get Store Key
 		invitation.DBGetInvitationFromRegistry,
