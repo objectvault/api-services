@@ -1,4 +1,4 @@
-// cSpell:ignore goginrpf, gonic, paulo ferreira
+// cSpell:ignore orgname
 package org
 
 /*

@@ -48,21 +48,6 @@ func GetOrgStores(c *gin.Context) {
 		return nil
 	})
 
-	/*
-		request.Chain = rpf.ProcessChain{
-			// Extract Route Parameters
-			org.ExtractGINParameterOrg,
-			// Validate Basic Request Settings
-			func(r rpf.GINProcessor, c *gin.Context) {
-				// Get Request Organization ID
-				oid := r.MustGet("request-org").(uint64)
-
-				// Initialize Request
-				g := org.GroupOrgRequestInitialize(r, oid, roles, false)
-				g.Run()
-			},
-	*/
-
 	// Request Processing
 	request.Append(
 		// Extract Query Parameters //

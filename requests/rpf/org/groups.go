@@ -1,4 +1,4 @@
-// cSpell:ignore ginrpf, gonic, paulo ferreira
+// cSpell:ignore orgid, userid
 package org
 
 /*
