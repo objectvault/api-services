@@ -1,4 +1,4 @@
-// cSpell:ignore bson, paulo ferreira
+// cSpell:ignore orgid, orgname
 package orm
 
 /*
@@ -37,7 +37,7 @@ type OrgRegistry struct {
 // TODO Implement Delete (Both From Within an Entry and Without a Structure)
 // TODO VERIFY if Organization Long Name 'name' should be part of registry entry
 
-func CountRegisteredOrgs(db *sql.DB, q query.TQueryConditions) (uint64, error) {
+func RegisteredOrgsCount(db *sql.DB, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -57,7 +57,7 @@ func CountRegisteredOrgs(db *sql.DB, q query.TQueryConditions) (uint64, error) {
 	return count, nil
 }
 
-func QueryRegisteredOrgs(db *sql.DB, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+func RegisteredOrgsQuery(db *sql.DB, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
 	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
@@ -118,11 +118,20 @@ func QueryRegisteredOrgs(db *sql.DB, q query.TQueryConditions, c bool) (query.TQ
 		s.OrderBy("id_org")
 	}
 
+	// Apply Extra Query Conditions
+	e := query.ApplyFilterConditions(s, q)
+	if e != nil { // Error Occurred
+		// DEBUG: Print SQL
+		log.Print(s.String())
+		log.Printf("query error: %v\n", e)
+		return nil, e
+	}
+
 	// DEBUG: Print SQL
 	fmt.Print(s.String())
 
 	// Execute Query
-	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
+	e = s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		orgid := id
 
 		o := OrgRegistry{
@@ -132,7 +141,8 @@ func QueryRegisteredOrgs(db *sql.DB, q query.TQueryConditions, c bool) (query.TQ
 		}
 
 		if name.Valid {
-			o.name = &name.String
+			n := name.String
+			o.name = &n
 		}
 
 		list.AppendValue(&o)
@@ -146,7 +156,7 @@ func QueryRegisteredOrgs(db *sql.DB, q query.TQueryConditions, c bool) (query.TQ
 
 	// Is Count of Entries Requested?
 	if c { // YES: Count Entries under Same Conditions
-		count, e := CountRegisteredOrgs(db, q)
+		count, e := RegisteredOrgsCount(db, q)
 		if e != nil {
 			return nil, e
 		}
@@ -260,7 +270,7 @@ func (o *OrgRegistry) ByAlias(db *sql.DB, alias string) error {
 		if name.Valid {
 			o.name = &name.String
 		}
-		o.stored = true // Registered Organiztation
+		o.stored = true // Registered Organization
 	}
 
 	return nil
