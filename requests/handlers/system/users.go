@@ -12,7 +12,6 @@ package system
  */
 
 import (
-	"github.com/objectvault/api-services/common"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/org"
 	"github.com/objectvault/api-services/requests/rpf/session"
@@ -28,37 +27,30 @@ func GetUsers(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("GET.SYSTEM.USERS", c, 1000, shared.JSONResponse)
 
+	// Required Roles : Organization 0 Access with Roles Users List
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_LIST)}
+
 	// TODO Session in System Mode? Should we force mode uses?
-	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
 
-				// Required Roles : Organization Access with Role os System Orgs List
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_LIST)}
+		return nil
+	})
 
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, common.SYSTEM_ORGANIZATION, roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
-		},
-		// Extract Query Parameters //
+	// Request Processing
+	request.Append(
 		func(r rpf.GINProcessor, c *gin.Context) {
 			gQuery := shared.GroupExtractQueryConditions(r, nil, func(f string) string {
 				switch f {
 				case "id":
 					return "id_user"
-				case "username":
+				case "alias":
 					return "username"
 				case "email":
 					return "email"
@@ -80,8 +72,10 @@ func GetUsers(c *gin.Context) {
 		user.DBRegistryUserList,
 		// Export Results //
 		user.ExportRegistryUserList,
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -92,34 +86,30 @@ func DeleteUsers(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("DELETE.SYSTEM.USERS", c, 1000, shared.JSONResponse)
 
-	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
+	// Required Roles : Organization 0 Access with Roles User Delete
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_DELETE)}
 
-				// Required Roles : Organization Access with Role os System Orgs List
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_DELETE)}
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
 
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, common.SYSTEM_ORGANIZATION, roles, true, true, false).
-					Run()
+		return nil
+	})
 
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
-		},
-		/* REQUEST VALIDATION */
+	// Request Processing
+	request.Append(
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.Abort(5999, nil)
 		},
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -130,37 +120,32 @@ func PutUsersLock(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("PUT.SYSTEM.USERS.LOCK", c, 1000, shared.JSONResponse)
 
-	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	// Required Roles : Organization 0 Access with Roles User Update
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Request Processing
+	request.Append(
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
-		// Validate Session Users Permission
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
-
-				// Required Roles : Organization Access with Role os System Orgs List
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
-
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, common.SYSTEM_ORGANIZATION, roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
-		},
-		/* REQUEST VALIDATION */
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.Abort(5999, nil)
 		},
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -172,36 +157,32 @@ func PutUsersBlock(c *gin.Context) {
 	request := rpf.RootProcessor("PUT.SYSTEM.USERS.BLOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	// Required Roles : Organization 0 Access with Roles User Update
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Request Processing
+	request.Append(
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
-		// Validate Session Users Permission
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
-
-				// Required Roles : Organization Access with Role os System Orgs List
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
-
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, common.SYSTEM_ORGANIZATION, roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
-		},
-		/* REQUEST VALIDATION */
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.Abort(5999, nil)
 		},
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()

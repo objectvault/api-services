@@ -1,3 +1,4 @@
+// cSpell:ignore hasher, userid
 package orm
 
 /*
@@ -44,7 +45,7 @@ func UserRegistryFromUser(u *User) (*UserRegistry, error) {
 	return r, nil
 }
 
-func CountRegisteredUsers(db *sql.DB, q query.TQueryConditions) (uint64, error) {
+func RegisteredUsersCount(db *sql.DB, q query.TQueryConditions) (uint64, error) {
 	// Query Results Values
 	var count uint64
 
@@ -64,7 +65,7 @@ func CountRegisteredUsers(db *sql.DB, q query.TQueryConditions) (uint64, error) 
 	return count, nil
 }
 
-func QueryRegisteredUsers(db *sql.DB, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
+func RegisteredUsersQuery(db *sql.DB, q query.TQueryConditions, c bool) (query.TQueryResults, error) {
 	var list query.QueryResults = query.QueryResults{}
 	list.SetMaxLimit(100) // Hard Code Maximum Limit
 
@@ -123,10 +124,19 @@ func QueryRegisteredUsers(db *sql.DB, q query.TQueryConditions, c bool) (query.T
 		s.OrderBy("id_user")
 	}
 
+	// Apply Extra Query Conditions
+	e := query.ApplyFilterConditions(s, q)
+	if e != nil { // Error Occurred
+		// DEBUG: Print SQL
+		log.Print(s.String())
+		log.Printf("query error: %v\n", e)
+		return nil, e
+	}
+
 	// DEBUG: Print SQL
 	fmt.Print(s.String())
 
-	e := s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
+	e = s.QueryAndClose(context.TODO(), db, func(row *sql.Rows) {
 		userid := id
 
 		u := UserRegistry{
@@ -147,7 +157,7 @@ func QueryRegisteredUsers(db *sql.DB, q query.TQueryConditions, c bool) (query.T
 
 	// Is Count of Entries Requested?
 	if c { // YES: Count Entries under Same Conditions
-		count, e := CountRegisteredUsers(db, q)
+		count, e := RegisteredUsersCount(db, q)
 		if e != nil {
 			return nil, e
 		}

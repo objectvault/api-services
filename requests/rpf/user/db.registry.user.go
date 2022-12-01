@@ -36,7 +36,7 @@ func DBRegistryUserList(r rpf.GINProcessor, c *gin.Context) {
 
 	// List Registered User
 	q := r.MustGet("query-conditions").(*query.QueryConditions)
-	users, err := orm.QueryRegisteredUsers(db, q, true)
+	users, err := orm.RegisteredUsersQuery(db, q, true)
 
 	// Failed Retrieving User?
 	if err != nil { // YES: Database Error
