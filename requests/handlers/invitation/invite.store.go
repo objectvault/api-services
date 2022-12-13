@@ -1,4 +1,4 @@
-// cSpell:ignore goginrpf, gonic, orgs, paulo, ferreira
+// cSpell:ignore vmap, xjson
 package invitation
 
 /*
@@ -140,7 +140,7 @@ func CreateStoreInvitation(c *gin.Context) {
 				return nil
 			})
 
-			// OPTIONAL: Invitation Experiation Period
+			// OPTIONAL: Invitation Expiration Period
 			vmap.Optional("expiry_in_days", nil, xjson.F_xToUint64, uint64(3), func(v interface{}) error {
 				ui := v.(uint64)
 				i.SetExpiresIn(uint16(ui))
