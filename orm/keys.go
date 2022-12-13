@@ -35,6 +35,25 @@ type Key struct {
 	created    *time.Time // Creation Timestamp
 }
 
+func KeyGetLastID(db sqlf.Executor, creator uint64) (uint32, error) {
+	// Query Results Values
+	var id uint32
+
+	// Create SQL Statement
+	e := sqlf.From("ciphers").
+		Select("MAX(id)").To(&id).
+		Where("id_creator = ?", creator).
+		QueryRowAndClose(context.TODO(), db)
+
+		// Error Executing Query?
+	if e != nil { // YES
+		log.Printf("query error: %v\n", e)
+		return 0, e
+	}
+
+	return id, nil
+}
+
 func NewKey(creator uint64, bytes []byte, exp time.Time) ([]byte, *Key, error) {
 	// Create a Key Object
 	k := &Key{}
@@ -238,14 +257,11 @@ func (o *Key) Flush(db sqlf.Executor, force bool) error {
 
 		_, e = s.Exec(context.TODO(), db)
 
-		// Error Occured?
-		if e == nil { // NO: Get Last Insert ID
+		// Error Occurred?
+		if e == nil { // NO: Get Last Key ID
 			var id uint32
-			e = sqlf.Select("LAST_INSERT_ID()").
-				To(&id).
-				QueryRowAndClose(context.TODO(), db)
-
-			// Error Occured?
+			id, e = KeyGetLastID(db, *o.creator)
+			// Error Occurred?
 			if e == nil { // NO: Set Object ID
 				o.id = &id
 			}
