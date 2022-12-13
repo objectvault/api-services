@@ -790,15 +790,38 @@ func DeleteInvite(c *gin.Context) {
 	request := rpf.RootProcessor("DELETE.INVITE", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		// Extract Route Parameters
-		object.ExtractGINParameterObjectID,
-		// Dynamically Create Request
+	request.Chain = rpf.ProcessChain{}
+
+	// Session
+	request.Append(
+		// Make user we have an Active Session
+		session.AssertUserSession,
+	)
+
+	// Get Invitation Information
+	request.Append(
+		// Extract Request Parameters
+		invitation.ExtractGINParameterInvitationID,
+		// Get Invitation by ID
 		func(r rpf.GINProcessor, c *gin.Context) {
 			// Get Request Object ID
-			oid := r.MustGet("request-object-id").(uint64)
+			iid := r.MustGet("request-invite-id").(uint64)
 
 			// Save as Request Object ID
+			r.SetLocal("invitation-id", iid)
+		},
+		invitation.DBGetRegistryInvitationByID,
+	)
+
+	// Get Invitation Information
+	request.Append(
+		// Dynamically Create Request
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Request Invitation
+			i := r.MustGet("registry-invitation").(*orm.InvitationRegistry)
+
+			// Save as Request Object ID
+			oid := i.Object()
 			r.SetLocal("object-id", oid)
 
 			if common.IsObjectOfType(oid, common.OTYPE_ORG) {
@@ -832,27 +855,18 @@ func DeleteInvite(c *gin.Context) {
 					return nil
 				})
 			} else {
-				// TODO: errors.New("Invalid Object ID")
-				r.Abort(5303, nil)
+				r.Abort(4390, nil) // Invalid Invitation ID
 			}
 
-			// Request Process //
+			// Revoke Invitation
 			request.Append(
-				// Get Invitation Registry Entry
-				invitation.ExtractGINParameterInvitationID,
-				invitation.DBGetRegistryInvitationByID,
-				// Assert Invitation Meets Requirements
-				invitation.AssertInvitationActive,
-				// Assert Invitation ID is For Request Object Invitation
-				invitation.AssertSameObjectInvitation,
-				// Update Invitation
 				invitation.DBInvitationRevoked,
 			)
-		},
-	}
 
-	// Save Session
-	session.AddinSaveSession(request, nil)
+			// Save Session
+			session.AddinSaveSession(request, nil)
+		},
+	)
 
 	// Start Request Processing
 	request.Run()
