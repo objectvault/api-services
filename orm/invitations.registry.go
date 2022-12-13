@@ -69,7 +69,7 @@ func HasPendingInvitation(db *sql.DB, object uint64, invitee_email string) (bool
 	// Create SQL Statement
 	s := sqlf.From("registry_invites").
 		Select("COUNT(*)").To(&count).
-		Where("id_object = ? and invitee_email = ?", object, invitee_email)
+		Where("id_object = ? and invitee_email = ? and state = 0", object, invitee_email)
 
 	// DEBUG: Print SQL
 	fmt.Println(s.String())
