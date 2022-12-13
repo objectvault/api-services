@@ -33,14 +33,14 @@ func (ore *RegistryInviteToJSON) MarshalJSON() ([]byte, error) {
 	return json.Marshal(&struct {
 		ID         string `json:"id"`
 		UID        string `json:"uid"`
-		Creator    uint64 `json:"creator"`
+		Creator    string `json:"creator"`
 		Invitee    string `json:"invitee"`
 		Expiration string `json:"expiration"`
 		State      uint16 `json:"state"`
 	}{
 		ID:         fmt.Sprintf(":%x", ore.Entry.ID()),
 		UID:        ore.Entry.UID(),
-		Creator:    ore.Entry.Creator(),
+		Creator:    fmt.Sprintf(":%x", ore.Entry.Creator()),
 		Invitee:    ore.Entry.InviteeEmail(),
 		Expiration: ore.Entry.ExpirationUTC(),
 		State:      ore.Entry.State(),
