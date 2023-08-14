@@ -202,7 +202,7 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 
 			// SINGLE INVITE
 			organization.POST("/invite", pkginvites.CreateOrgInvitation) // IMPLEMENTED
-			// RESEND: Use DELETE /invite/:id
+			// RESEND: Use PUT /invite/:id
 			// DELETE: Use DELETE /invite/:id
 
 			// ORGANIZATION STORE MANAGEMENT //
