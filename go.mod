@@ -11,7 +11,7 @@ require (
 	github.com/objectvault/common v0.0.3
 	github.com/objectvault/filter-parser v0.0.3
 	github.com/objectvault/goginrpf v0.0.7
-	github.com/objectvault/queue-interface v0.0.9
+	github.com/objectvault/queue-interface v0.0.10
 	github.com/pjacferreira/sqlf v1.1.2-pf
 )
 
@@ -30,7 +30,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/pelletier/go-toml/v2 v2.0.2 // indirect
-	github.com/streadway/amqp v1.0.0 // indirect
+	github.com/rabbitmq/amqp091-go v1.8.0 // indirect
 	github.com/ugorji/go/codec v1.2.7 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e // indirect
