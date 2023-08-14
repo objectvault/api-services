@@ -182,7 +182,7 @@ func CreateOrgInvitation(c *gin.Context) {
 			r.SetLocal("from-user-name", session.Get("user-name"))
 
 			// Message Queue
-			r.SetLocal("queue", "action:in")
+			r.SetLocal("queue", "q.actions.inbox")
 		},
 		queue.CreateInvitationMessage,
 		queue.SendQueueMessage,

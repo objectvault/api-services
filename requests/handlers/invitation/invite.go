@@ -767,7 +767,7 @@ func ResendInvite(c *gin.Context) {
 					r.SetLocal("from-user-name", session.Get("user-name"))
 
 					// Message Queue
-					r.SetLocal("queue", "action:in")
+					r.SetLocal("queue", "q.actions.inbox")
 				},
 				invitation.DBGetInvitationByID,
 				queue.CreateInvitationMessage,
