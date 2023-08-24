@@ -42,3 +42,19 @@ func AddinRemapParameters(g rpf.GINGroupProcessor, p_map map[string]string) {
 		}
 	})
 }
+
+// Common Addin : Handler has Incomplete Implementation
+func AddinIncomplete(g rpf.GINGroupProcessor, p_map map[string]string) {
+	// Handler Incomplete
+	g.Append(func(r rpf.GINProcessor, c *gin.Context) {
+		r.Abort(5999, nil)
+	})
+}
+
+// Common Addin : Handler has not been Implemented
+func AddinToDo(g rpf.GINGroupProcessor, p_map map[string]string) {
+	// Handler Not Implemented
+	g.Append(func(r rpf.GINProcessor, c *gin.Context) {
+		r.Abort(5999, nil)
+	})
+}

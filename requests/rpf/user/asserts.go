@@ -86,3 +86,14 @@ func AssertCredentials(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 }
+
+func AssertUserNotDeleted(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request User
+	user := r.MustGet("registry-user").(*orm.UserRegistry)
+
+	// Is the User Account in Deleted Mode?
+	if user.IsDeleted() { // YES
+		r.Abort(4002, nil)
+		return
+	}
+}

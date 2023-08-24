@@ -46,6 +46,20 @@ func ValidateGUIDFormat(value string) (string, string) {
 }
 
 // Value Contains a Value that can pass as a User Reference
+func ValidateUserID(value string) (interface{}, string) {
+	// Is Valid Store ID
+	if IsValidHexID(value) { // YES
+		id, e := strconv.ParseUint(value[1:], 16, 64)
+		if e == nil {
+			return id, ""
+		}
+	}
+
+	// ELSE: No
+	return "", "Parameter Does NOT Contain Valid a User ID"
+}
+
+// Value Contains a Value that can pass as a User Reference
 func ValidateUserReference(value string) (interface{}, string) {
 	// Is Valid Store ID
 	if IsValidHexID(value) { // YES

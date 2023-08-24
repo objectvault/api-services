@@ -82,6 +82,7 @@ func RegisteredUsersQuery(db *sql.DB, q query.TQueryConditions, c bool) (query.T
 
 	// Query Results Values
 	var id uint64
+	var state uint16
 	var name, username, email string
 
 	// Create SQL Statement
@@ -89,7 +90,8 @@ func RegisteredUsersQuery(db *sql.DB, q query.TQueryConditions, c bool) (query.T
 		Select("id_user").To(&id).
 		Select("name").To(&name).
 		Select("username").To(&username).
-		Select("email").To(&email)
+		Select("email").To(&email).
+		Select("state").To(&state)
 
 	// Is OFFSET Set?
 	if list.Offset() > 0 { // YES: Use it
@@ -144,6 +146,7 @@ func RegisteredUsersQuery(db *sql.DB, q query.TQueryConditions, c bool) (query.T
 			name:     name,
 			username: username,
 			email:    email,
+			state:    state,
 		}
 
 		list.AppendValue(&u)
@@ -365,6 +368,11 @@ func (o *UserRegistry) IsBlocked() bool {
 	return HasAnyStates(o.state, STATE_BLOCKED|STATE_DELETE)
 }
 
+func (o *UserRegistry) IsDeleted() bool {
+	// GLOBAL User marked for Deletion
+	return HasAnyStates(o.state, STATE_DELETE)
+}
+
 func (o *UserRegistry) IsReadOnly() bool {
 	return HasAllStates(o.state, STATE_READONLY)
 }
@@ -553,7 +561,9 @@ func (o *UserRegistry) Flush(db sqlf.Executor, force bool) error {
 			s.Set("ciphertext", o.ciphertext)
 		}
 
-		_, e = s.ExecAndClose(context.TODO(), db)
+		_, e = s.
+			Where("id_user = ?", o.id).
+			ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

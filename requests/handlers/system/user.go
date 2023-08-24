@@ -19,6 +19,7 @@ import (
 	"github.com/objectvault/api-services/requests/rpf/invitation"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/user"
@@ -239,18 +240,74 @@ func GetUserProfile(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: DELETE User
+// TODO IMPLEMENT: DELETE User from the System
 func DeleteUser(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("DELETE.SYSTEM.USER", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		/* REQUEST VALIDATION */
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System User Role with Delete Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_DELETE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
+		// Extract : GIN Parameter 'user' //
+		user.ExtractGINParameterUserID,
+		// Can't Delete Self
+		session.AssertIfSelf,
+		// REQUEST: Get User (by Way of Registry) //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			r.Abort(5999, nil)
+			r.SetLocal("user-id", r.MustGet("request-user"))
 		},
-	}
+		user.DBRegistryUserFindByID,
+	)
+
+	// Block User and Mark as Being Deleted
+	request.Append(
+		user.AssertUserNotDeleted,
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-user").(*orm.UserRegistry)
+			registry.SetStates(orm.STATE_BLOCKED)
+			registry.SetStates(orm.STATE_DELETE)
+		},
+		user.DBRegistryUserUpdate,
+	)
+
+	// Queue Action
+	request.Append(
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
+
+			// Get Session User's Information for User
+			r.SetLocal("action-user", session.Get("user-id"))
+			r.SetLocal("action-user-name", session.Get("user-name"))
+			r.SetLocal("action-user-email", session.Get("user-email"))
+
+			// Message Queue
+			r.SetLocal("queue", "q.actions.inbox")
+		},
+		queue.CreateMessageDeleteUserFromSystem,
+		queue.SendQueueMessage,
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -262,12 +319,10 @@ func PutUserProfile(c *gin.Context) {
 	request := rpf.RootProcessor("PUT.SYSTEM.USER", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		/* REQUEST VALIDATION */
-		func(r rpf.GINProcessor, c *gin.Context) {
-			r.Abort(5999, nil)
-		},
-	}
+	request.Chain = rpf.ProcessChain{}
+
+	// Implementation Incomplete
+	shared.AddinToDo(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -437,39 +492,36 @@ func PutUserBlockState(c *gin.Context) {
 	request := rpf.RootProcessor("PUT.SYSTEM.USER.BLOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System User Role with Delete Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
 		// Extract : GIN Parameter 'user' //
-		user.ExtractGINParameterUser,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-user").(string)
-			r.Set("user", id)
-		},
+		user.ExtractGINParameterUserID,
+		// Can't Delete Self
+		session.AssertIfSelf,
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
-		// Validate Session Users Permission
+		// REQUEST: Get User (by Way of Registry) //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
-
-				// Required Roles : System User Access with Modify Function
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
-
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, uint64(0), roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
+			r.SetLocal("user-id", r.MustGet("request-user"))
 		},
-		// SEARCH Regisrty for Entry
-		user.DBRegistryUserFind,
+		user.DBRegistryUserFindByID,
 		// UPDATE Registry Entry
 		user.AssertNotSystemUserRegistry,
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -488,8 +540,10 @@ func PutUserBlockState(c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
 			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()

@@ -153,14 +153,14 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			system.PUT("/users/block/:bool", pkgsystem.PutUsersBlock)
 
 			// SINGLE USER
-			system.POST("/user", pkgsystem.PostCreateUser)      // HOW TO? SHOULD? Use Invite?
-			system.GET("/user/:user", pkgsystem.GetUserProfile) // IMPLEMENTED: Needs Testing
-			system.DELETE("/user/:user", pkgsystem.DeleteUser)
+			system.POST("/user", pkgsystem.PostCreateUser)                     // HOW TO? SHOULD? Use Invite?
+			system.GET("/user/:user", pkgsystem.GetUserProfile)                // IMPLEMENTED: Needs Testing
+			system.DELETE("/user/:user", pkgsystem.DeleteUser)                 // IMPLEMENTED: Tested 20230824
 			system.PUT("/user/:user", pkgsystem.PutUserProfile)                // WHAT Options Can the System User Change?
 			system.GET("/user/:user/lock", pkgsystem.GetUserLockState)         // IMPLEMENTED: Needs Testing
 			system.GET("/user/:user/block", pkgsystem.GetUserBlockState)       // IMPLEMENTED: Needs Testing
 			system.PUT("/user/:user/lock/:bool", pkgsystem.PutUserLockState)   // IMPLEMENTED: Needs Testing
-			system.PUT("/user/:user/block/:bool", pkgsystem.PutUserBlockState) // IMPLEMENTED: Needs Testing
+			system.PUT("/user/:user/block/:bool", pkgsystem.PutUserBlockState) // IMPLEMENTED: Tested 20230824
 
 			// GLOBAL SYSTEM ORGS MANAGEMENT //
 			// LIST BASED

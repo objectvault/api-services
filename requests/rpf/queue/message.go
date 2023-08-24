@@ -3,7 +3,10 @@ package queue
 // cSpell:ignore amqp, otype
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
+	"github.com/gofrs/uuid"
 
 	rpf "github.com/objectvault/goginrpf"
 
@@ -11,6 +14,40 @@ import (
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/queue-interface/messages"
 )
+
+func CreateMessageDeleteUserFromSystem(r rpf.GINProcessor, c *gin.Context) {
+	// Get the Required Invitation
+	user := r.MustGet("request-user").(uint64)
+
+	// Create Action Message
+	msg := &messages.ActionMessage{}
+
+	// Create GUID (V4 see https://www.sohamkamani.com/uuid-versions-explained/)
+	uid, err := uuid.NewV4()
+	if err != nil {
+		r.Abort(5920, nil)
+		return
+	}
+
+	// Initialize Action Message
+	err = messages.InitQueueAction(msg, uid.String(), "system:user:delete")
+	if err != nil { // Failed: Abort
+		r.Abort(5920, nil)
+		return
+	}
+
+	// Set User ID
+	msg.SetParameter("delete-user", fmt.Sprintf(":%x", user))
+
+	//Set Action Creator's Information
+	actionUser := r.MustGet("action-user").(uint64)
+	msg.SetParameter("action-user", fmt.Sprintf(":%x", actionUser))
+	msg.SetParameter("action-user-name", r.MustGet("action-user-name"))
+	msg.SetParameter("action-user-email", r.MustGet("action-user-email"))
+
+	// Save Activation
+	r.Set("queue-message", msg)
+}
 
 func CreateInvitationMessage(r rpf.GINProcessor, c *gin.Context) {
 	// Get the Required Invitation

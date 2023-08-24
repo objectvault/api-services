@@ -41,6 +41,25 @@ func ExtractGINParameterUser(r rpf.GINProcessor, c *gin.Context) {
 	r.SetLocal("request-user", iid)
 }
 
+func ExtractGINParameterUserID(r rpf.GINProcessor, c *gin.Context) {
+	// Initial Post Parameter Tests
+	id, message := utils.ValidateGinParameter(c, "user", true, true, false)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	iid, message := utils.ValidateUserID(id)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	r.SetLocal("request-user", iid)
+}
+
 func ExtractGINParameterObject(r rpf.GINProcessor, c *gin.Context) {
 	// Initial Post Parameter Tests
 	v, message := utils.ValidateGinParameter(c, "object", true, true, false)
