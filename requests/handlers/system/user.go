@@ -333,44 +333,41 @@ func GetUserLockState(c *gin.Context) {
 	request := rpf.RootProcessor("GET.SYSTEM.USER.LOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System User Role with Delete Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_READ)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
 		// Extract : GIN Parameter 'user' //
-		user.ExtractGINParameterUser,
+		user.ExtractGINParameterUserID,
+		// REQUEST: Get User (by Way of Registry) //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-user").(string)
-			r.Set("user", id)
+			r.SetLocal("user-id", r.MustGet("request-user"))
 		},
-		// Validate Session Users Permission
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
-
-				// Required Roles : System User Access with Read Function
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_READ)}
-
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, uint64(0), roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
-		},
-		// SEARCH Registry for Entry
-		user.DBRegistryUserFind,
+		user.DBRegistryUserFindByID,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
 			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -381,39 +378,36 @@ func PutUserLockState(c *gin.Context) {
 	request := rpf.RootProcessor("PUT.SYSTEM.USER.LOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System User Role with Delete Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
 		// Extract : GIN Parameter 'user' //
-		user.ExtractGINParameterUser,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-user").(string)
-			r.Set("user", id)
-		},
+		user.ExtractGINParameterUserID,
+		// Can't Delete Self
+		session.AssertIfSelf,
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
-		// Validate Session Users Permission
+		// REQUEST: Get User (by Way of Registry) //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
-
-				// Required Roles : System User Access with Modify Function
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
-
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, uint64(0), roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
+			r.SetLocal("user-id", r.MustGet("request-user"))
 		},
-		// SEARCH Regisrty for Entry
-		user.DBRegistryUserFind,
+		user.DBRegistryUserFindByID,
 		// UPDATE Registry Entry
 		user.AssertNotSystemUserRegistry,
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -432,8 +426,10 @@ func PutUserLockState(c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
 			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -444,44 +440,41 @@ func GetUserBlockState(c *gin.Context) {
 	request := rpf.RootProcessor("GET.SYSTEM.USER.BLOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System User Role with Delete Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_READ)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
 		// Extract : GIN Parameter 'user' //
-		user.ExtractGINParameterUser,
+		user.ExtractGINParameterUserID,
+		// REQUEST: Get User (by Way of Registry) //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-user").(string)
-			r.Set("user", id)
+			r.SetLocal("user-id", r.MustGet("request-user"))
 		},
-		// Validate Session Users Permission
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
-
-				// Required Roles : System User Access with Read Function
-				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_READ)}
-
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, uint64(0), roles, true, true, false).
-					Run()
-
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
-			}
-		},
-		// SEARCH Registry for Entry
-		user.DBRegistryUserFind,
+		user.DBRegistryUserFindByID,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-user").(*orm.UserRegistry)
 			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
