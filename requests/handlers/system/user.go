@@ -335,7 +335,7 @@ func GetUserLockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{}
 
-	// Required Roles : System User Role with Delete Function
+	// Required Roles : System User Role with Read Function
 	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_READ)}
 
 	// Do Basic ORG Request Validation
@@ -399,7 +399,7 @@ func PutUserLockState(c *gin.Context) {
 	request.Append(
 		// Extract : GIN Parameter 'user' //
 		user.ExtractGINParameterUserID,
-		// Can't Delete Self
+		// Can't Modify Self
 		session.AssertIfSelf,
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
@@ -442,7 +442,7 @@ func GetUserBlockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{}
 
-	// Required Roles : System User Role with Delete Function
+	// Required Roles : System User Role with Read Function
 	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_READ)}
 
 	// Do Basic ORG Request Validation
@@ -487,7 +487,7 @@ func PutUserBlockState(c *gin.Context) {
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{}
 
-	// Required Roles : System User Role with Delete Function
+	// Required Roles : System User Role with Update Function
 	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_USER, orm.FUNCTION_UPDATE)}
 
 	// Do Basic ORG Request Validation
@@ -506,7 +506,7 @@ func PutUserBlockState(c *gin.Context) {
 	request.Append(
 		// Extract : GIN Parameter 'user' //
 		user.ExtractGINParameterUserID,
-		// Can't Delete Self
+		// Can't Modify Self
 		session.AssertIfSelf,
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
