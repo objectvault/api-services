@@ -27,7 +27,7 @@ func GetOrgs(c *gin.Context) {
 	request := rpf.RootProcessor("GET.SYSTEM.ORGS", c, 1000, shared.JSONResponse)
 
 	// Required Roles : Organization 0 Access with Roles Orgs List
-	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_ORG, orm.FUNCTION_LIST)}
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_LIST)}
 
 	// Do Basic ORG Request Validation
 	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {

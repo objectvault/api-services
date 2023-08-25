@@ -313,6 +313,10 @@ func (o *OrgRegistry) IsActive() bool {
 	return !HasAllStates(o.state, STATE_INACTIVE)
 }
 
+func (o *OrgRegistry) IsDeleted() bool {
+	return HasAllStates(o.state, STATE_DELETE)
+}
+
 func (o *OrgRegistry) IsBlocked() bool {
 	// GLOBAL Org Access Blocked
 	return HasAnyStates(o.state, STATE_INACTIVE|STATE_BLOCKED)
@@ -427,8 +431,7 @@ func (o *OrgRegistry) Flush(db sqlf.Executor, force bool) error {
 		// Create SQL Statement
 		s := sqlf.Update("registry_orgs").
 			Set("name", o.name).
-			Set("state", o.state).
-			Where("id_org = ?", o.id)
+			Set("state", o.state)
 
 		// Is Organization Alias Set?
 		if o.alias != "" { // YES: Update that as well
@@ -436,7 +439,9 @@ func (o *OrgRegistry) Flush(db sqlf.Executor, force bool) error {
 		}
 
 		// Execute Statement
-		_, e = s.ExecAndClose(context.TODO(), db)
+		_, e = s.
+			Where("id_org = ?", o.id).
+			ExecAndClose(context.TODO(), db)
 	}
 
 	if e == nil {

@@ -12,6 +12,7 @@ package system
  */
 
 import (
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 
 	rpf "github.com/objectvault/goginrpf"
@@ -20,6 +21,7 @@ import (
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 )
@@ -91,7 +93,7 @@ func PostCreateOrg(c *gin.Context) {
 				user := gSessionUser.MustGet("registry-user").(*orm.UserRegistry)
 
 				// Required Roles : Organization 0 Access with Role Orgs Update
-				roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_ORG, orm.FUNCTION_CREATE)}
+				roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_CREATE)}
 
 				// Check User has Permissions in System Organization
 				org.GroupAssertUserOrganizationPermissions(r, user.ID(), common.SYSTEM_ORGANIZATION, roles, true, true, false).
@@ -189,43 +191,284 @@ func DeleteOrg(c *gin.Context) {
 	request := rpf.RootProcessor("DELETE.SYSTEM.ORG", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System User Role with Delete Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_DELETE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Get Organization
+	request.Append(
 		// Extract : GIN Parameter 'org' //
-		org.ExtractGINParameterOrg,
+		org.ExtractGINParameterOrgID,
+		// Can't Modify System
+		org.AssertNotSystemOrgRequest,
+		// REQUEST: Get Organization (by Way of Registry) //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			id := r.MustGet("request-org").(string)
-			r.Set("org", id)
+			r.Unset("registry-org")
+			r.SetLocal("org-id", r.MustGet("request-org"))
 		},
-		// Validate Session Users Permission
+		org.DBRegistryOrgFindByID,
+	)
+
+	// Mark Organization as Being Deleted (BLOCKED)
+	request.Append(
+		org.AssertOrgNotDeleted,
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// Is User Session?
-			gSessionUser := session.GroupGetSessionUser(r, true, false)
-			gSessionUser.Run()
-			if !r.IsFinished() { // YES
-				// Get Session User
-				user_id := gSessionUser.MustGet("user-id").(uint64)
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			registry.SetStates(orm.STATE_BLOCKED)
+			registry.SetStates(orm.STATE_DELETE)
+		},
+		org.DBRegistryOrgUpdate,
+	)
 
-				// Required Roles : Organization 0 Access with Role Orgs Update
-				roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_ORG, orm.FUNCTION_DELETE)}
+	// Queue Action
+	request.Append(
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
 
-				// Check User has Permissions in System Organization
-				org.GroupAssertUserOrganizationPermissions(r, user_id, common.SYSTEM_ORGANIZATION, roles, true, true, false).
-					Run()
+			// Get Session User's Information for User
+			r.SetLocal("action-user", session.Get("user-id"))
+			r.SetLocal("action-user-name", session.Get("user-name"))
+			r.SetLocal("action-user-email", session.Get("user-email"))
 
-				// Session Requirements Passed?
-				if !r.IsFinished() { // YES: Save User Information
-					r.SetLocal("user-id", user_id)
-				}
+			// Message Queue
+			r.SetLocal("queue", "q.actions.inbox")
+		},
+		queue.CreateMessageDeleteOrgFromSystem,
+		queue.SendQueueMessage,
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
+}
+
+func GetOrgLockState(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("GET.SYSTEM.ORG.LOCK", c, 1000, shared.JSONResponse)
+
+	// Request Processing Chain
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System Organization Role with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_READ)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
+		// Extract : GIN Parameter 'org' //
+		org.ExtractGINParameterOrgID,
+		// REQUEST: Get Organization (by Way of Registry) //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.Unset("registry-org")
+			r.SetLocal("org-id", r.MustGet("request-org"))
+		},
+		org.DBRegistryOrgFindByID,
+		// CALCULATE RESPONSE //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
+		},
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
+}
+
+func PutOrgLockState(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("PUT.SYSTEM.ORG.LOCK", c, 1000, shared.JSONResponse)
+
+	// Request Processing Chain
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System Organization Role with Update Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_UPDATE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Process Request
+	request.Append(
+		// Extract : GIN Parameter 'org' //
+		org.ExtractGINParameterOrgID,
+		// Can't Modify System
+		org.AssertNotSystemOrgRequest,
+		// Extract : GIN Parameter 'bool' //
+		shared.ExtractGINParameterBooleanValue,
+		// REQUEST: Get Organization (by Way of Registry) //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.Unset("registry-org")
+			r.SetLocal("org-id", r.MustGet("request-org"))
+		},
+		org.DBRegistryOrgFindByID,
+		// UPDATE Registry Entry
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			lock := r.MustGet("request-value").(bool)
+
+			if lock {
+				registry.SetStates(orm.STATE_READONLY)
+			} else {
+				registry.ClearStates(orm.STATE_READONLY)
 			}
 		},
-		// SEARCH Regisrty for Entry
-		org.DBRegistryOrgFind,
-		org.AssertNotSystemOrgRegistry,
-		// REQUEST VALIDATION //
+		org.DBRegistryOrgUpdate,
+		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
-			r.Abort(5999, nil)
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
+}
+
+func GetOrgBlockState(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("GET.SYSTEM.ORG.BLOCK", c, 1000, shared.JSONResponse)
+
+	// Request Processing Chain
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System Organization Role with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_READ)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
+		// Extract : GIN Parameter 'org' //
+		org.ExtractGINParameterOrgID,
+		// REQUEST: Get Organization (by Way of Registry) //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("org-id", r.MustGet("request-org"))
+		},
+		org.DBRegistryOrgFindByID,
+		// CALCULATE RESPONSE //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+		},
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
+
+	// Start Request Processing
+	request.Run()
+}
+
+func PutOrgBlockState(c *gin.Context) {
+	// Create Request
+	request := rpf.RootProcessor("PUT.SYSTEM.ORG.BLOCK", c, 1000, shared.JSONResponse)
+
+	// Request Processing Chain
+	request.Chain = rpf.ProcessChain{}
+
+	// Required Roles : System Organization Role with Update Function
+	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_UPDATE)}
+
+	// Do Basic ORG Request Validation
+	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
+		switch o {
+		case "system-organization":
+			return true
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Validate User
+	request.Append(
+		// Extract : GIN Parameter 'org' //
+		org.ExtractGINParameterOrgID,
+		// Can't Modify System
+		org.AssertNotSystemOrgRequest,
+		// Extract : GIN Parameter 'bool' //
+		shared.ExtractGINParameterBooleanValue,
+		// REQUEST: Get Organization (by Way of Registry) //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.Unset("registry-org")
+			r.SetLocal("org-id", r.MustGet("request-org"))
+		},
+		org.DBRegistryOrgFindByID,
+		// UPDATE Registry Entry
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			lock := r.MustGet("request-value").(bool)
+
+			if lock {
+				registry.SetStates(orm.STATE_BLOCKED)
+			} else {
+				registry.ClearStates(orm.STATE_BLOCKED)
+			}
+		},
+		org.DBRegistryOrgUpdate,
+		// CALCULATE RESPONSE //
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+		},
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()

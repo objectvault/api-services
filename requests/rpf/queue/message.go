@@ -49,6 +49,40 @@ func CreateMessageDeleteUserFromSystem(r rpf.GINProcessor, c *gin.Context) {
 	r.Set("queue-message", msg)
 }
 
+func CreateMessageDeleteOrgFromSystem(r rpf.GINProcessor, c *gin.Context) {
+	// Get the Required Invitation
+	org := r.MustGet("request-org").(uint64)
+
+	// Create Action Message
+	msg := &messages.ActionMessage{}
+
+	// Create GUID (V4 see https://www.sohamkamani.com/uuid-versions-explained/)
+	uid, err := uuid.NewV4()
+	if err != nil {
+		r.Abort(5920, nil)
+		return
+	}
+
+	// Initialize Action Message
+	err = messages.InitQueueAction(msg, uid.String(), "system:org:delete")
+	if err != nil { // Failed: Abort
+		r.Abort(5920, nil)
+		return
+	}
+
+	// Set User ID
+	msg.SetParameter("delete-org", fmt.Sprintf(":%x", org))
+
+	//Set Action Creator's Information
+	actionUser := r.MustGet("action-user").(uint64)
+	msg.SetParameter("action-user", fmt.Sprintf(":%x", actionUser))
+	msg.SetParameter("action-user-name", r.MustGet("action-user-name"))
+	msg.SetParameter("action-user-email", r.MustGet("action-user-email"))
+
+	// Save Activation
+	r.Set("queue-message", msg)
+}
+
 func CreateInvitationMessage(r rpf.GINProcessor, c *gin.Context) {
 	// Get the Required Invitation
 	i := r.MustGet("invitation").(*orm.Invitation)

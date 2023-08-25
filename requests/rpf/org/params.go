@@ -44,3 +44,23 @@ func ExtractGINParameterOrg(r rpf.GINProcessor, c *gin.Context) {
 
 	r.SetLocal("request-org", iid)
 }
+
+func ExtractGINParameterOrgID(r rpf.GINProcessor, c *gin.Context) {
+	// Initial Post Parameter Tests
+	id, message := utils.ValidateGinParameter(c, "org", true, true, false)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	// See if it is valid
+	iid, message := utils.ValidateOrgID(id)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	r.SetLocal("request-org", iid)
+}

@@ -363,14 +363,14 @@ func (o *UserRegistry) IsActive() bool {
 	return !HasAnyStates(o.state, STATE_INACTIVE|STATE_BLOCKED|STATE_DELETE)
 }
 
+func (o *UserRegistry) IsDeleted() bool {
+	// GLOBAL User marked for Deletion
+	return HasAllStates(o.state, STATE_DELETE)
+}
+
 func (o *UserRegistry) IsBlocked() bool {
 	// GLOBAL User Access Blocked
 	return HasAnyStates(o.state, STATE_BLOCKED|STATE_DELETE)
-}
-
-func (o *UserRegistry) IsDeleted() bool {
-	// GLOBAL User marked for Deletion
-	return HasAnyStates(o.state, STATE_DELETE)
 }
 
 func (o *UserRegistry) IsReadOnly() bool {

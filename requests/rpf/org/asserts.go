@@ -42,6 +42,17 @@ func AssertNotSystemOrgRegistry(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
+func AssertOrgNotDeleted(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request User
+	org := r.MustGet("registry-org").(*orm.OrgRegistry)
+
+	// Is the User Account in Deleted Mode?
+	if org.IsDeleted() { // YES
+		r.Abort(4002, nil)
+		return
+	}
+}
+
 func AssertOrgUnblocked(r rpf.GINProcessor, c *gin.Context) {
 	// Get Request Organization
 	org := r.MustGet("registry-org").(*orm.OrgRegistry)

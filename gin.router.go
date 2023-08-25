@@ -157,9 +157,9 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			system.GET("/user/:user", pkgsystem.GetUserProfile)                // IMPLEMENTED: Needs Testing
 			system.DELETE("/user/:user", pkgsystem.DeleteUser)                 // IMPLEMENTED: Tested 20230824
 			system.PUT("/user/:user", pkgsystem.PutUserProfile)                // WHAT Options Can the System User Change?
-			system.GET("/user/:user/lock", pkgsystem.GetUserLockState)         // IMPLEMENTED: Needs Testing
-			system.GET("/user/:user/block", pkgsystem.GetUserBlockState)       // IMPLEMENTED: Needs Testing
-			system.PUT("/user/:user/lock/:bool", pkgsystem.PutUserLockState)   // IMPLEMENTED: Needs Testing
+			system.GET("/user/:user/lock", pkgsystem.GetUserLockState)         // IMPLEMENTED: Tested 20230825
+			system.GET("/user/:user/block", pkgsystem.GetUserBlockState)       // IMPLEMENTED: Tested 20230825
+			system.PUT("/user/:user/lock/:bool", pkgsystem.PutUserLockState)   // IMPLEMENTED: Tested 20230825
 			system.PUT("/user/:user/block/:bool", pkgsystem.PutUserBlockState) // IMPLEMENTED: Tested 20230824
 
 			// GLOBAL SYSTEM ORGS MANAGEMENT //
@@ -169,10 +169,14 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			system.PUT("/orgs/block/:bool", pkgsystem.PutOrgsBlock)
 
 			// SINGLE ORGANIZATION
-			system.POST("/org", pkgsystem.PostCreateOrg)     // IMPLEMENTED
-			system.GET("/org/:org", pkgsystem.GetOrgProfile) // IMPLEMENTED
-			system.PUT("/org/:org", pkgsystem.PutOrgProfile) // IMPLEMENTED
-			system.DELETE("/org/:org", pkgsystem.DeleteOrg)
+			system.POST("/org", pkgsystem.PostCreateOrg)                    // IMPLEMENTED
+			system.GET("/org/:org", pkgsystem.GetOrgProfile)                // IMPLEMENTED
+			system.PUT("/org/:org", pkgsystem.PutOrgProfile)                // IMPLEMENTED
+			system.DELETE("/org/:org", pkgsystem.DeleteOrg)                 // IMPLEMENTED: Tested 20230825
+			system.GET("/org/:org/lock", pkgsystem.GetOrgLockState)         // IMPLEMENTED: Tested 20230825
+			system.GET("/org/:org/block", pkgsystem.GetOrgBlockState)       // IMPLEMENTED: Tested 20230825
+			system.PUT("/org/:org/lock/:bool", pkgsystem.PutOrgLockState)   // IMPLEMENTED: Tested 20230825
+			system.PUT("/org/:org/block/:bool", pkgsystem.PutOrgBlockState) // IMPLEMENTED: Tested 20230824
 
 			// TEMPLATE ACCESS (LIST / GET)
 			system.GET("/templates", pkgsystem.ListTemplates)
