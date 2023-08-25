@@ -269,7 +269,7 @@ func GetOrgLockState(c *gin.Context) {
 	// Required Roles : System Organization Role with Read Function
 	roles := []uint32{orm.Role(orm.CATEGORY_SYSTEM|orm.SUBCATEGORY_ORG, orm.FUNCTION_READ)}
 
-	// Do Basic ORG Request Validation
+	// Validate Permissions
 	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
 		switch o {
 		case "system-organization":
@@ -281,7 +281,7 @@ func GetOrgLockState(c *gin.Context) {
 		return nil
 	})
 
-	// Validate User
+	// Resolve Request
 	request.Append(
 		// Extract : GIN Parameter 'org' //
 		org.ExtractGINParameterOrgID,

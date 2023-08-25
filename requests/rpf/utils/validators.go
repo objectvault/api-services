@@ -117,13 +117,17 @@ func ValidateStoreReference(value string) (interface{}, string) {
 	return "", "Parameter Does NOT Contain Valid a Store Reference"
 }
 
-func ValidateStoreID(value string) (string, string) {
-	// Is a Valid Unique Reference to a Organization (ID, Alias)?
-	if IsValidStoreID(value) { // YES
-		return value, ""
+func ValidateStoreID(value string) (interface{}, string) {
+	// Is Valid Store ID
+	if IsValidHexID(value) { // YES
+		id, e := strconv.ParseUint(value[1:], 16, 64)
+		if e == nil {
+			return id, ""
+		}
 	}
+
 	// ELSE: No
-	return "", "Parameter Does NOT Contain Valid a Organization Reference"
+	return "", "Parameter Does NOT Contain Valid a Store ID"
 }
 
 func ValidateObjectID(name string, value string) (*uint64, string) {

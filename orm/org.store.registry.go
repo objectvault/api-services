@@ -280,7 +280,7 @@ func (o *OrgStoreRegistry) ByAlias(db *sql.DB, org uint64, store string) error {
 	return nil
 }
 
-func (o *OrgStoreRegistry) IsDeleted() bool {
+func (o *OrgStoreRegistry) IsEntryDeleted() bool {
 	return o.deleted
 }
 
@@ -340,13 +340,17 @@ func (o *OrgStoreRegistry) HasAllStates(states uint16) bool {
 	return HasAllStates(o.state, states)
 }
 
+func (o *OrgStoreRegistry) IsDeleted() bool {
+	return HasAllStates(o.state, STATE_DELETE)
+}
+
 func (o *OrgStoreRegistry) IsBlocked() bool {
 	// GLOBAL Org Access Blocked
 	return HasAnyStates(o.state, STATE_INACTIVE|STATE_BLOCKED)
 }
 
 func (o *OrgStoreRegistry) IsReadOnly() bool {
-	return HasAnyStates(o.state, STATE_READONLY)
+	return HasAllStates(o.state, STATE_READONLY)
 }
 
 func (o *OrgStoreRegistry) SetKey(org uint64, user uint64) error {

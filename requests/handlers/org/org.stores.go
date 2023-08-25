@@ -15,10 +15,10 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/objectvault/api-services/common"
+	"github.com/gin-contrib/sessions"
 	"github.com/objectvault/api-services/orm"
-	"github.com/objectvault/api-services/requests/rpf/entry"
 	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/store"
@@ -240,6 +240,45 @@ func DeleteStore(c *gin.Context) {
 		return nil
 	})
 
+	// Get Organization
+	request.Append(
+		// Extract : GIN Parameter 'store' //
+		store.ExtractGINParameterStoreID,
+		// Get Org Store Registry
+		org.DBOrgStoreFind,
+	)
+
+	// Mark Store as Being Deleted (BLOCKED)
+	request.Append(
+		store.AssertStoreNotDeleted,
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			registry.SetStates(orm.STATE_BLOCKED)
+			registry.SetStates(orm.STATE_DELETE)
+		},
+		org.DBOrgStoreUpdate,
+	)
+
+	// Queue Action
+	request.Append(
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
+
+			// Get Session User's Information for User
+			r.SetLocal("action-user", session.Get("user-id"))
+			r.SetLocal("action-user-name", session.Get("user-name"))
+			r.SetLocal("action-user-email", session.Get("user-email"))
+
+			// Message Queue
+			r.SetLocal("queue", "q.actions.inbox")
+		},
+		queue.CreateMessageDeleteStore,
+		queue.SendQueueMessage,
+	)
+
+	/* OLD PROCESS (or Step by Step)
 	// Request Processing Chain
 	request.Append(
 		// ASSERT: For now only works on single shard
@@ -275,6 +314,7 @@ func DeleteStore(c *gin.Context) {
 			r.SetResponseDataValue("ok", true)
 		},
 	)
+	*/
 
 	/* OBJECT TO REMOVE:
 	 * ORG-STORE REGISTRY
@@ -305,23 +345,36 @@ func GetOrgStoreLockState(c *gin.Context) {
 	request := rpf.RootProcessor("GET.ORG.STORE.LOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		// Validate Basic Request Settings
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Required Roles : Organization Access with Read Function
-			roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_READONLY)}
+	request.Chain = rpf.ProcessChain{}
 
-			// Initialize Request
-			store.GroupOrgStoreRequestInitialize(r, roles, true, false).
-				Run()
-		},
+	// Required Roles : Organization Store Role with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_READ)}
+
+	// Validate Permissions
+	store.AddinGroupValidateOrgStoreRequest(request, func(o string) interface{} {
+		switch o {
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Resolve Request
+	request.Append(
+		// Extract : GIN Parameter 'store' //
+		store.ExtractGINParameterStoreID,
+		// Get Org Store Registry
+		org.DBOrgStoreFind,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
 			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -332,18 +385,29 @@ func PutOrgStoreLockState(c *gin.Context) {
 	request := rpf.RootProcessor("PUT.ORG.STORE.LOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		// Validate Basic Request Settings
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Required Roles : Organization Access with Read Function
-			roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_MODIFY)}
+	request.Chain = rpf.ProcessChain{}
 
-			// Initialize Request
-			store.GroupOrgStoreRequestInitialize(r, roles, true, false).
-				Run()
-		},
+	// Required Roles : Organization Store Role with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_UPDATE)}
+
+	// Validate Permissions
+	store.AddinGroupValidateOrgStoreRequest(request, func(o string) interface{} {
+		switch o {
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Resolve Request
+	request.Append(
+		// Extract : GIN Parameter 'store' //
+		store.ExtractGINParameterStoreID,
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
+		// Get Org Store Registry
+		org.DBOrgStoreFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
@@ -361,8 +425,10 @@ func PutOrgStoreLockState(c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
 			r.SetResponseDataValue("locked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -373,23 +439,36 @@ func GetOrgStoreBlockState(c *gin.Context) {
 	request := rpf.RootProcessor("GET.ORG.STORE.BLOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		// Validate Basic Request Settings
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Required Roles : Organization Access with Read Function
-			roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_READONLY)}
+	request.Chain = rpf.ProcessChain{}
 
-			// Initialize Request
-			store.GroupOrgStoreRequestInitialize(r, roles, true, false).
-				Run()
-		},
+	// Required Roles : Organization Store Role with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_READ)}
+
+	// Validate Permissions
+	store.AddinGroupValidateOrgStoreRequest(request, func(o string) interface{} {
+		switch o {
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Resolve Request
+	request.Append(
+		// Extract : GIN Parameter 'store' //
+		store.ExtractGINParameterStoreID,
+		// Get Org Store Registry
+		org.DBOrgStoreFind,
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
-			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_BLOCKED))
+			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -400,18 +479,29 @@ func PutOrgStoreBlockState(c *gin.Context) {
 	request := rpf.RootProcessor("PUT.ORG.STORE.BLOCK", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
-	request.Chain = rpf.ProcessChain{
-		// Validate Basic Request Settings
-		func(r rpf.GINProcessor, c *gin.Context) {
-			// Required Roles : Organization Access with Read Function
-			roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_MODIFY)}
+	request.Chain = rpf.ProcessChain{}
 
-			// Initialize Request
-			store.GroupOrgStoreRequestInitialize(r, roles, true, false).
-				Run()
-		},
+	// Required Roles : Organization Store Role with Read Function
+	roles := []uint32{orm.Role(orm.CATEGORY_ORG|orm.SUBCATEGORY_STORE, orm.FUNCTION_UPDATE)}
+
+	// Validate Permissions
+	store.AddinGroupValidateOrgStoreRequest(request, func(o string) interface{} {
+		switch o {
+		case "roles":
+			return roles
+		}
+
+		return nil
+	})
+
+	// Resolve Request
+	request.Append(
+		// Extract : GIN Parameter 'store' //
+		store.ExtractGINParameterStoreID,
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
+		// Get Org Store Registry
+		org.DBOrgStoreFind,
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
@@ -429,8 +519,10 @@ func PutOrgStoreBlockState(c *gin.Context) {
 			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
 			r.SetResponseDataValue("blocked", registry.HasAnyStates(orm.STATE_READONLY))
 		},
-		session.SaveSession, // Update Session Cookie
-	}
+	)
+
+	// Save Session
+	session.AddinSaveSession(request, nil)
 
 	// Start Request Processing
 	request.Run()
@@ -503,7 +595,7 @@ func PutOrgStoreState(c *gin.Context) {
 
 func DeleteOrgStoreState(c *gin.Context) {
 	// Create Request
-	request := rpf.RootProcessor("PDELETEUT.ORG.STORE.STATE", c, 1000, shared.JSONResponse)
+	request := rpf.RootProcessor("DELETE.ORG.STORE.STATE", c, 1000, shared.JSONResponse)
 
 	// Request Processing Chain
 	request.Chain = rpf.ProcessChain{

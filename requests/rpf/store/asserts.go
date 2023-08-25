@@ -38,6 +38,17 @@ func AssertStoreUnblocked(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
+func AssertStoreNotDeleted(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Organization
+	entry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
+
+	// Is the Store Blocked?
+	if entry.IsDeleted() { // YES: Abort
+		r.Abort(4203, nil) // TODO: Specific Error
+		return
+	}
+}
+
 func AssertStoreOpen(r rpf.GINProcessor, c *gin.Context) {
 	// Store ID
 	id := r.MustGet("request-store").(uint64)

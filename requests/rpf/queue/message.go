@@ -36,8 +36,8 @@ func CreateMessageDeleteUserFromSystem(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	// Set User ID
-	msg.SetParameter("delete-user", fmt.Sprintf(":%x", user))
+	// Set User Coordinates
+	msg.SetParameter("user", fmt.Sprintf(":%x", user))
 
 	//Set Action Creator's Information
 	actionUser := r.MustGet("action-user").(uint64)
@@ -70,8 +70,44 @@ func CreateMessageDeleteOrgFromSystem(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	// Set User ID
-	msg.SetParameter("delete-org", fmt.Sprintf(":%x", org))
+	// Set Organization Coordinates
+	msg.SetParameter("organization", fmt.Sprintf(":%x", org))
+
+	//Set Action Creator's Information
+	actionUser := r.MustGet("action-user").(uint64)
+	msg.SetParameter("action-user", fmt.Sprintf(":%x", actionUser))
+	msg.SetParameter("action-user-name", r.MustGet("action-user-name"))
+	msg.SetParameter("action-user-email", r.MustGet("action-user-email"))
+
+	// Save Activation
+	r.Set("queue-message", msg)
+}
+
+func CreateMessageDeleteStore(r rpf.GINProcessor, c *gin.Context) {
+	// Get the Required Invitation
+	org := r.MustGet("request-org").(uint64)
+	store := r.MustGet("request-store").(uint64)
+
+	// Create Action Message
+	msg := &messages.ActionMessage{}
+
+	// Create GUID (V4 see https://www.sohamkamani.com/uuid-versions-explained/)
+	uid, err := uuid.NewV4()
+	if err != nil {
+		r.Abort(5920, nil)
+		return
+	}
+
+	// Initialize Action Message
+	err = messages.InitQueueAction(msg, uid.String(), "org:store:delete")
+	if err != nil { // Failed: Abort
+		r.Abort(5920, nil)
+		return
+	}
+
+	// Set Store Coordinates
+	msg.SetParameter("organization", fmt.Sprintf(":%x", org))
+	msg.SetParameter("store", fmt.Sprintf(":%x", store))
 
 	//Set Action Creator's Information
 	actionUser := r.MustGet("action-user").(uint64)

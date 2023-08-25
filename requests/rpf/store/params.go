@@ -44,3 +44,23 @@ func ExtractGINParameterStore(r rpf.GINProcessor, c *gin.Context) {
 
 	r.SetLocal("request-store", iid)
 }
+
+func ExtractGINParameterStoreID(r rpf.GINProcessor, c *gin.Context) {
+	// Initial Post Parameter Tests
+	id, message := utils.ValidateGinParameter(c, "store", true, true, false)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	// See if it is valid
+	iid, message := utils.ValidateStoreID(id)
+	if message != "" {
+		fmt.Println(message)
+		r.Abort(3100, nil)
+		return
+	}
+
+	r.SetLocal("request-store", iid)
+}
