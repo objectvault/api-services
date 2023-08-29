@@ -193,14 +193,6 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			organization.GET("", pkgorg.Get) // IMPLEMENTED: Needs Testing
 			organization.PUT("", pkgorg.Put) // IMPLEMENTED: Needs Testing
 
-			// State Management
-			organization.GET("/lock", pkgorg.GetOrgLockState)         // IMPLEMENTED
-			organization.PUT("/lock/:bool", pkgorg.PutOrgLockState)   // IMPLEMENTED
-			organization.GET("/block", pkgorg.GetOrgBlockState)       // IMPLEMENTED
-			organization.PUT("/block/:bool", pkgorg.PutOrgBlockState) // IMPLEMENTED
-			organization.GET("/state", pkgorg.GetOrgState)            // IMPLEMENTED: Needs Testing
-			organization.PUT("/state/:uint", pkgorg.PutOrgState)      // IMPLEMENTED: Needs Testing
-
 			// ORGANIZATION INVITATION
 			// LIST: Use GET /invites
 
