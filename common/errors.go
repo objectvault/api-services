@@ -115,6 +115,8 @@ func codesObjectErrors(code int) (int, string) {
 		return http.StatusBadRequest, "Alias already Exists"
 	case 4011: // Email Registered
 		return http.StatusBadRequest, "Email already registered"
+	case 4099: // Action not allowed by User
+		return http.StatusBadRequest, "Access Denied"
 	// 4050 - 4099 : Object User Related Errors
 	case 4050: // User <--> Object Registration Exists
 		return http.StatusBadRequest, "User already registered with object"
@@ -136,6 +138,8 @@ func codesObjectErrors(code int) (int, string) {
 	case 4100: // Organization Does not Exist
 		return http.StatusBadRequest, "Organization does not exist"
 	case 4101: // Action not allowed
+		return http.StatusBadRequest, "Access Denied"
+	case 4199: // Action not allowed
 		return http.StatusBadRequest, "Access Denied"
 	// 4200 - 4249 : Store Related Errors
 	case 4200: // Store Does not Exist

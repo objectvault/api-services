@@ -184,7 +184,7 @@ func DBRegisterUserWithOrg(r rpf.GINProcessor, c *gin.Context) {
 
 	// Is User Org Admin?
 	if r.Has("register-org-admin") { // YES
-		e.SetState(orm.STATE_SYSTEM)
+		e.SetStates(orm.STATE_SYSTEM)
 	}
 
 	r.SetLocal("registry-object-user", e)

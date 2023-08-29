@@ -230,9 +230,9 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			organization.GET("/user/:user", pkgorg.GetOrgUser) // IMPLEMENTED
 			organization.DELETE("/user/:user", pkgorg.DeleteOrgUser)
 			organization.GET("/user/:user/lock", pkgorg.GetOrgUserLock)               // IMPLEMENTED: Needs Testing
-			organization.PUT("/user/:user/lock/:bool", pkgorg.PutOrgUserLock)         // IMPLEMENTED: Needs Testing
+			organization.PUT("/user/:user/lock/:bool", pkgorg.PutOrgUserLock)         // IMPLEMENTED: Tested
 			organization.GET("/user/:user/block", pkgorg.GetOrgUserBlock)             // IMPLEMENTED: Needs Testing
-			organization.PUT("/user/:user/block/:bool", pkgorg.PutOrgUserBlock)       // IMPLEMENTED: Needs Testing
+			organization.PUT("/user/:user/block/:bool", pkgorg.PutOrgUserBlock)       // IMPLEMENTED: Tested
 			organization.GET("/user/:user/state", pkgorg.GetOrgUserState)             // IMPLEMENTED: Needs Testing
 			organization.PUT("/user/:user/state/:uint", pkgorg.PutOrgUserState)       // IMPLEMENTED: Needs Testing
 			organization.PUT("/user/:user/admin", pkgorg.ToggleOrgUserAdmin)          // IMPLEMENTED: Needs Testing

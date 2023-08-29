@@ -608,7 +608,7 @@ func ToggleStoreUserAdmin(c *gin.Context) {
 				registry.ClearStates(orm.STATE_SYSTEM)
 				registry.RemoveRoles(roles)
 			} else { // Make Admin
-				registry.SetState(orm.STATE_SYSTEM)
+				registry.SetStates(orm.STATE_SYSTEM)
 				registry.AddRoles(roles)
 			}
 		},

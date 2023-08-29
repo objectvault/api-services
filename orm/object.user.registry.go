@@ -460,17 +460,6 @@ func (o *ObjectUserRegistry) RolesToCSV() string {
 	return o.roles.RolesToCSV()
 }
 
-// State Management
-func (o *ObjectUserRegistry) IsBlocked() bool {
-	// State BIT 1 : Set == User Blocked (By Organization User Administrator)
-	return (o.state & 0x1) != 0
-}
-
-func (o *ObjectUserRegistry) IsReadOnly() bool {
-	// State BIT 2 : Set == User Set to Read Only (By Organization User Administrator)
-	return (o.state & 0x2) != 0
-}
-
 func (o *ObjectUserRegistry) IsRolesManager() bool {
 	// ROLES Manager Requires User Read/List/Update
 	r := o.roles.GetSubCategoryRole(SUBCATEGORY_USER)
@@ -501,7 +490,34 @@ func (o *ObjectUserRegistry) State() uint16 {
 	return o.state
 }
 
-func (o *ObjectUserRegistry) SetState(states uint16) (uint16, error) {
+func (o *ObjectUserRegistry) HasAnyStates(states uint16) bool {
+	return HasAnyStates(o.state, states)
+}
+
+func (o *ObjectUserRegistry) HasAllStates(states uint16) bool {
+	return HasAllStates(o.state, states)
+}
+
+func (o *ObjectUserRegistry) IsActive() bool {
+	// User Account Active
+	return !HasAnyStates(o.state, STATE_INACTIVE|STATE_BLOCKED|STATE_DELETE)
+}
+
+func (o *ObjectUserRegistry) IsDeleted() bool {
+	// GLOBAL User marked for Deletion
+	return HasAllStates(o.state, STATE_DELETE)
+}
+
+func (o *ObjectUserRegistry) IsBlocked() bool {
+	// GLOBAL User Access Blocked
+	return HasAnyStates(o.state, STATE_BLOCKED|STATE_DELETE)
+}
+
+func (o *ObjectUserRegistry) IsReadOnly() bool {
+	return HasAllStates(o.state, STATE_READONLY)
+}
+
+func (o *ObjectUserRegistry) SetStates(states uint16) {
 	// Current State
 	current := o.state
 
@@ -510,10 +526,9 @@ func (o *ObjectUserRegistry) SetState(states uint16) (uint16, error) {
 	if o.state != current {
 		o.dirty = true
 	}
-	return current, nil
 }
 
-func (o *ObjectUserRegistry) ClearStates(states uint16) (uint16, error) {
+func (o *ObjectUserRegistry) ClearStates(states uint16) {
 	// Current State
 	current := o.state
 
@@ -522,7 +537,6 @@ func (o *ObjectUserRegistry) ClearStates(states uint16) (uint16, error) {
 	if o.state != current {
 		o.dirty = true
 	}
-	return current, nil
 }
 
 // STORE KEY

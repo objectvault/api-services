@@ -497,7 +497,7 @@ func InvitationNoSessionInfo(c *gin.Context) {
 			r.SetLocal("user-email", i.InviteeEmail())
 		},
 		user.DBRegistryUserFindByID,
-		user.AssertUserUnblocked,
+		user.AssertUserBlocked,
 		func(r rpf.GINProcessor, c *gin.Context) {
 			r.SetLocal("invitation-creator", r.Get("registry-user"))
 			r.Unset("registry-user")

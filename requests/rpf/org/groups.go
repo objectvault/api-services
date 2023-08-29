@@ -47,8 +47,8 @@ func GroupAssertUserOrganizationPermissions(parent rpf.GINProcessor, userid uint
 	// Check if User is Organization Locked?
 	if checkUserLock { // YES
 		group.Chain = append(group.Chain,
-			object.DBOrgUserFind,             // Get Organization Entry for User
-			object.AssertObjectUserUnblocked, // ASSERT User is Active in Organization
+			object.DBOrgUserFind,           // Get Organization Entry for User
+			object.AssertObjectUserBlocked, // ASSERT User is Active in Organization
 		)
 	}
 

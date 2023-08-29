@@ -87,7 +87,7 @@ func AssertStoreOpen(r rpf.GINProcessor, c *gin.Context) {
 func AssertStoreUserUnblocked(r rpf.GINProcessor, c *gin.Context) {
 	// Get Registry Entry
 	r.SetLocal("registry-object-user", r.MustGet("registry-store-user"))
-	object.AssertObjectUserUnblocked(r, c)
+	object.AssertObjectUserBlocked(r, c)
 }
 
 func AssertUserHasAllRolesInStore(r rpf.GINProcessor, c *gin.Context) {

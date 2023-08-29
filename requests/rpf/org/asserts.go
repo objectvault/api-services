@@ -59,7 +59,7 @@ func AssertOrgUnblocked(r rpf.GINProcessor, c *gin.Context) {
 
 	// Is the Organization Blocked? (HARD CODE: Can't Block System Organization)
 	if !org.IsSystem() && org.IsBlocked() { // YES: Abort
-		r.Abort(5998, nil) // TODO: Specific Error
+		r.Abort(4199, nil) // TODO: Specific Error
 		return
 	}
 }

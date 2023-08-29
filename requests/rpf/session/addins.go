@@ -26,12 +26,26 @@ func AddinActiveUserSession(g rpf.GINGroupProcessor, opts shared.TAddinCallbackO
 		g.Append(AssertNotSystemAdmin)
 	}
 
-	// OPTION: Check if user is unblocked? (DEFAULT: Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-user-unlocked", true).(bool) {
+	// OPTION: Check Session User Status
+	sub := shared.HelperAddinOptionsCallback(opts, "assert-session-user-blocked", true).(bool)
+	suro := shared.HelperAddinOptionsCallback(opts, "assert-session-user-readonly", true).(bool)
+
+	if sub || suro {
 		g.Append(
 			SessionUserToRegistry,
-			user.AssertUserUnblocked,
 		)
+
+		if sub {
+			g.Append(
+				user.AssertUserBlocked,
+			)
+		}
+
+		if suro {
+			g.Append(
+				user.AssertUserReadOnly,
+			)
+		}
 	} else { // NO
 		g.Append(SessionExtractUser)
 	}

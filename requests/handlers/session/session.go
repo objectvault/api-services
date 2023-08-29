@@ -174,9 +174,9 @@ func Login(c *gin.Context) {
 		user.DBRegistryUserFind,  // Get User Registry
 		session.CloseUserSession, // Reset Session if Required
 		// Verify User State //
-		user.AssertUserActive,    // See if the account active
-		user.AssertUserUnblocked, // See if Account Blocked by System Admin
-		user.AssertCredentials,   // See if User Password Correct
+		user.AssertUserActive,  // See if the account active
+		user.AssertUserBlocked, // See if Account Blocked by System Admin
+		user.AssertCredentials, // See if User Password Correct
 		// Verify User Password //
 		/*
 			func(r rpf.GINProcessor, c *gin.Context) {

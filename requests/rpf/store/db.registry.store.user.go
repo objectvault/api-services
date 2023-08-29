@@ -122,7 +122,7 @@ func DBRegisterUserWithNewStore(r rpf.GINProcessor, c *gin.Context) {
 
 	// Is User Store Admin?
 	if r.Has("register-as-admin") { // YES
-		o.SetState(orm.STATE_SYSTEM)
+		o.SetStates(orm.STATE_SYSTEM)
 	}
 
 	// Create Store Key
@@ -163,7 +163,7 @@ func DBRegisterUserWithExistingStore(r rpf.GINProcessor, c *gin.Context) {
 
 	// Is User Store Admin?
 	if r.Has("register-as-admin") { // YES
-		o.SetState(orm.STATE_SYSTEM)
+		o.SetStates(orm.STATE_SYSTEM)
 	}
 
 	// Set Store Key

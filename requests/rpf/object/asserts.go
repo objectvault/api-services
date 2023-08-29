@@ -20,13 +20,24 @@ import (
 
 // USERS //
 
-func AssertObjectUserUnblocked(r rpf.GINProcessor, c *gin.Context) {
+func AssertObjectUserBlocked(r rpf.GINProcessor, c *gin.Context) {
 	// Get Request Org's USer Entry
 	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
 	// Is the User Blocked?
 	if entry.IsBlocked() { // YES: Can't Access Org Information
-		r.Abort(5998, nil) // TODO: Specific Error
+		r.Abort(4053, nil)
+		return
+	}
+}
+
+func AssertObjectUserReadOnly(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Org's USer Entry
+	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
+
+	// Is the User Blocked?
+	if entry.IsReadOnly() { // YES: Can't Access Org Information
+		r.Abort(4054, nil)
 		return
 	}
 }

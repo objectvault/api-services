@@ -44,7 +44,7 @@ func GroupAssertUserStorePermissions(parent rpf.GINProcessor, userid uint64, sto
 	// Check if User is Store Locked?
 	if checkUserLock { // YES
 		group.Chain = append(group.Chain,
-			object.AssertObjectUserUnblocked, // ASSERT User is Active in Organization
+			object.AssertObjectUserBlocked, // ASSERT User is Active in Organization
 		)
 	}
 

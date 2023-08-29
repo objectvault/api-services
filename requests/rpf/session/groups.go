@@ -38,10 +38,10 @@ func GroupGetSessionUser(parent rpf.GINProcessor, checkUserLock bool, noAdmin bo
 	}
 
 	// Check if User Locked?
-	if !checkUserLock { // YES
+	if checkUserLock { // YES
 		// TODO: Never Check if Admin User is Locked
 		group.Chain = append(group.Chain,
-			user.AssertUserUnblocked, // Assert User is GLOBALLY Active
+			user.AssertUserBlocked, // Assert User is GLOBALLY Active
 		)
 	}
 

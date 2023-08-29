@@ -30,13 +30,24 @@ func AssertNotSystemUserRegistry(r rpf.GINProcessor, c *gin.Context) {
 	}
 }
 
-func AssertUserUnblocked(r rpf.GINProcessor, c *gin.Context) {
+func AssertUserBlocked(r rpf.GINProcessor, c *gin.Context) {
 	// Get Request User
 	user := r.MustGet("registry-user").(*orm.UserRegistry)
 
 	// Is the User Blocked?
 	if user.IsBlocked() { // YES: Can't Login
 		r.Abort(4001, nil)
+		return
+	}
+}
+
+func AssertUserReadOnly(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request User
+	user := r.MustGet("registry-user").(*orm.UserRegistry)
+
+	// Is the User ReadOnly?
+	if user.IsReadOnly() { // YES: Can't Modify
+		r.Abort(4003, nil)
 		return
 	}
 }

@@ -38,6 +38,8 @@ func GetOrgUsers(c *gin.Context) {
 	org.AddinGroupValidateOrgRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-org-user-readonly" {
+			return false
 		}
 
 		return nil
@@ -307,8 +309,11 @@ func GetOrgUserLock(c *gin.Context) {
 
 	// Request Process //
 	request.Append(
-		// FIND Store by Searching Org Store Registry
-		object.DBOrgUserFind,
+		// Load Request User Org Registration
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("user-id", r.MustGet("request-user"))
+			object.DBOrgUserFind(r, c)
+		},
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -323,7 +328,6 @@ func GetOrgUserLock(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: UPDATE User's Locked Status in Organization
 func PutOrgUserLock(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("PUT.ORG.USER.LOCK", c, 1000, shared.JSONResponse)
@@ -335,6 +339,8 @@ func PutOrgUserLock(c *gin.Context) {
 	org.AddinGroupValidateOrgUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-if-self" {
+			return true
 		}
 
 		return nil
@@ -344,8 +350,11 @@ func PutOrgUserLock(c *gin.Context) {
 	request.Append(
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
-		// SEARCH Registry for Entry
-		object.DBOrgUserFind,
+		// Load Session User Org Registration
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("user-id", r.MustGet("request-user"))
+			object.DBOrgUserFind(r, c)
+		},
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -372,7 +381,6 @@ func PutOrgUserLock(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: GET User's Blocked Status in Organization
 func GetOrgUserBlock(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("GET.ORG.USER.BLOCK", c, 1000, shared.JSONResponse)
@@ -391,8 +399,11 @@ func GetOrgUserBlock(c *gin.Context) {
 
 	// Request Process //
 	request.Append(
-		// FIND Store by Searching Org Store Registry
-		object.DBOrgUserFind,
+		// Load Request User Org Registration
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("user-id", r.MustGet("request-user"))
+			object.DBOrgUserFind(r, c)
+		},
 		// CALCULATE RESPONSE //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -407,7 +418,6 @@ func GetOrgUserBlock(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: UPDATE User's Blocked Status in Organization
 func PutOrgUserBlock(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("PUT.ORG.USER.BLOCK", c, 1000, shared.JSONResponse)
@@ -419,6 +429,8 @@ func PutOrgUserBlock(c *gin.Context) {
 	org.AddinGroupValidateOrgUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-if-self" {
+			return true
 		}
 
 		return nil
@@ -428,8 +440,11 @@ func PutOrgUserBlock(c *gin.Context) {
 	request.Append(
 		// Extract : GIN Parameter 'bool' //
 		shared.ExtractGINParameterBooleanValue,
-		// SEARCH Registry for Entry
-		object.DBOrgUserFind,
+		// Load Request User Org Registration
+		func(r rpf.GINProcessor, c *gin.Context) {
+			r.SetLocal("user-id", r.MustGet("request-user"))
+			object.DBOrgUserFind(r, c)
+		},
 		// UPDATE Registry Entry
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
@@ -617,7 +632,7 @@ func ToggleOrgUserAdmin(c *gin.Context) {
 					registry.AddRoles(roles)
 				}
 			} else { // Make Admin
-				registry.SetState(orm.STATE_SYSTEM)
+				registry.SetStates(orm.STATE_SYSTEM)
 
 				if registry.IsSystemOrganization() {
 					// Add All System Organization Administration Roles

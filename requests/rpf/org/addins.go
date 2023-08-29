@@ -51,19 +51,34 @@ func BaseValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackO
 		g.Append(AssertNotSystemOrgRegistry)
 	}
 
-	// OPTION: Check if session user is unblocked? (DEFAULT: Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-user-unlocked", true).(bool) {
+	// OPTION: for Organization User Object
+	oub := shared.HelperAddinOptionsCallback(opts, "assert-org-user-blocked", true).(bool)
+	ouro := shared.HelperAddinOptionsCallback(opts, "assert-org-user-readonly", true).(bool)
+	cur := shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool)
+
+	if oub || ouro || cur {
 		g.Append(
+			// Load Session User Org Registration
 			object.DBOrgUserFind,
-			object.AssertObjectUserUnblocked,
-			func(r rpf.GINProcessor, c *gin.Context) {
-				r.Set("registry-object-user-session", r.MustGet("registry-object-user"))
-			},
 		)
 	}
 
-	// OPTION: Check user's org roles? (DEFAULT: Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool) {
+	// CHECK: Is User Blocked in Organization? (DEFAULT: Check)
+	if oub {
+		g.Append(
+			object.AssertObjectUserBlocked,
+		)
+	}
+
+	// CHECK: Is User Set Read Only in Organization? (DEFAULT: Check)
+	if ouro {
+		g.Append(
+			object.AssertObjectUserReadOnly,
+		)
+	}
+
+	// CHECK: Does user have Required Roles in Organization? (DEFAULT: Check)
+	if cur {
 		g.Append(
 			func(r rpf.GINProcessor, c *gin.Context) {
 				skipSelf := shared.HelperAddinOptionsCallback(opts, "skip-roles-if-self", false).(bool)
