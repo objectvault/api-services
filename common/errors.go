@@ -115,8 +115,6 @@ func codesObjectErrors(code int) (int, string) {
 		return http.StatusBadRequest, "Alias already Exists"
 	case 4011: // Email Registered
 		return http.StatusBadRequest, "Email already registered"
-	case 4099: // Action not allowed by User
-		return http.StatusBadRequest, "Access Denied"
 	// 4050 - 4099 : Object User Related Errors
 	case 4050: // User <--> Object Registration Exists
 		return http.StatusBadRequest, "User already registered with object"
@@ -134,6 +132,8 @@ func codesObjectErrors(code int) (int, string) {
 		return http.StatusBadRequest, "Last Objects Roles Manager"
 	case 4062: // Trying to DELETE last Invitation Manager
 		return http.StatusBadRequest, "Last Objects Invitation Manager"
+	case 4099: // Action not Permitted
+		return http.StatusBadRequest, "Access Denied"
 	// 4100 - 4199 : Organization Related Errors
 	case 4100: // Organization Does not Exist
 		return http.StatusBadRequest, "Organization does not exist"
@@ -152,6 +152,8 @@ func codesObjectErrors(code int) (int, string) {
 		return http.StatusBadRequest, "Store Access Blocked"
 	case 4204: // Store Read Only
 		return http.StatusBadRequest, "Store Read Only Mode"
+	case 4299: // Action not Permitted
+		return http.StatusBadRequest, "Access Denied"
 	// 4300 - 4399 : Invitation Related Error
 	case 4300:
 		return http.StatusBadRequest, "Invitation Accept, requires Session by the invitee!"
