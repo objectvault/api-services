@@ -222,17 +222,6 @@ func DeleteOrg(c *gin.Context) {
 		org.DBRegistryOrgFindByID,
 	)
 
-	// Mark Organization as Being Deleted (BLOCKED)
-	request.Append(
-		org.AssertOrgNotDeleted,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			registry.SetStates(orm.STATE_BLOCKED)
-			registry.SetStates(orm.STATE_DELETE)
-		},
-		org.DBRegistryOrgUpdate,
-	)
-
 	// Queue Action
 	request.Append(
 		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
@@ -250,6 +239,17 @@ func DeleteOrg(c *gin.Context) {
 		},
 		queue.CreateMessageDeleteOrgFromSystem,
 		queue.SendQueueMessage,
+	)
+
+	// Mark Organization as Being Deleted (BLOCKED)
+	request.Append(
+		org.AssertOrgNotDeleted,
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
+			registry.SetStates(orm.STATE_BLOCKED)
+			registry.SetStates(orm.STATE_DELETE)
+		},
+		org.DBRegistryOrgUpdate,
 	)
 
 	// Save Session

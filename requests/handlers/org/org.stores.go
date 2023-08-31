@@ -240,23 +240,13 @@ func DeleteStore(c *gin.Context) {
 		return nil
 	})
 
-	// Get Organization
+	// Get Organization Store
 	request.Append(
 		// Extract : GIN Parameter 'store' //
 		store.ExtractGINParameterStoreID,
 		// Get Org Store Registry
 		org.DBOrgStoreFind,
-	)
-
-	// Mark Store as Being Deleted (BLOCKED)
-	request.Append(
 		store.AssertStoreNotDeleted,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			registry := r.MustGet("registry-org").(*orm.OrgRegistry)
-			registry.SetStates(orm.STATE_BLOCKED)
-			registry.SetStates(orm.STATE_DELETE)
-		},
-		org.DBOrgStoreUpdate,
 	)
 
 	// Queue Action
@@ -276,6 +266,16 @@ func DeleteStore(c *gin.Context) {
 		},
 		queue.CreateMessageDeleteStore,
 		queue.SendQueueMessage,
+	)
+
+	// Mark Store as Being Deleted (BLOCKED)
+	request.Append(
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-store").(*orm.OrgStoreRegistry)
+			registry.SetStates(orm.STATE_BLOCKED)
+			registry.SetStates(orm.STATE_DELETE)
+		},
+		org.DBOrgStoreUpdate,
 	)
 
 	/* OLD PROCESS (or Step by Step)

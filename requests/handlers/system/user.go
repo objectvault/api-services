@@ -276,17 +276,6 @@ func DeleteUser(c *gin.Context) {
 		user.DBRegistryUserFindByID,
 	)
 
-	// Block User and Mark as Being Deleted
-	request.Append(
-		user.AssertUserNotDeleted,
-		func(r rpf.GINProcessor, c *gin.Context) {
-			registry := r.MustGet("registry-user").(*orm.UserRegistry)
-			registry.SetStates(orm.STATE_BLOCKED)
-			registry.SetStates(orm.STATE_DELETE)
-		},
-		user.DBRegistryUserUpdate,
-	)
-
 	// Queue Action
 	request.Append(
 		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
@@ -304,6 +293,17 @@ func DeleteUser(c *gin.Context) {
 		},
 		queue.CreateMessageDeleteUserFromSystem,
 		queue.SendQueueMessage,
+	)
+
+	// Block User and Mark as Being Deleted
+	request.Append(
+		user.AssertUserNotDeleted,
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-user").(*orm.UserRegistry)
+			registry.SetStates(orm.STATE_BLOCKED)
+			registry.SetStates(orm.STATE_DELETE)
+		},
+		user.DBRegistryUserUpdate,
 	)
 
 	// Save Session
