@@ -78,7 +78,7 @@ func DBOrgStoreFind(r rpf.GINProcessor, c *gin.Context) {
 		return
 	}
 
-	// Save Org Registry
+	// Save Store Registry
 	r.SetLocal("registry-store", entry)
 }
 

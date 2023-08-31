@@ -19,9 +19,19 @@ import (
 )
 
 // USERS //
+func AssertUserNotDeleted(r rpf.GINProcessor, c *gin.Context) {
+	// Get Request Org's User Entry
+	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
+
+	// Is the User Blocked?
+	if entry.IsDeleted() { // YES: Abort
+		r.Abort(4099, nil)
+		return
+	}
+}
 
 func AssertObjectUserBlocked(r rpf.GINProcessor, c *gin.Context) {
-	// Get Request Org's USer Entry
+	// Get Request Org's User Entry
 	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
 	// Is the User Blocked?
@@ -32,7 +42,7 @@ func AssertObjectUserBlocked(r rpf.GINProcessor, c *gin.Context) {
 }
 
 func AssertObjectUserReadOnly(r rpf.GINProcessor, c *gin.Context) {
-	// Get Request Org's USer Entry
+	// Get Request Org's User Entry
 	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
 	// Is the User Blocked?
@@ -43,7 +53,7 @@ func AssertObjectUserReadOnly(r rpf.GINProcessor, c *gin.Context) {
 }
 
 func AssertObjectUserAdmin(r rpf.GINProcessor, c *gin.Context) {
-	// Get Request Org's USer Entry
+	// Get Request Org's User Entry
 	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
 	// Is Admin User in Object?
@@ -54,7 +64,7 @@ func AssertObjectUserAdmin(r rpf.GINProcessor, c *gin.Context) {
 }
 
 func AssertObjectUserNotAdmin(r rpf.GINProcessor, c *gin.Context) {
-	// Get Request Org's USer Entry
+	// Get Request Org's User Entry
 	entry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
 
 	// Is Admin User in Ob ject?
