@@ -14,9 +14,11 @@ package org
 import (
 	"strings"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/object"
 	"github.com/objectvault/api-services/requests/rpf/org"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/utils"
@@ -255,7 +257,6 @@ func GetOrgUser(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: DELETE User from Organization
 func DeleteOrgUser(c *gin.Context) {
 	// Create Request
 	request := rpf.RootProcessor("DELETE.ORG.USER", c, 1000, shared.JSONResponse)
@@ -267,17 +268,51 @@ func DeleteOrgUser(c *gin.Context) {
 	org.AddinGroupValidateOrgUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-if-self" {
+			return true
 		}
 
 		return nil
 	})
 
-	// Request Process //
+	// Load Request User Org Registration
 	request.Append(
 		func(r rpf.GINProcessor, c *gin.Context) {
-			// TODO Implement
-			r.Abort(5999, nil)
+			r.SetLocal("user-id", r.MustGet("request-user"))
+			object.DBOrgUserFind(r, c)
 		},
+		object.AssertUserNotDeleted,
+	)
+
+	// Queue Action
+	request.Append(
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
+
+			// Get Session User's Information for User
+			r.SetLocal("action-user", session.Get("user-id"))
+			r.SetLocal("action-user-name", session.Get("user-name"))
+			r.SetLocal("action-user-email", session.Get("user-email"))
+
+			// Message Queue
+			r.SetLocal("queue", "q.actions.inbox")
+		},
+		queue.CreateMessageDeleteUserFromOrg,
+		queue.SendQueueMessage,
+	)
+
+	// UPDATE Registry Entry
+	request.Append(
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
+
+			// Mark User as in the Process of Removal and Block from Organization
+			registry.SetStates(orm.STATE_DELETE)
+			registry.SetStates(orm.STATE_BLOCKED)
+		},
+		object.DBObjectUserFlush,
 	)
 
 	// Save Session
