@@ -227,12 +227,12 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			organization.PUT("/users/roles", pkgorg.PutOrgUsersRoles)
 
 			// SINGLE USER MANAGEMENT
-			organization.GET("/user/:user", pkgorg.GetOrgUser) // IMPLEMENTED
-			organization.DELETE("/user/:user", pkgorg.DeleteOrgUser)
+			organization.GET("/user/:user", pkgorg.GetOrgUser)                        // IMPLEMENTED
+			organization.DELETE("/user/:user", pkgorg.DeleteOrgUser)                  // IMPLEMENTED: Tested 20230831
 			organization.GET("/user/:user/lock", pkgorg.GetOrgUserLock)               // IMPLEMENTED: Needs Testing
-			organization.PUT("/user/:user/lock/:bool", pkgorg.PutOrgUserLock)         // IMPLEMENTED: Tested
+			organization.PUT("/user/:user/lock/:bool", pkgorg.PutOrgUserLock)         // IMPLEMENTED: Tested 20230831
 			organization.GET("/user/:user/block", pkgorg.GetOrgUserBlock)             // IMPLEMENTED: Needs Testing
-			organization.PUT("/user/:user/block/:bool", pkgorg.PutOrgUserBlock)       // IMPLEMENTED: Tested
+			organization.PUT("/user/:user/block/:bool", pkgorg.PutOrgUserBlock)       // IMPLEMENTED: Tested 20230831
 			organization.GET("/user/:user/state", pkgorg.GetOrgUserState)             // IMPLEMENTED: Needs Testing
 			organization.PUT("/user/:user/state/:uint", pkgorg.PutOrgUserState)       // IMPLEMENTED: Needs Testing
 			organization.PUT("/user/:user/admin", pkgorg.ToggleOrgUserAdmin)          // IMPLEMENTED: Needs Testing
@@ -273,12 +273,12 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			store.PUT("/users/roles", pkgstore.PutStoreUsersRoles)
 
 			// SINGLE USER MANAGEMENT
-			store.GET("/user/:user", pkgstore.GetStoreUser) // IMPLEMENTED
-			store.DELETE("/user/:user", pkgstore.DeleteStoreUser)
+			store.GET("/user/:user", pkgstore.GetStoreUser)                        // IMPLEMENTED
+			store.DELETE("/user/:user", pkgstore.DeleteStoreUser)                  // IMPLEMENTED: Tested 20230901
 			store.GET("/user/:user/lock", pkgstore.GetStoreUserLock)               // IMPLEMENTED: Needs Testing
-			store.PUT("/user/:user/lock/:bool", pkgstore.PutStoreUserLock)         // IMPLEMENTED: Needs Testing
+			store.PUT("/user/:user/lock/:bool", pkgstore.PutStoreUserLock)         // IMPLEMENTED: Tested 20230901
 			store.GET("/user/:user/block", pkgstore.GetStoreUserBlock)             // IMPLEMENTED: Needs Testing
-			store.PUT("/user/:user/block/:bool", pkgstore.PutStoreUserBlock)       // IMPLEMENTED: Needs Testing
+			store.PUT("/user/:user/block/:bool", pkgstore.PutStoreUserBlock)       // IMPLEMENTED: Tested 20230901
 			store.GET("/user/:user/state", pkgstore.GetStoreUserState)             // IMPLEMENTED: Needs Testing
 			store.PUT("/user/:user/state/:uint", pkgstore.PutStoreUserState)       // IMPLEMENTED: Needs Testing
 			store.PUT("/user/:user/admin", pkgstore.ToggleStoreUserAdmin)          // IMPLEMENTED: Needs Testing
