@@ -11,6 +11,8 @@ package org
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore aoub, aouro
+
 import (
 	"github.com/gin-gonic/gin"
 
@@ -52,11 +54,11 @@ func BaseValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackO
 	}
 
 	// OPTION: for Organization User Object
-	oub := shared.HelperAddinOptionsCallback(opts, "assert-org-user-blocked", true).(bool)
-	ouro := shared.HelperAddinOptionsCallback(opts, "assert-org-user-readonly", true).(bool)
+	aoub := shared.HelperAddinOptionsCallback(opts, "assert-org-user-blocked", true).(bool)
+	aouro := shared.HelperAddinOptionsCallback(opts, "assert-org-user-readonly", true).(bool)
 	cur := shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool)
 
-	if oub || ouro || cur {
+	if aoub || aouro || cur {
 		g.Append(
 			// Load Session User Org Registration
 			object.DBOrgUserFind,
@@ -64,14 +66,14 @@ func BaseValidateOrgRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackO
 	}
 
 	// CHECK: Is User Blocked in Organization? (DEFAULT: Check)
-	if oub {
+	if aoub {
 		g.Append(
 			object.AssertObjectUserBlocked,
 		)
 	}
 
 	// CHECK: Is User Set Read Only in Organization? (DEFAULT: Check)
-	if ouro {
+	if aouro {
 		g.Append(
 			object.AssertObjectUserReadOnly,
 		)

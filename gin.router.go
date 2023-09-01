@@ -276,9 +276,9 @@ func ginRouter(r *gin.Engine) *gin.Engine {
 			store.GET("/user/:user", pkgstore.GetStoreUser) // IMPLEMENTED
 			store.DELETE("/user/:user", pkgstore.DeleteStoreUser)
 			store.GET("/user/:user/lock", pkgstore.GetStoreUserLock)               // IMPLEMENTED: Needs Testing
-			store.PUT("/user/:user/lock", pkgstore.PutStoreUserLock)               // IMPLEMENTED: Needs Testing
+			store.PUT("/user/:user/lock/:bool", pkgstore.PutStoreUserLock)         // IMPLEMENTED: Needs Testing
 			store.GET("/user/:user/block", pkgstore.GetStoreUserBlock)             // IMPLEMENTED: Needs Testing
-			store.PUT("/user/:user/block", pkgstore.PutStoreUserBlock)             // IMPLEMENTED: Needs Testing
+			store.PUT("/user/:user/block/:bool", pkgstore.PutStoreUserBlock)       // IMPLEMENTED: Needs Testing
 			store.GET("/user/:user/state", pkgstore.GetStoreUserState)             // IMPLEMENTED: Needs Testing
 			store.PUT("/user/:user/state/:uint", pkgstore.PutStoreUserState)       // IMPLEMENTED: Needs Testing
 			store.PUT("/user/:user/admin", pkgstore.ToggleStoreUserAdmin)          // IMPLEMENTED: Needs Testing

@@ -11,6 +11,8 @@ package store
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// cSpell:ignore lros
+
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/objectvault/api-services/orm"
@@ -25,9 +27,6 @@ import (
 // COMMON //
 func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbackOptions) rpf.GINGroupProcessor {
 	session.AddinActiveUserSession(g, opts)
-	g.Append(
-		DBStoreUserGet, // FIND User by Searching Store User Registry
-	)
 
 	/* NOTES:
 	 * Store are Children of Organizations.
@@ -35,27 +34,11 @@ func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbac
 	 * Answer: From the Store Object (which has the Parent Organization ID)
 	 */
 
-	// OPTION: Check if organization is unblocked? (DEFAULT: Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-org-unlocked", true).(bool) {
-		g.Append(
-			DBStoreGetByID, // Get Store from ID
-			func(r rpf.GINProcessor, c *gin.Context) { // Get Store Organization
-				s := r.MustGet("store").(*orm.Store)
-				r.SetLocal("org-id", s.Organization())
-			},
-			org.DBRegistryOrgFindByID, // Get Organization Registry
-			org.AssertOrgUnblocked,    // Make Sure Org Unblocked
-		)
+	cou := shared.HelperAddinOptionsCallback(opts, "check-org-unlocked", true).(bool)
+	csu := shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool)
+	lros := shared.HelperAddinOptionsCallback(opts, "load-registry-org-store", false).(bool)
 
-		// OPTION: Check if store is unblocked? (DEFAULT: Check)
-		if shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool) {
-			g.Append(
-				org.DBOrgStoreFind,   // Find Store's Organization  Registry
-				AssertStoreUnblocked, // Make Store Unblocked
-			)
-		}
-	} else // OPTION: Check if store is unblocked (but skip org check)? (DEFAULT: Check)
-	if shared.HelperAddinOptionsCallback(opts, "check-store-unlocked", true).(bool) {
+	if cou || csu {
 		g.Append(
 			DBStoreGetByID, // Get Store from ID
 			func(r rpf.GINProcessor, c *gin.Context) { // Get Store Organization
@@ -63,14 +46,34 @@ func BaseValidateStoreRequest(g rpf.GINGroupProcessor, opts shared.TAddinCallbac
 				r.SetLocal("org-id", s.Organization())
 			},
 			org.DBRegistryOrgFindByID, // Get Organization Registry
-			org.DBOrgStoreFind,        // Find Store's Organization  Registry
-			AssertStoreUnblocked,      // Make Store Unblocked
+		)
+	}
+
+	// OPTION: Check if organization is unblocked? (DEFAULT: Check)
+	if cou {
+		g.Append(
+			org.AssertOrgUnblocked, // Make Sure Org Unblocked
+		)
+	}
+
+	// OPTION: Load Store's Organization Registry? (DEFAULT: No unless requested or required)
+	if lros || csu {
+		g.Append(
+			org.DBOrgStoreFind,
+		)
+	}
+
+	// OPTION: Check if store is unblocked? (DEFAULT: Check)
+	if csu {
+		g.Append(
+			AssertStoreUnblocked, // Make Store Unblocked
 		)
 	}
 
 	// OPTION: Check user's store roles? (DEFAULT: Check)
 	if shared.HelperAddinOptionsCallback(opts, "check-user-roles", true).(bool) {
 		g.Append(
+			DBStoreUserGet,
 			func(r rpf.GINProcessor, c *gin.Context) {
 				skipSelf := shared.HelperAddinOptionsCallback(opts, "skip-roles-if-self", false).(bool)
 				skipRoles := skipSelf || !session.IsSelf(c, r.MustGet("user-id").(uint64))

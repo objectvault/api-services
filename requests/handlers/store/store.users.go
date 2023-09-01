@@ -14,8 +14,10 @@ package store
 import (
 	"strings"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/objectvault/api-services/orm"
 	"github.com/objectvault/api-services/requests/rpf/object"
+	"github.com/objectvault/api-services/requests/rpf/queue"
 	"github.com/objectvault/api-services/requests/rpf/session"
 	"github.com/objectvault/api-services/requests/rpf/shared"
 	"github.com/objectvault/api-services/requests/rpf/store"
@@ -228,7 +230,6 @@ func GetStoreUser(c *gin.Context) {
 	request.Run()
 }
 
-// TODO IMPLEMENT: DELETE User from Store
 func DeleteStoreUser(c *gin.Context) {
 	/* IMPLEMENTATION NOTE:
 	 * It shouldn't be possible to delete last user from store, since
@@ -245,6 +246,8 @@ func DeleteStoreUser(c *gin.Context) {
 	store.AddinGroupValidateStoreUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-if-self" {
+			return true
 		}
 
 		return nil
@@ -252,10 +255,33 @@ func DeleteStoreUser(c *gin.Context) {
 
 	// Get Object Registry Entry for Request Store / User
 	store.AddinRequestStoreUserRegistry(request)
+	request.Append(
+		object.AssertUserNotDeleted,
+	)
 
+	// Queue Action
+	request.Append(
+		// IMPORTANT: As long as the invitation is created (but not published to the queue) the handler passes
+		func(r rpf.GINProcessor, c *gin.Context) {
+			// Get Session Store
+			session := sessions.Default(c)
+
+			// Get Session User's Information for User
+			r.SetLocal("action-user", session.Get("user-id"))
+			r.SetLocal("action-user-name", session.Get("user-name"))
+			r.SetLocal("action-user-email", session.Get("user-email"))
+
+			// Message Queue
+			r.SetLocal("queue", "q.actions.inbox")
+		},
+		queue.CreateMessageDeleteUserFromStore,
+		queue.SendQueueMessage,
+	)
+
+	/* ORIGINAL WORKING HANDLER
 	// Request Processing
 	request.Append(
-		/* REQUEST VALIDATION */
+		// REQUEST VALIDATION
 		object.AssertNotLastUserRolesManager,
 		object.AssertNotLastUserInvitesManager,
 		func(r rpf.GINProcessor, c *gin.Context) {
@@ -266,6 +292,19 @@ func DeleteStoreUser(c *gin.Context) {
 		},
 		object.DBDeleteRegistryUserObject,
 		object.DBObjectUserDelete,
+	)
+	*/
+
+	// UPDATE Registry Entry
+	request.Append(
+		func(r rpf.GINProcessor, c *gin.Context) {
+			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
+
+			// Mark User as in the Process of Removal and Block from Organization
+			registry.SetStates(orm.STATE_DELETE)
+			registry.SetStates(orm.STATE_BLOCKED)
+		},
+		object.DBObjectUserFlush,
 	)
 
 	// Save Session
@@ -323,6 +362,8 @@ func PutStoreUserLock(c *gin.Context) {
 	store.AddinGroupValidateStoreUserRequest(request, func(o string) interface{} {
 		if o == "roles" {
 			return roles
+		} else if o == "assert-if-self" {
+			return true
 		}
 
 		return nil
@@ -348,7 +389,7 @@ func PutStoreUserLock(c *gin.Context) {
 				registry.ClearStates(orm.STATE_READONLY)
 			}
 		},
-		store.DBStoreUserUpdate,
+		object.DBObjectUserFlush,
 		// Request Response //
 		func(r rpf.GINProcessor, c *gin.Context) {
 			registry := r.MustGet("registry-object-user").(*orm.ObjectUserRegistry)
